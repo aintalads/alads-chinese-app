@@ -1,36 +1,30 @@
 :root {
-    /* Vanilla Theme (Clean, Soft, Minimalist) */
-    --bg-color: #FDFBF7;         /* Warm off-white / Vanilla */
-    --card-bg: #FFFFFF;          /* Pure white cards */
-    --text-main: #2C2B29;        /* Soft charcoal black */
-    --text-muted: #7A7873;       /* Muted grey/brown */
-    --border-color: #E8E6E1;     /* Soft beige border */
-    
-    --primary-color: #4A4A4A;    /* Dark grey/charcoal for main buttons */
-    --primary-hover: #1A1A1A;    
-    --accent-color: #F0EEE9;     /* Light vanilla for active states */
-    
-    --correct-color: #5C6E58;    /* Muted sage green */
-    --wrong-color: #8C5E58;      /* Muted rust red */
-    
-    --border-radius: 12px;
-    --shadow-sm: 0 4px 12px rgba(0,0,0,0.03);
-    --shadow-md: 0 8px 24px rgba(0,0,0,0.06);
+    /* Custom Color Palette */
+    --blue-dianne: #204E59;
+    --surfie-green: #0C7A79;
+    --atoll: #0A6F75;
+    --fountain-blue: #5EBBBA;
+    --black: #000000;
+    --gray: #808080;
+
+    /* Theme Mapping */
+    --primary-color: var(--surfie-green);
+    --secondary-color: var(--atoll);
+    --accent-color: var(--fountain-blue);
+    --bg-color: #f4f6f8; /* Slightly off-white to make cards pop */
+    --card-bg: #ffffff;
+    --text-main: var(--black);
+    --text-muted: var(--gray);
+    --border-color: #e0e0e0;
 }
 
-.dark-mode {
-    --bg-color: #1A1A19;         /* Very dark warm grey */
-    --card-bg: #242422;          /* Slightly lighter card */
-    --text-main: #E8E6E1;        /* Off-white text */
-    --text-muted: #A3A099;       
-    --border-color: #3B3A38;     
-    
-    --primary-color: #D6D2C4;    /* Light beige buttons */
-    --primary-hover: #FFFFFF;
-    --accent-color: #33322E;     
-    
-    --correct-color: #7B9376;
-    --wrong-color: #B57A73;
+body.dark-mode {
+    --bg-color: var(--black);
+    --card-bg: var(--blue-dianne);
+    --text-main: #ffffff;
+    --text-muted: #d0d0d0;
+    --border-color: var(--atoll);
+    --primary-color: var(--fountain-blue); /* Lighter blue for dark mode */
 }
 
 /* --- UPDATED FONT FAMILY FOR CHINESE --- */
@@ -207,3 +201,243 @@ body { background-color: var(--bg-color); color: var(--text-main); line-height: 
 
 .writing-controls { flex-wrap: wrap; }
 .practice-btn { background: var(--primary-color) !important; color: var(--card-bg) !important; }
+
+/* Auto-Play Button Styles */
+.auto-play-btn {
+    background: transparent;
+    border: 2px solid var(--primary-color);
+    color: var(--text-main);
+    padding: 8px 16px;
+    border-radius: 20px;
+    font-weight: bold;
+    cursor: pointer;
+    transition: 0.3s ease;
+    margin-bottom: 15px;
+}
+.auto-play-btn.active {
+    background: var(--primary-color);
+    color: #ffffff;
+    border-color: var(--primary-color);
+}
+
+.top-controls { display: flex; gap: 10px; justify-content: center; margin-bottom: 15px; flex-wrap: wrap; }
+.action-btn { background: transparent; border: 2px solid var(--primary-color); color: var(--text-main); padding: 8px 16px; border-radius: 20px; font-weight: bold; cursor: pointer; transition: 0.3s ease; }
+.action-btn.active { background: var(--primary-color); color: #ffffff; }
+.action-btn:hover { background: var(--primary-color); color: #ffffff; }
+/* Professional Transparent Bubble Buttons */
+button {
+    border-radius: 9999px; /* Gives it the perfect bubble/pill shape */
+    padding: 10px 20px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s ease-in-out;
+    backdrop-filter: blur(4px); /* Creates a subtle frosted glass effect */
+    font-family: inherit;
+    font-size: 0.95rem;
+}
+
+/* Base style for general action buttons (Blue theme) */
+.action-btn, .mode-btn, .add-btn, .clear-btn, .manage-list-btn, .apply-btn, .review-btn, .practice-btn {
+    background-color: rgba(0, 120, 215, 0.1); 
+    border: 1px solid rgba(0, 120, 215, 0.3);
+    color: #005a9e; 
+}
+
+.action-btn:hover, .mode-btn:hover, .apply-btn:hover {
+    background-color: rgba(0, 120, 215, 0.2);
+    border-color: rgba(0, 120, 215, 0.5);
+    transform: translateY(-2px); /* Slight lift on hover */
+}
+
+/* "Got It" button (Green theme) */
+.swipe-btn.right {
+    background-color: rgba(40, 167, 69, 0.1);
+    border: 1px solid rgba(40, 167, 69, 0.3);
+    color: #1e7e34;
+}
+
+.swipe-btn.right:hover {
+    background-color: rgba(40, 167, 69, 0.2);
+    border-color: rgba(40, 167, 69, 0.5);
+    transform: translateY(-2px);
+}
+
+/* "Study Again" button (Red theme) */
+.swipe-btn.left {
+    background-color: rgba(220, 53, 69, 0.1);
+    border: 1px solid rgba(220, 53, 69, 0.3);
+    color: #bd2130;
+}
+
+.swipe-btn.left:hover {
+    background-color: rgba(220, 53, 69, 0.2);
+    border-color: rgba(220, 53, 69, 0.5);
+    transform: translateY(-2px);
+}
+
+/* Neutral Flip / Nav buttons */
+.swipe-btn.flip, .sentence-controls button, .writing-controls button {
+    background-color: rgba(108, 117, 125, 0.1);
+    border: 1px solid rgba(108, 117, 125, 0.3);
+    color: #495057;
+}
+
+.swipe-btn.flip:hover, .sentence-controls button:hover, .writing-controls button:hover {
+    background-color: rgba(108, 117, 125, 0.2);
+    transform: translateY(-2px);
+}
+/* Tablet and Desktop Scaling */
+@media (min-width: 1024px) {
+    .flashcard-container {
+        height: 500px; /* Increased from default */
+        perspective: 1500px;
+    }
+
+    .card {
+        width: 450px; /* Larger width for laptop */
+        height: 100%;
+    }
+
+    #fc-front-text {
+        font-size: 6rem; /* Huge characters on big screens */
+    }
+
+    #fc-pinyin {
+        font-size: 2.5rem;
+    }
+
+    #fc-meaning {
+        font-size: 1.8rem;
+    }
+}
+/* ==========================================
+   --- UPGRADED QUIZ DESIGN ---
+   ========================================== */
+
+/* Settings Menu */
+.quiz-settings {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 20px;
+    padding: 15px;
+    margin-bottom: 30px;
+    background: linear-gradient(135deg, #f8f9fa, #e9ecef);
+    border-radius: 12px;
+    box-shadow: 0 4px 6px rgba(0,0,0,0.05);
+    flex-wrap: wrap;
+    border: 1px solid #dee2e6;
+}
+.setting-group label {
+    font-weight: 600;
+    margin-right: 8px;
+    color: #495057;
+}
+.setting-group select {
+    padding: 8px 12px;
+    border-radius: 8px;
+    border: 1px solid #ced4da;
+    background-color: white;
+    cursor: pointer;
+    outline: none;
+    transition: border-color 0.2s;
+}
+.setting-group select:focus {
+    border-color: #007bff;
+}
+
+/* Score Display */
+.quiz-score {
+    font-weight: bold;
+    color: #fff;
+    background-color: #007bff;
+    padding: 8px 15px;
+    border-radius: 20px;
+    font-size: 1.1rem;
+    box-shadow: 0 2px 4px rgba(0,123,255,0.3);
+}
+
+/* Question Area */
+.qz-word-container {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    margin-bottom: 30px;
+    padding: 20px;
+    background-color: white;
+    border-radius: 16px;
+    box-shadow: 0 4px 15px rgba(0,0,0,0.05);
+}
+.qz-word-container h2 {
+    margin: 0;
+    font-size: 3.5rem;
+    color: #212529;
+}
+.icon-btn {
+    background: #f1f3f5;
+    border: none;
+    cursor: pointer;
+    font-size: 1.5rem;
+    margin-left: 15px;
+    width: 50px;
+    height: 50px;
+    border-radius: 50%;
+    transition: background 0.2s, transform 0.1s;
+}
+.icon-btn:hover {
+    background: #e2e6ea;
+}
+.icon-btn:active {
+    transform: scale(0.95);
+}
+
+/* Multiple Choice Grid */
+.quiz-options {
+    display: grid;
+    grid-template-columns: 1fr 1fr; /* 2x2 Grid */
+    gap: 15px;
+    width: 100%;
+    max-width: 600px;
+    margin: 0 auto;
+}
+.option-btn {
+    padding: 15px 20px;
+    font-size: 1.1rem;
+    border-radius: 12px;
+    border: 2px solid #e9ecef;
+    background-color: white;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    font-weight: 500;
+}
+.option-btn:hover:not(:disabled) {
+    border-color: #007bff;
+    background-color: #f8f9fa;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 8px rgba(0,0,0,0.05);
+}
+
+/* Typing Mode Input */
+.quiz-input {
+    width: 100%;
+    max-width: 500px;
+    padding: 15px;
+    font-size: 1.2rem;
+    margin: 0 auto 15px auto;
+    display: block;
+    border-radius: 12px;
+    border: 2px solid #ced4da;
+    outline: none;
+    transition: border-color 0.2s, box-shadow 0.2s;
+}
+.quiz-input:focus {
+    border-color: #007bff;
+    box-shadow: 0 0 0 3px rgba(0,123,255,0.25);
+}
+.quiz-feedback {
+    text-align: center;
+    margin-top: 15px;
+    font-size: 1.2rem;
+    padding: 15px;
+    border-radius: 8px;
+}
