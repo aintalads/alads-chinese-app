@@ -23,7 +23,14 @@
         </div>
         <div class="nav-controls">
             <div class="streak" title="Daily Streak">🔥 Streak: <span id="streak-count">0</span></div>
-            <button id="dark-mode-btn" title="Toggle Dark Mode">🌗</button>
+            
+            <select id="theme-selector" class="theme-dropdown" onchange="app.changeTheme(this.value)">
+                <option value="default">🌤️ Light Mode</option>
+                <option value="dark">🌙 Dark Mode</option>
+                <option value="matcha">🍵 Matcha Theme</option>
+                <option value="sakura">🌸 Sakura Theme</option>
+                <option value="midnight">🌌 Midnight Theme</option>
+            </select>
         </div>
     </nav>
 
@@ -93,6 +100,13 @@
             <div id="view-flashcards" class="study-view active">
                 <div class="top-controls">
                     <button id="auto-play-btn" class="action-btn" onclick="app.toggleAutoPlaySlideshow()">▶️ Slideshow</button>
+                    
+                    <select id="fc-speed-select" class="speed-select">
+                        <option value="slow">🐢 Slow</option>
+                        <option value="normal" selected>🚶 Normal</option>
+                        <option value="fast">🐇 Fast</option>
+                    </select>
+
                     <button id="fc-auto-audio-btn" class="action-btn" onclick="app.toggleAutoAudio()">🔇 Auto-Audio Off</button>
                     <button id="undo-btn" class="action-btn" onclick="app.undoLastSwipe()">↩️ Undo Last</button>
                 </div>
@@ -113,6 +127,9 @@
                                 <button class="card-audio-btn" onclick="app.playCurrentFlashcardAudio(event)">🔊</button>
                                 <h2 id="fc-pinyin">hàn zì</h2>
                                 <p id="fc-meaning">Chinese characters</p>
+                                
+                                <div id="fc-radical-box" class="extra-info-box hidden"></div>
+                                <div id="fc-example-box" class="extra-info-box hidden"></div>
                             </div>
                         </div>
                     </div>
@@ -144,6 +161,13 @@
             <div id="view-sentences" class="study-view">
                 <div class="top-controls" style="justify-content: center; gap: 10px; margin-bottom: 1rem;">
                     <button id="sn-auto-play-btn" class="action-btn" onclick="app.toggleSentenceSlideshow()">▶️ Slideshow</button>
+                    
+                    <select id="sn-speed-select" class="speed-select">
+                        <option value="slow">🐢 Slow</option>
+                        <option value="normal" selected>🚶 Normal</option>
+                        <option value="fast">🐇 Fast</option>
+                    </select>
+
                     <button id="sn-auto-audio-btn" class="action-btn" onclick="app.toggleAutoAudio()">🔇 Auto-Audio Off</button>
                 </div>
                 <div class="sentence-container">
