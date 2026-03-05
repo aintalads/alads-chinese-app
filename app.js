@@ -22,7 +22,12 @@ class ChineseApp {
         this.sentenceSlideshowTimeout = null;
         this.hanziWriter = null;
         
+        // Pre-load voices to fix mobile delays
         window.speechSynthesis.getVoices(); 
+        if (speechSynthesis.onvoiceschanged !== undefined) {
+            speechSynthesis.onvoiceschanged = () => window.speechSynthesis.getVoices();
+        }
+        
         this.init();
     }
 
@@ -348,11 +353,26 @@ class ChineseApp {
         });
     }
 
-    playAudio(text, lang = 'zh-TW', callback = null) {
+    /* --- MOBILE AUDIO FIX --- */
+    playAudio(text, lang = 'zh-CN', callback = null) {
         if (!text) return;
         window.speechSynthesis.cancel(); 
+        
         const msg = new SpeechSynthesisUtterance(text);
-        msg.lang = lang; msg.rate = 0.9; 
+        msg.lang = lang; // Defaults to zh-CN which has better mobile support
+        msg.rate = 0.85; 
+
+        // Force the browser to find a matching voice (Crucial for mobile phones)
+        const voices = window.speechSynthesis.getVoices();
+        if (voices.length > 0) {
+            let targetVoice = voices.find(v => v.lang.replace('_', '-').toLowerCase().includes(lang.toLowerCase()));
+            if (!targetVoice && lang.includes('zh')) {
+                // If specific Chinese dialect fails, grab ANY available Chinese voice
+                targetVoice = voices.find(v => v.lang.includes('zh'));
+            }
+            if (targetVoice) msg.voice = targetVoice;
+        }
+
         msg.onend = () => { if (callback) callback(); };
         window.speechSynthesis.speak(msg);
     }
@@ -400,7 +420,7 @@ class ChineseApp {
             }, 10);
         }
 
-        if (this.state.autoAudio && !this.state.isAutoPlaying) this.playAudio(item.word || item.simplified);
+        if (this.state.autoAudio && !this.state.isAutoPlaying) this.playAudio(item.word || item.simplified, 'zh-CN');
 
         var knownCount = 0; var studyCount = 0;
         if (this.state.history) {
@@ -481,21 +501,19 @@ class ChineseApp {
         }
     }
 
-    /* --- SPEED SELECTOR LOGIC IMPLEMENTED --- */
     runSlideshowStep() {
         if (!this.state.isAutoPlaying || this.state.currentIndex >= this.state.studyQueue.length) {
             if (this.state.isAutoPlaying) this.toggleAutoPlaySlideshow();
             return;
         }
 
-        // Get Speed Multiplier
         let speedMultiplier = 1;
         const speedVal = document.getElementById('fc-speed-select') ? document.getElementById('fc-speed-select').value : 'normal';
         if (speedVal === 'slow') speedMultiplier = 1.5;
         if (speedVal === 'fast') speedMultiplier = 0.5;
 
         const item = this.state.studyQueue[this.state.currentIndex];
-        this.playAudio(item.word || item.simplified);
+        this.playAudio(item.word || item.simplified, 'zh-CN');
 
         this.slideshowTimeout = setTimeout(() => {
             if (!this.state.isAutoPlaying) return;
@@ -552,7 +570,7 @@ class ChineseApp {
         document.getElementById('sn-english').innerText = s.english || "";
         document.getElementById('sn-english').classList.add('hidden');
         document.getElementById('reveal-translation-btn').style.display = 'inline-block';
-        if (this.state.autoAudio && !this.state.isSentenceAutoPlaying) this.playAudio(s.sentence);
+        if (this.state.autoAudio && !this.state.isSentenceAutoPlaying) this.playAudio(s.sentence, 'zh-CN');
     }
 
     revealSentence() {
@@ -573,7 +591,6 @@ class ChineseApp {
         }
     }
 
-    /* --- SPEED SELECTOR LOGIC IMPLEMENTED FOR SENTENCES --- */
     runSentenceSlideshowStep() {
         if (!this.state.isSentenceAutoPlaying || this.state.currentIndex >= this.state.studyQueue.length) {
             if (this.state.isSentenceAutoPlaying) this.toggleSentenceSlideshow();
@@ -586,7 +603,7 @@ class ChineseApp {
         if (speedVal === 'fast') speedMultiplier = 0.5;
 
         const s = this.state.studyQueue[this.state.currentIndex];
-        this.playAudio(s.sentence, 'zh-TW', () => {
+        this.playAudio(s.sentence, 'zh-CN', () => {
             this.sentenceSlideshowTimeout = setTimeout(() => {
                 if (!this.state.isSentenceAutoPlaying) return;
                 this.revealSentence(); 
@@ -629,7 +646,10 @@ class ChineseApp {
         }
 
         document.getElementById('qz-word').innerText = questionText;
-        document.getElementById('qz-sound-btn').onclick = () => this.playAudio(item.word || item.simplified);
+        
+        // --- QUIZ AUDIO FIX --- 
+        document.getElementById('qz-sound-btn').onclick = () => this.playAudio(item.word || item.simplified, 'zh-CN');
+        if (this.state.autoAudio) this.playAudio(item.word || item.simplified, 'zh-CN');
 
         var optionsContainer = document.getElementById('qz-options');
         optionsContainer.innerHTML = ''; 
@@ -765,6 +785,9 @@ class ChineseApp {
         const newCard = card.cloneNode(true);
         card.parentNode.replaceChild(newCard, card);
         const activeCard = document.getElementById('flashcard');
+
+        // --- MOBILE TOUCH FIX ---
+        activeCard.style.touchAction = 'none';
 
         activeCard.addEventListener('pointerdown', (e) => {
             if(e.target.tagName.toLowerCase() === 'button') return; 
