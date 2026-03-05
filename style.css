@@ -440,4 +440,208 @@ button {
     font-size: 1.2rem;
     padding: 15px;
     border-radius: 8px;
+}/* ==========================================
+   --- PREMIUM THEMES & EXTRA FEATURES ---
+   ========================================== */
+
+/* 1. Theme Variables (Default Light) */
+:root {
+    --bg-main: #f4f7f6;
+    --nav-bg: #ffffff;
+    --text-main: #333333;
+    --text-muted: #666666;
+    --card-bg: #ffffff;
+    --primary-color: #007bff;
+    --accent-color: rgba(0,0,0,0.05);
+}
+
+/* Dark Mode Theme */
+body.theme-dark {
+    --bg-main: #121212;
+    --nav-bg: #1e1e1e;
+    --text-main: #e0e0e0;
+    --text-muted: #a0a0a0;
+    --card-bg: #2d2d2d;
+    --primary-color: #4da3ff;
+    --accent-color: rgba(255,255,255,0.08);
+}
+
+/* Matcha Theme 🍵 */
+body.theme-matcha {
+    --bg-main: #f5f5dc; 
+    --nav-bg: #e8ecd7;
+    --text-main: #2b3a1d;
+    --text-muted: #4f5a43;
+    --card-bg: #ffffff;
+    --primary-color: #556b2f;
+    --accent-color: #dcedc8;
+}
+
+/* Sakura Theme 🌸 */
+body.theme-sakura {
+    --bg-main: #fff0f5;
+    --nav-bg: #ffe4e1;
+    --text-main: #4a2c3a;
+    --text-muted: #8a5a70;
+    --card-bg: #ffffff;
+    --primary-color: #ff69b4;
+    --accent-color: #ffd1dc;
+}
+
+/* Midnight Theme 🌌 */
+body.theme-midnight {
+    --bg-main: #0f172a;
+    --nav-bg: #1e293b;
+    --text-main: #e2e8f0;
+    --text-muted: #94a3b8;
+    --card-bg: #334155;
+    --primary-color: #8b5cf6;
+    --accent-color: rgba(255,255,255,0.1);
+}
+
+/* Apply variables to major elements dynamically */
+body { background-color: var(--bg-main); color: var(--text-main); }
+.navbar { background-color: var(--nav-bg); }
+.sidebar { background-color: var(--nav-bg); }
+.card-inner .card-front, .card-inner .card-back { background-color: var(--card-bg); color: var(--text-main); }
+.quiz-settings { background-color: var(--nav-bg); }
+.qz-word-container { background-color: var(--card-bg); color: var(--text-main); }
+
+/* Theme Dropdown UI */
+.theme-dropdown {
+    padding: 8px 12px;
+    border-radius: 8px;
+    border: 1px solid #ccc;
+    background-color: var(--card-bg);
+    color: var(--text-main);
+    font-weight: bold;
+    cursor: pointer;
+    outline: none;
+    margin-left: 15px;
+}
+
+/* Flashcard Radicals & Sentences Boxes */
+.extra-info-box {
+    margin-top: 15px;
+    padding: 12px;
+    background-color: var(--accent-color);
+    border-radius: 8px;
+    font-size: 0.95rem;
+    text-align: left;
+    line-height: 1.4;
+    border-left: 4px solid var(--primary-color);
+}
+.extra-info-box.hidden {
+    display: none;
+}
+.extra-info-box strong {
+    color: var(--primary-color);
+}
+
+/* Autoplay Speed Selector Styling */
+.speed-select {
+    padding: 8px 12px;
+    border-radius: 8px;
+    border: 1px solid #ccc;
+    background-color: var(--card-bg);
+    color: var(--text-main);
+    font-weight: 600;
+    cursor: pointer;
+    outline: none;
+    font-size: 0.95rem;
+}
+.speed-select:focus {
+    border-color: var(--primary-color);
+}
+
+/* ==========================================
+   --- MOBILE RESPONSIVENESS & NEAT LAYOUT ---
+   ========================================== */
+
+/* 1. Flashcard Auto-Scroll 
+   (If the Radical & Sentence are too long, this lets the user scroll inside the card!) */
+.card-back {
+    overflow-y: auto; 
+    padding-bottom: 20px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: flex-start; /* Aligns text to the top so it flows nicely */
+}
+
+/* 2. Extra Info Boxes Formatting */
+.extra-info-box {
+    width: 100%;
+    box-sizing: border-box;
+    font-size: 0.9rem;
+    padding: 12px;
+    margin-top: 15px;
+}
+
+/* ==========================================
+   --- SMARTPHONE LAYOUT TWEAKS (Max width 768px) ---
+   ========================================== */
+@media (max-width: 768px) {
+    
+    /* Fix Top Controls: Make the 4 buttons stack neatly into a 2x2 grid */
+    .top-controls {
+        flex-wrap: wrap;
+        justify-content: center;
+        gap: 8px;
+    }
+    .top-controls .action-btn, 
+    .top-controls .speed-select {
+        flex: 1 1 45%; /* Buttons take up half the width on phones */
+        font-size: 0.85rem;
+        padding: 8px 5px;
+        text-align: center;
+    }
+
+    /* Fix Flashcard Stats: Make it fit narrow screens */
+    .session-stats {
+        gap: 15px;
+        font-size: 0.9rem;
+        padding: 8px 15px;
+    }
+
+    /* Fix the Theme Dropdown so it doesn't push the menu off-screen */
+    .theme-dropdown {
+        width: 120px;
+        font-size: 0.8rem;
+        padding: 5px;
+        margin-left: 10px;
+    }
+
+    /* Fix Quiz Layout: Turn the 2x2 grid into a single column so buttons are easy to tap */
+    .quiz-options {
+        grid-template-columns: 1fr; /* 1 Column instead of 2 */
+        gap: 10px;
+    }
+    .option-btn {
+        padding: 12px;
+        font-size: 1rem;
+    }
+
+    /* Fix Quiz Settings so they stack cleanly */
+    .quiz-settings {
+        flex-direction: column;
+        gap: 12px;
+        align-items: stretch;
+    }
+    .setting-group {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+    }
+    
+    /* Shrink the giant Chinese character slightly in the Quiz */
+    .qz-word-container h2 {
+        font-size: 2.5rem;
+    }
+
+    /* Give the flashcard a bit more height on phones to fit the examples */
+    .card {
+        height: 60vh;
+        min-height: 400px;
+    }
 }
