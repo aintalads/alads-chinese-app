@@ -555,34 +555,29 @@ body { background-color: var(--bg-main); color: var(--text-main); }
 }
 
 /* ==========================================
-   --- MOBILE RESPONSIVENESS & NEAT LAYOUT ---
+   --- SMARTPHONE LAYOUT FIXES (Max width 768px) ---
    ========================================== */
 
-/* 1. Flashcard Auto-Scroll 
-   (If the Radical & Sentence are too long, this lets the user scroll inside the card!) */
-.card-back {
-    overflow-y: auto; 
-    padding-bottom: 20px;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: flex-start; /* Aligns text to the top so it flows nicely */
+/* This stops the browser from scrolling when you try to swipe! */
+#flashcard {
+    touch-action: pan-y; /* Allows vertical scroll inside, but captures horizontal swipes */
 }
 
-/* 2. Extra Info Boxes Formatting */
-.extra-info-box {
-    width: 100%;
-    box-sizing: border-box;
-    font-size: 0.9rem;
-    padding: 12px;
-    margin-top: 15px;
-}
-
-/* ==========================================
-   --- SMARTPHONE LAYOUT TWEAKS (Max width 768px) ---
-   ========================================== */
 @media (max-width: 768px) {
-    
+    /* Shrink the flashcard so it perfectly fits phone screens without overflowing */
+    .card {
+        height: 50vh !important; 
+        min-height: 320px !important;
+        max-height: 450px !important;
+        width: 90vw !important;
+        margin: 0 auto;
+    }
+
+    /* Make text inside the flashcard fit better */
+    #fc-front-text { font-size: 3.5rem !important; }
+    #fc-pinyin { font-size: 1.5rem !important; }
+    #fc-meaning { font-size: 1.1rem !important; }
+
     /* Fix Top Controls: Make the 4 buttons stack neatly into a 2x2 grid */
     .top-controls {
         flex-wrap: wrap;
@@ -591,28 +586,20 @@ body { background-color: var(--bg-main); color: var(--text-main); }
     }
     .top-controls .action-btn, 
     .top-controls .speed-select {
-        flex: 1 1 45%; /* Buttons take up half the width on phones */
+        flex: 1 1 45%; 
         font-size: 0.85rem;
         padding: 8px 5px;
         text-align: center;
     }
 
-    /* Fix Flashcard Stats: Make it fit narrow screens */
+    /* Fix Flashcard Stats */
     .session-stats {
         gap: 15px;
         font-size: 0.9rem;
         padding: 8px 15px;
     }
 
-    /* Fix the Theme Dropdown so it doesn't push the menu off-screen */
-    .theme-dropdown {
-        width: 120px;
-        font-size: 0.8rem;
-        padding: 5px;
-        margin-left: 10px;
-    }
-
-    /* Fix Quiz Layout: Turn the 2x2 grid into a single column so buttons are easy to tap */
+    /* Fix Quiz Layout */
     .quiz-options {
         grid-template-columns: 1fr; /* 1 Column instead of 2 */
         gap: 10px;
@@ -622,7 +609,6 @@ body { background-color: var(--bg-main); color: var(--text-main); }
         font-size: 1rem;
     }
 
-    /* Fix Quiz Settings so they stack cleanly */
     .quiz-settings {
         flex-direction: column;
         gap: 12px;
@@ -634,14 +620,5 @@ body { background-color: var(--bg-main); color: var(--text-main); }
         align-items: center;
     }
     
-    /* Shrink the giant Chinese character slightly in the Quiz */
-    .qz-word-container h2 {
-        font-size: 2.5rem;
-    }
-
-    /* Give the flashcard a bit more height on phones to fit the examples */
-    .card {
-        height: 60vh;
-        min-height: 400px;
-    }
+    .qz-word-container h2 { font-size: 2rem !important; }
 }
