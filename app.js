@@ -29,7 +29,7 @@ class ChineseApp {
     init() {
         this.processData();
         this.setupEventListeners();
-        this.applyDarkMode();
+        this.applyTheme(); 
         
         const firstBook = Object.keys(this.data.books)[0];
         if (firstBook) {
@@ -63,6 +63,61 @@ class ChineseApp {
                 this.data.books[bId].lessons[lId].sentences.push(s);
             });
         }
+    }
+
+    playSound(type) {
+        const AudioContext = window.AudioContext || window.webkitAudioContext;
+        if (!AudioContext) return;
+        const ctx = new AudioContext();
+        const osc = ctx.createOscillator();
+        const gain = ctx.createGain();
+        osc.connect(gain);
+        gain.connect(ctx.destination);
+        
+        const now = ctx.currentTime;
+        if (type === 'correct') { 
+            osc.type = 'sine';
+            osc.frequency.setValueAtTime(523.25, now); 
+            osc.frequency.setValueAtTime(659.25, now + 0.1); 
+            gain.gain.setValueAtTime(0.5, now);
+            gain.gain.exponentialRampToValueAtTime(0.01, now + 0.3);
+            osc.start(now); osc.stop(now + 0.3);
+        } else if (type === 'wrong') { 
+            osc.type = 'sawtooth';
+            osc.frequency.setValueAtTime(150, now);
+            osc.frequency.setValueAtTime(120, now + 0.15);
+            gain.gain.setValueAtTime(0.3, now);
+            gain.gain.exponentialRampToValueAtTime(0.01, now + 0.3);
+            osc.start(now); osc.stop(now + 0.3);
+        } else if (type === 'swipe-right') { 
+            osc.type = 'sine';
+            osc.frequency.setValueAtTime(800, now);
+            gain.gain.setValueAtTime(0.1, now);
+            gain.gain.exponentialRampToValueAtTime(0.01, now + 0.15);
+            osc.start(now); osc.stop(now + 0.15);
+        } else if (type === 'swipe-left') { 
+            osc.type = 'triangle';
+            osc.frequency.setValueAtTime(200, now);
+            gain.gain.setValueAtTime(0.1, now);
+            gain.gain.exponentialRampToValueAtTime(0.01, now + 0.15);
+            osc.start(now); osc.stop(now + 0.15);
+        }
+    }
+
+    applyTheme() {
+        const savedTheme = localStorage.getItem('aladsTheme') || 'default';
+        this.changeTheme(savedTheme);
+        const dropdown = document.getElementById('theme-selector');
+        if (dropdown) dropdown.value = savedTheme;
+    }
+
+    changeTheme(themeName) {
+        document.body.className = ''; 
+        if (themeName !== 'default') {
+            document.body.classList.add(`theme-${themeName}`);
+        }
+        localStorage.setItem('aladsTheme', themeName);
+        if(this.state.currentMode === 'writing') this.renderWritingChar();
     }
 
     renderChips() {
@@ -107,12 +162,10 @@ class ChineseApp {
         this.state.selectedBooks.forEach(bId => {
             Object.keys(this.data.books[bId].lessons).forEach(lId => availableLessons.add(parseInt(lId)));
         });
-
         let allSelected = true;
         availableLessons.forEach(lId => {
             if (!this.state.selectedLessons.has(lId.toString())) allSelected = false;
         });
-
         if (allSelected) {
             this.state.selectedLessons.clear(); 
         } else {
@@ -138,7 +191,6 @@ class ChineseApp {
     setMode(mode) {
         this.state.currentMode = mode;
         this.state.isReviewMode = false;
-        
         if (this.state.isAutoPlaying) this.toggleAutoPlaySlideshow();
         if (this.state.isSentenceAutoPlaying) this.toggleSentenceSlideshow();
 
@@ -173,24 +225,17 @@ class ChineseApp {
         if(curView) curView.classList.add('active');
 
         if (this.state.currentMode === 'manage-review') {
-            const t = document.getElementById('current-title');
-            if(t) t.innerText = "⚙️ Manage Study List";
-            const mc = document.getElementById('mode-current');
-            if(mc) mc.innerText = '-';
-            const mt = document.getElementById('mode-total');
-            if(mt) mt.innerText = '-';
+            document.getElementById('current-title').innerText = "⚙️ Manage Study List";
             this.renderManageReview();
             return;
         }
 
         if (this.state.isReviewMode) {
             this.state.studyQueue = [...this.state.progress.reviewQueue].sort(() => Math.random() - 0.5);
-            const t = document.getElementById('current-title');
-            if(t) t.innerText = "🔄 Review Deck";
+            document.getElementById('current-title').innerText = "🔄 Review Deck";
         } else {
             let aggregatedVocab = [];
             let aggregatedSentences = [];
-
             this.state.selectedBooks.forEach(bId => {
                 const book = this.data.books[bId];
                 if (!book) return;
@@ -202,8 +247,7 @@ class ChineseApp {
                 });
             });
 
-            const t = document.getElementById('current-title');
-            if(t) t.innerText = `📚 Study Session`;
+            document.getElementById('current-title').innerText = `📚 Study Session`;
             
             if (this.state.currentMode === 'sentences') {
                 this.state.studyQueue = [...aggregatedSentences].sort(() => Math.random() - 0.5);
@@ -245,28 +289,6 @@ class ChineseApp {
                 listUi.appendChild(li);
             });
         }
-
-        const selectUi = document.getElementById('add-review-select');
-        if(!selectUi) return;
-        selectUi.innerHTML = '<option value="">➕ Add a word from current selected lessons...</option>';
-        let aggregatedVocab = [];
-        this.state.selectedBooks.forEach(bId => {
-            const book = this.data.books[bId];
-            if (!book) return;
-            this.state.selectedLessons.forEach(lId => {
-                if (book.lessons[lId]) aggregatedVocab.push(...book.lessons[lId].vocab);
-            });
-        });
-
-        const uniqueVocab = Array.from(new Map(aggregatedVocab.map(item => [item.id, item])).values());
-        uniqueVocab.forEach(item => {
-            if (!this.state.progress.reviewQueue.some(r => r && r.id === item.id)) {
-                const opt = document.createElement('option');
-                opt.value = item.id;
-                opt.innerText = `${item.word || item.simplified} (${item.pinyin})`;
-                selectUi.appendChild(opt);
-            }
-        });
     }
 
     removeFromReviewQueue(id) {
@@ -283,34 +305,9 @@ class ChineseApp {
         }
     }
 
-    addSelectedToReview() {
-        const selectUi = document.getElementById('add-review-select');
-        if(!selectUi) return;
-        const selectedId = selectUi.value;
-        if (!selectedId) return;
-        let itemToAdd = null;
-        for (let bId in this.data.books) {
-            for (let lId in this.data.books[bId].lessons) {
-                const found = this.data.books[bId].lessons[lId].vocab.find(v => v.id === selectedId);
-                if (found) itemToAdd = found;
-            }
-        }
-        if (itemToAdd) {
-            this.state.progress.reviewQueue.unshift(itemToAdd);
-            this.saveProgress();
-            this.renderManageReview();
-        }
-    }
-
     renderCurrentItem() {
-        if (this.state.studyQueue.length === 0) {
-            this.showEmptyState();
-            return;
-        }
-        if (this.state.currentIndex >= this.state.studyQueue.length) {
-            this.showCompletionScreen();
-            return;
-        }
+        if (this.state.studyQueue.length === 0) return this.showEmptyState();
+        if (this.state.currentIndex >= this.state.studyQueue.length) return this.showCompletionScreen();
 
         const mc = document.getElementById('mode-current');
         if(mc) mc.innerText = this.state.currentIndex + 1;
@@ -329,20 +326,16 @@ class ChineseApp {
 
     showEmptyState() {
         document.querySelectorAll('.study-view').forEach(v => v.classList.remove('active'));
-        const vc = document.getElementById('view-complete');
-        if(vc) vc.classList.add('active');
-        const ct = document.getElementById('completion-title');
-        if(ct) ct.innerText = "Empty Selection";
+        document.getElementById('view-complete').classList.add('active');
+        document.getElementById('completion-title').innerText = "Empty Selection";
     }
 
     showCompletionScreen() {
         if (this.state.isAutoPlaying) this.toggleAutoPlaySlideshow(); 
         if (this.state.isSentenceAutoPlaying) this.toggleSentenceSlideshow();
         document.querySelectorAll('.study-view').forEach(v => v.classList.remove('active'));
-        const vc = document.getElementById('view-complete');
-        if(vc) vc.classList.add('active');
-        const ct = document.getElementById('completion-title');
-        if(ct) ct.innerText = "Session Complete 🏆";
+        document.getElementById('view-complete').classList.add('active');
+        document.getElementById('completion-title').innerText = "Session Complete 🏆";
         this.triggerConfetti();
     }
 
@@ -359,26 +352,41 @@ class ChineseApp {
         if (!text) return;
         window.speechSynthesis.cancel(); 
         const msg = new SpeechSynthesisUtterance(text);
-        msg.lang = lang;
-        msg.rate = 0.9; 
+        msg.lang = lang; msg.rate = 0.9; 
         msg.onend = () => { if (callback) callback(); };
         window.speechSynthesis.speak(msg);
-    }
-
-    playEnglishAudio(text) {
-        this.playAudio(text, 'en-US');
     }
 
     renderFlashcard() {
         var item = this.state.studyQueue[this.state.currentIndex];
         if (!item) return; 
         
-        const fText = document.getElementById('fc-front-text');
-        if(fText) fText.innerText = item.word || item.simplified || "?";
-        const pText = document.getElementById('fc-pinyin');
-        if(pText) pText.innerText = item.pinyin || "";
-        const mText = document.getElementById('fc-meaning');
-        if(mText) mText.innerText = item.definition || item.meaning || item.english || "";
+        document.getElementById('fc-front-text').innerText = item.word || item.simplified || "?";
+        document.getElementById('fc-pinyin').innerText = item.pinyin || "";
+        document.getElementById('fc-meaning').innerText = item.definition || item.meaning || item.english || "";
+        
+        let radBox = document.getElementById('fc-radical-box');
+        let exBox = document.getElementById('fc-example-box');
+        radBox.classList.add('hidden');
+        exBox.classList.add('hidden');
+
+        if (window.CHARS_DATA) {
+            let firstChar = (item.word || item.simplified || "")[0];
+            let charData = window.CHARS_DATA.find(c => c.hanzi === firstChar);
+            if (charData && charData.radical) {
+                radBox.innerHTML = `<strong>🧩 Radical Info:</strong> The character contains the radical <b>${charData.radical}</b>.`;
+                radBox.classList.remove('hidden');
+            }
+        }
+
+        if (window.sentences) {
+            let searchWord = item.word || item.simplified;
+            let found = window.sentences.find(s => s.sentence && s.sentence.includes(searchWord));
+            if (found) {
+                exBox.innerHTML = `<strong>📖 Example:</strong><br>${found.sentence}<br><span style="color:var(--text-muted); font-size: 0.9em;">${found.english}</span>`;
+                exBox.classList.remove('hidden');
+            }
+        }
         
         var card = document.getElementById('flashcard');
         if (card) {
@@ -392,23 +400,17 @@ class ChineseApp {
             }, 10);
         }
 
-        if (this.state.autoAudio && !this.state.isAutoPlaying) {
-             this.playAudio(item.word || item.simplified);
-        }
+        if (this.state.autoAudio && !this.state.isAutoPlaying) this.playAudio(item.word || item.simplified);
 
-        var knownCount = 0; 
-        var studyCount = 0;
+        var knownCount = 0; var studyCount = 0;
         if (this.state.history) {
             this.state.history.forEach(h => {
                 if (h.direction === 'right') knownCount++;
                 if (h.direction === 'left') studyCount++;
             });
         }
-
-        var studySpan = document.getElementById('stat-study-count');
-        var knownSpan = document.getElementById('stat-known-count');
-        if (studySpan) studySpan.innerText = studyCount;
-        if (knownSpan) knownSpan.innerText = knownCount;
+        document.getElementById('stat-study-count').innerText = studyCount;
+        document.getElementById('stat-known-count').innerText = knownCount;
     }
 
     flipCard() { 
@@ -419,13 +421,12 @@ class ChineseApp {
     handleSwipe(direction) {
         if (this.state.isAnimating) return; 
         this.state.isAnimating = true;
-        const item = this.state.studyQueue[this.state.currentIndex];
         
-        if (item) {
-            this.state.history.push({ index: this.state.currentIndex, item: item, direction: direction });
-        } else {
-            this.state.isAnimating = false; this.nextItem(); return;
-        }
+        this.playSound(direction === 'right' ? 'swipe-right' : 'swipe-left');
+
+        const item = this.state.studyQueue[this.state.currentIndex];
+        if (item) this.state.history.push({ index: this.state.currentIndex, item: item, direction: direction });
+        else { this.state.isAnimating = false; this.nextItem(); return; }
 
         const card = document.getElementById('flashcard');
         const moveX = direction === 'right' ? 350 : -350;
@@ -452,12 +453,8 @@ class ChineseApp {
         }, 250);
     }
 
-    goBack() {
-        if (!this.state.history || this.state.history.length === 0) {
-            console.log("No history to undo");
-            return;
-        }
-        
+    undoLastSwipe() {
+        if (!this.state.history || this.state.history.length === 0) return;
         const lastAction = this.state.history.pop();
         this.state.currentIndex = lastAction.index;
         
@@ -465,7 +462,6 @@ class ChineseApp {
             this.state.progress.mastered = this.state.progress.mastered.filter(i => i.id !== lastAction.item.id);
             this.state.progress.dailyMastered = Math.max(0, this.state.progress.dailyMastered - 1);
         }
-        
         this.saveProgress();
         this.renderCurrentItem();
     }
@@ -485,55 +481,58 @@ class ChineseApp {
         }
     }
 
+    /* --- SPEED SELECTOR LOGIC IMPLEMENTED --- */
     runSlideshowStep() {
         if (!this.state.isAutoPlaying || this.state.currentIndex >= this.state.studyQueue.length) {
             if (this.state.isAutoPlaying) this.toggleAutoPlaySlideshow();
             return;
         }
+
+        // Get Speed Multiplier
+        let speedMultiplier = 1;
+        const speedVal = document.getElementById('fc-speed-select') ? document.getElementById('fc-speed-select').value : 'normal';
+        if (speedVal === 'slow') speedMultiplier = 1.5;
+        if (speedVal === 'fast') speedMultiplier = 0.5;
+
         const item = this.state.studyQueue[this.state.currentIndex];
         this.playAudio(item.word || item.simplified);
 
-        // DELAY UPDATE: Faster Flip
         this.slideshowTimeout = setTimeout(() => {
             if (!this.state.isAutoPlaying) return;
             this.flipCard();
             const eng = item.definition || item.meaning || item.english;
-            this.playEnglishAudio(eng);
+            this.playAudio(eng, 'en-US');
 
-            // DELAY UPDATE: Faster Swipe
             this.slideshowTimeout = setTimeout(() => {
                 if (!this.state.isAutoPlaying) return;
                 this.handleSwipe('right');
                 
-                // DELAY UPDATE: Faster Next Card
-                this.slideshowTimeout = setTimeout(() => this.runSlideshowStep(), 800);
-            }, 2000); 
-        }, 1500); 
+                this.slideshowTimeout = setTimeout(() => this.runSlideshowStep(), 800 * speedMultiplier);
+            }, 2000 * speedMultiplier); 
+        }, 1500 * speedMultiplier); 
     }
 
     renderWritingChar() {
         const char = this.state.studyQueue[this.state.currentIndex];
         const charData = window.CHARS_DATA ? window.CHARS_DATA.find(c => c.hanzi === char) : null;
-        const wp = document.getElementById('wr-pinyin');
-        if(wp) wp.innerText = charData ? charData.pinyin : char;
-        const wm = document.getElementById('wr-meaning');
-        if(wm) wm.innerText = charData ? charData.meaning : '';
+        document.getElementById('wr-pinyin').innerText = charData ? charData.pinyin : char;
+        document.getElementById('wr-meaning').innerText = charData ? charData.meaning : '';
 
         const targetDiv = document.getElementById('character-target-div');
         if(!targetDiv) return;
         targetDiv.innerHTML = ''; 
-        const isDark = document.body.classList.contains('dark-mode');
+
+        const isDark = document.body.className.includes('dark') || document.body.className.includes('midnight');
 
         this.hanziWriter = HanziWriter.create('character-target-div', char, {
             width: 250, height: 250, padding: 15,
             strokeColor: isDark ? '#E8E6E1' : '#000000',
-            radicalColor: isDark ? '#5EBBBA' : '#0C7A79', 
+            radicalColor: isDark ? '#5EBBBA' : '#007bff', 
             showOutline: !this.state.outlineHidden,
-            outlineColor: isDark ? '#204E59' : '#e0e0e0'
+            outlineColor: isDark ? '#334155' : '#e0e0e0'
         });
         
-        const btn = document.getElementById('toggle-outline-btn');
-        if(btn) btn.innerText = this.state.outlineHidden ? "👁️ Show Outline" : "🙈 Hide Outline";
+        document.getElementById('toggle-outline-btn').innerText = this.state.outlineHidden ? "👁️ Show Outline" : "🙈 Hide Outline";
         this.hanziWriter.quiz();
     }
 
@@ -541,38 +540,24 @@ class ChineseApp {
         if (!this.hanziWriter) return;
         this.state.outlineHidden = !this.state.outlineHidden;
         const btn = document.getElementById('toggle-outline-btn');
-        if(!btn) return;
-        if (this.state.outlineHidden) {
-            this.hanziWriter.hideOutline();
-            btn.innerText = "👁️ Show Outline";
-        } else {
-            this.hanziWriter.showOutline();
-            btn.innerText = "🙈 Hide Outline";
-        }
+        if (this.state.outlineHidden) { this.hanziWriter.hideOutline(); btn.innerText = "👁️ Show Outline"; } 
+        else { this.hanziWriter.showOutline(); btn.innerText = "🙈 Hide Outline"; }
     }
 
     renderSentence() {
         const s = this.state.studyQueue[this.state.currentIndex];
         if (!s) return;
-        const sc = document.getElementById('sn-chinese');
-        if(sc) sc.innerText = s.sentence || "";
-        const sp = document.getElementById('sn-pinyin');
-        if(sp) sp.innerText = s.pinyin || "";
-        const se = document.getElementById('sn-english');
-        if(se) {
-            se.innerText = s.english || "";
-            se.classList.add('hidden');
-        }
-        const rb = document.getElementById('reveal-translation-btn');
-        if(rb) rb.style.display = 'inline-block';
+        document.getElementById('sn-chinese').innerText = s.sentence || "";
+        document.getElementById('sn-pinyin').innerText = s.pinyin || "";
+        document.getElementById('sn-english').innerText = s.english || "";
+        document.getElementById('sn-english').classList.add('hidden');
+        document.getElementById('reveal-translation-btn').style.display = 'inline-block';
         if (this.state.autoAudio && !this.state.isSentenceAutoPlaying) this.playAudio(s.sentence);
     }
 
     revealSentence() {
-        const se = document.getElementById('sn-english');
-        if(se) se.classList.remove('hidden');
-        const rb = document.getElementById('reveal-translation-btn');
-        if(rb) rb.style.display = 'none';
+        document.getElementById('sn-english').classList.remove('hidden');
+        document.getElementById('reveal-translation-btn').style.display = 'none';
     }
 
     toggleSentenceSlideshow() {
@@ -580,37 +565,38 @@ class ChineseApp {
         const btn = document.getElementById('sn-auto-play-btn');
         if(!btn) return;
         if (this.state.isSentenceAutoPlaying) {
-            btn.innerText = "⏸️ Stop Slideshow";
-            btn.classList.add('active');
+            btn.innerText = "⏸️ Stop Slideshow"; btn.classList.add('active');
             this.runSentenceSlideshowStep();
         } else {
-            btn.innerText = "▶️ Slideshow";
-            btn.classList.remove('active');
+            btn.innerText = "▶️ Slideshow"; btn.classList.remove('active');
             clearTimeout(this.sentenceSlideshowTimeout);
         }
     }
 
+    /* --- SPEED SELECTOR LOGIC IMPLEMENTED FOR SENTENCES --- */
     runSentenceSlideshowStep() {
         if (!this.state.isSentenceAutoPlaying || this.state.currentIndex >= this.state.studyQueue.length) {
             if (this.state.isSentenceAutoPlaying) this.toggleSentenceSlideshow();
             return;
         }
 
+        let speedMultiplier = 1;
+        const speedVal = document.getElementById('sn-speed-select') ? document.getElementById('sn-speed-select').value : 'normal';
+        if (speedVal === 'slow') speedMultiplier = 1.5;
+        if (speedVal === 'fast') speedMultiplier = 0.5;
+
         const s = this.state.studyQueue[this.state.currentIndex];
-        
         this.playAudio(s.sentence, 'zh-TW', () => {
             this.sentenceSlideshowTimeout = setTimeout(() => {
                 if (!this.state.isSentenceAutoPlaying) return;
                 this.revealSentence(); 
-                
                 this.playAudio(s.english, 'en-US', () => {
                     this.sentenceSlideshowTimeout = setTimeout(() => {
                         if (!this.state.isSentenceAutoPlaying) return;
-                        this.nextItem();
-                        this.runSentenceSlideshowStep();
-                    }, 3000);
+                        this.nextItem(); this.runSentenceSlideshowStep();
+                    }, 3000 * speedMultiplier);
                 });
-            }, 1200);
+            }, 1200 * speedMultiplier);
         });
     }
 
@@ -627,94 +613,67 @@ class ChineseApp {
         }
 
         var scoreUi = document.getElementById('quiz-score-ui');
-        if (scoreUi && this.state.studyQueue) {
-            scoreUi.innerText = `🏆 Score: ${this.state.score || 0} / ${this.state.studyQueue.length}`;
-        }
+        if (scoreUi) scoreUi.innerText = `🏆 Score: ${this.state.score || 0} / ${this.state.studyQueue.length}`;
 
         var qType = qTypeSelect ? qTypeSelect.value : 'zh';
         var aType = aTypeSelect ? aTypeSelect.value : 'mc';
 
-        var questionText = "";
-        var correctMeaning = "";
+        var questionText = ""; var correctMeaning = "";
         
         if (qType === 'zh') {
-            questionText = item.word || item.simplified;
-            correctMeaning = item.definition || item.meaning || item.english || "";
+            questionText = item.word || item.simplified; correctMeaning = item.definition || item.meaning || item.english || "";
         } else if (qType === 'py') {
-            questionText = item.pinyin;
-            correctMeaning = item.definition || item.meaning || item.english || "";
+            questionText = item.pinyin; correctMeaning = item.definition || item.meaning || item.english || "";
         } else if (qType === 'en') {
-            questionText = item.definition || item.meaning || item.english;
-            correctMeaning = item.pinyin || item.word || item.simplified || "";
+            questionText = item.definition || item.meaning || item.english; correctMeaning = item.pinyin || item.word || item.simplified || "";
         }
 
-        var wordEl = document.getElementById('qz-word');
-        if (wordEl) wordEl.innerText = questionText;
-        
-        var soundBtn = document.getElementById('qz-sound-btn');
-        if(soundBtn) soundBtn.onclick = () => this.playAudio(item.word || item.simplified);
+        document.getElementById('qz-word').innerText = questionText;
+        document.getElementById('qz-sound-btn').onclick = () => this.playAudio(item.word || item.simplified);
 
         var optionsContainer = document.getElementById('qz-options');
-        if (!optionsContainer) return;
         optionsContainer.innerHTML = ''; 
 
         var cleanText = (str) => {
             if (!str) return "";
-            return str.normalize("NFD")
-                      .replace(/[\u0300-\u036f]/g, "")
-                      .replace(/[^a-zA-Z0-9\u4e00-\u9fa5]/g, "")
-                      .toLowerCase();
+            return str.normalize("NFD").replace(/[\u0300-\u036f]/g, "").replace(/[^a-zA-Z0-9\u4e00-\u9fa5]/g, "").toLowerCase();
         };
 
         if (aType === 'type') {
             optionsContainer.style.display = 'block';
-            
             var inputField = document.createElement('input');
-            inputField.type = 'text';
-            inputField.className = 'quiz-input';
+            inputField.type = 'text'; inputField.className = 'quiz-input';
             inputField.placeholder = `Type the ${qType === 'en' ? 'Pinyin / Chinese' : 'English'}...`;
 
             var submitBtn = document.createElement('button');
-            submitBtn.innerText = 'Submit Answer'; 
-            submitBtn.className = 'option-btn'; 
-            submitBtn.style.width = '100%';
-            submitBtn.style.maxWidth = '500px';
-            submitBtn.style.display = 'block';
-            submitBtn.style.margin = '0 auto';
+            submitBtn.innerText = 'Submit Answer'; submitBtn.className = 'option-btn'; 
+            submitBtn.style.width = '100%'; submitBtn.style.maxWidth = '500px'; submitBtn.style.display = 'block'; submitBtn.style.margin = '0 auto';
 
             var feedback = document.createElement('div');
             feedback.className = 'quiz-feedback';
 
-            optionsContainer.appendChild(inputField);
-            optionsContainer.appendChild(submitBtn);
-            optionsContainer.appendChild(feedback);
-
+            optionsContainer.appendChild(inputField); optionsContainer.appendChild(submitBtn); optionsContainer.appendChild(feedback);
             setTimeout(() => inputField.focus(), 100);
 
             var checkAnswer = () => {
                 var cleanedUserInput = cleanText(inputField.value);
                 var correctMeaningsList = correctMeaning.split(/[,/;]/).map(m => cleanText(m));
-                
                 var isCorrect = correctMeaningsList.some(m => m === cleanedUserInput || (m.includes(cleanedUserInput) && cleanedUserInput.length > 2));
 
                 if (isCorrect) {
-                    this.state.score = (this.state.score || 0) + 1;
-                    feedback.innerHTML = `✅ <b>Correct!</b><br><span style="font-size:0.9rem; color:#155724;">Answer: ${correctMeaning}</span>`;
-                    feedback.style.backgroundColor = '#d4edda';
-                    feedback.style.color = '#155724';
+                    this.playSound('correct'); 
+                    this.state.score++;
+                    feedback.innerHTML = `✅ <b>Correct!</b><br><span style="font-size:0.9rem;">Answer: ${correctMeaning}</span>`;
+                    feedback.style.backgroundColor = '#d4edda'; feedback.style.color = '#155724';
                     inputField.style.borderColor = '#28a745';
                 } else {
+                    this.playSound('wrong'); 
                     feedback.innerHTML = `❌ <b>Incorrect.</b><br>Right answer: <b>${correctMeaning}</b>`;
-                    feedback.style.backgroundColor = '#f8d7da';
-                    feedback.style.color = '#721c24';
+                    feedback.style.backgroundColor = '#f8d7da'; feedback.style.color = '#721c24';
                     inputField.style.borderColor = '#dc3545';
                 }
-                var updateScoreUi = document.getElementById('quiz-score-ui');
-                if (updateScoreUi) updateScoreUi.innerText = `🏆 Score: ${this.state.score} / ${this.state.studyQueue.length}`;
-                
+                document.getElementById('quiz-score-ui').innerText = `🏆 Score: ${this.state.score} / ${this.state.studyQueue.length}`;
                 submitBtn.disabled = true; inputField.disabled = true;
-                
-                // DELAY UPDATE: Faster Quiz Typing Transition
                 setTimeout(() => this.nextItem(), 1200); 
             };
 
@@ -723,7 +682,6 @@ class ChineseApp {
 
         } else {
             optionsContainer.style.display = 'grid'; 
-            
             var options = [item];
             while (options.length < 4 && options.length < this.state.studyQueue.length) {
                 var randItem = this.state.studyQueue[Math.floor(Math.random() * this.state.studyQueue.length)];
@@ -740,22 +698,19 @@ class ChineseApp {
                 btn.onclick = () => {
                     Array.from(optionsContainer.children).forEach(child => child.disabled = true);
                     if (opt.id === item.id) {
-                        btn.style.backgroundColor = '#d4edda'; btn.style.borderColor = '#28a745';
-                        btn.style.color = '#155724';
-                        this.state.score = (this.state.score || 0) + 1;
+                        this.playSound('correct'); 
+                        btn.style.backgroundColor = '#d4edda'; btn.style.borderColor = '#28a745'; btn.style.color = '#155724';
+                        this.state.score++;
                     } else {
-                        btn.style.backgroundColor = '#f8d7da'; btn.style.borderColor = '#dc3545';
-                        btn.style.color = '#721c24';
+                        this.playSound('wrong'); 
+                        btn.style.backgroundColor = '#f8d7da'; btn.style.borderColor = '#dc3545'; btn.style.color = '#721c24';
                         Array.from(optionsContainer.children).forEach(child => {
                             if (child.innerText.includes(item.definition || item.word || item.english)) {
                                 child.style.backgroundColor = '#d4edda'; child.style.borderColor = '#28a745';
                             }
                         });
                     }
-                    var updateScoreUi = document.getElementById('quiz-score-ui');
-                    if (updateScoreUi) updateScoreUi.innerText = `🏆 Score: ${this.state.score} / ${this.state.studyQueue.length}`;
-                    
-                    // DELAY UPDATE: Faster Quiz Multiple Choice Transition
+                    document.getElementById('quiz-score-ui').innerText = `🏆 Score: ${this.state.score} / ${this.state.studyQueue.length}`;
                     setTimeout(() => this.nextItem(), 1000);
                 };
                 optionsContainer.appendChild(btn);
@@ -788,25 +743,11 @@ class ChineseApp {
         if(pb) pb.style.width = `${Math.min((this.state.progress.dailyMastered / 10) * 100, 100)}%`;
     }
 
-    applyDarkMode() { if (localStorage.getItem('aladsDarkMode') === 'true') document.body.classList.add('dark-mode'); }
-    toggleDarkMode() {
-        document.body.classList.toggle('dark-mode');
-        localStorage.setItem('aladsDarkMode', document.body.classList.contains('dark-mode'));
-        if(this.state.currentMode === 'writing') this.renderWritingChar();
-    }
-
     setupEventListeners() {
-        const dmBtn = document.getElementById('dark-mode-btn');
-        if(dmBtn) dmBtn.addEventListener('click', () => this.toggleDarkMode());
-        
         document.addEventListener('keydown', (e) => {
             if (this.state.currentMode !== 'flashcards') return;
             const card = document.getElementById('flashcard');
-            
-            if (e.code === 'Space') { 
-                e.preventDefault(); 
-                this.flipCard(); 
-            }
+            if (e.code === 'Space') { e.preventDefault(); this.flipCard(); }
             if (e.code === 'ArrowRight') {
                 if (card) card.style.boxShadow = '0 0 40px rgba(0, 255, 0, 1)';
                 setTimeout(() => this.handleSwipe('right'), 150); 
@@ -821,7 +762,6 @@ class ChineseApp {
         if (!card) return;
         
         let startX = 0, startTime = 0;
-        
         const newCard = card.cloneNode(true);
         card.parentNode.replaceChild(newCard, card);
         const activeCard = document.getElementById('flashcard');
@@ -839,30 +779,22 @@ class ChineseApp {
             const deltaX = e.clientX - startX;
             activeCard.style.transform = `translateX(${deltaX}px) rotate(${deltaX * 0.05}deg)`;
             
-            if (deltaX > 20) {
-                activeCard.style.boxShadow = `0 0 40px rgba(0, 255, 0, ${Math.min(deltaX/100, 0.8)})`;
-            } else if (deltaX < -20) {
-                activeCard.style.boxShadow = `0 0 40px rgba(255, 0, 0, ${Math.min(Math.abs(deltaX)/100, 0.8)})`;
-            } else {
-                activeCard.style.boxShadow = 'none';
-            }
+            if (deltaX > 20) activeCard.style.boxShadow = `0 0 40px rgba(0, 255, 0, ${Math.min(deltaX/100, 0.8)})`;
+            else if (deltaX < -20) activeCard.style.boxShadow = `0 0 40px rgba(255, 0, 0, ${Math.min(Math.abs(deltaX)/100, 0.8)})`;
+            else activeCard.style.boxShadow = 'none';
         });
         
         activeCard.addEventListener('pointerup', (e) => {
             if (!this.swipeState.isDragging) return;
             this.swipeState.isDragging = false;
             activeCard.releasePointerCapture(e.pointerId);
-            
             const deltaX = e.clientX - startX;
             activeCard.style.boxShadow = 'none'; 
             
-            if (Math.abs(deltaX) < 15 && (Date.now() - startTime) < 400) {
-                this.flipCard();
-            } else if (deltaX > 100) {
-                this.handleSwipe('right');
-            } else if (deltaX < -100) {
-                this.handleSwipe('left');
-            } else { 
+            if (Math.abs(deltaX) < 15 && (Date.now() - startTime) < 400) this.flipCard();
+            else if (deltaX > 100) this.handleSwipe('right');
+            else if (deltaX < -100) this.handleSwipe('left');
+            else { 
                 activeCard.style.transition = 'transform 0.3s ease, box-shadow 0.3s ease'; 
                 activeCard.style.transform = 'translateX(0) rotate(0)'; 
             }
