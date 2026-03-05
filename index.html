@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Alads</title>
+    <title>Alads | Chinese Learning</title>
     
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -18,12 +18,12 @@
 <body>
     <nav class="navbar">
         <div class="nav-left">
-            <button id="mobile-menu-btn" onclick="app.toggleSidebar()">☰</button>
+            <button id="mobile-menu-btn" onclick="app.toggleSidebar()">☰ Menu</button>
             <div class="logo">Alads</div>
         </div>
         <div class="nav-controls">
-            <div class="streak" title="Daily Streak">🔥 <span id="streak-count">0</span></div>
-            <button id="dark-mode-btn" title="Toggle Dark Mode">☾</button>
+            <div class="streak" title="Daily Streak">🔥 Streak: <span id="streak-count">0</span></div>
+            <button id="dark-mode-btn" title="Toggle Dark Mode">🌗</button>
         </div>
     </nav>
 
@@ -31,51 +31,51 @@
         <aside class="sidebar" id="sidebar">
             <div class="control-group">
                 <div class="group-header">
-                    <h3>Course Selection</h3>
+                    <h3>📚 Course Selection</h3>
                 </div>
                 
-                <div class="chip-label">Books:</div>
+                <div class="chip-label">📖 Books:</div>
                 <div id="book-chips" class="chip-container"></div>
                 
                 <div class="chip-label">
-                    Lessons: 
-                    <button class="text-btn" onclick="app.selectAllLessons()">Select All</button>
+                    📝 Lessons: 
+                    <button class="text-btn" onclick="app.selectAllLessons()">☑️ Select / Deselect All</button>
                 </div>
                 <div id="lesson-chips" class="chip-container"></div>
                 
-                <button class="apply-btn" onclick="app.applyCourseSelection()">Load Selected Content</button>
+                <button class="apply-btn" onclick="app.applyCourseSelection()">🚀 Load Selected Content</button>
             </div>
 
             <div class="control-group">
-                <h3>Study Mode</h3>
+                <h3>🕹️ Study Mode</h3>
                 <div class="mode-buttons">
-                    <button id="btn-flashcards" class="mode-btn active" onclick="app.setMode('flashcards')">Flashcards</button>
-                    <button id="btn-writing" class="mode-btn" onclick="app.setMode('writing')">Writing Practice</button>
-                    <button id="btn-sentences" class="mode-btn" onclick="app.setMode('sentences')">Sentences</button>
-                    <button id="btn-quiz" class="mode-btn" onclick="app.setMode('quiz')">Vocabulary Quiz</button>
+                    <button id="btn-flashcards" class="mode-btn active" onclick="app.setMode('flashcards')">🗂️ Flashcards</button>
+                    <button id="btn-writing" class="mode-btn" onclick="app.setMode('writing')">✍️ Writing Practice</button>
+                    <button id="btn-sentences" class="mode-btn" onclick="app.setMode('sentences')">💬 Sentences</button>
+                    <button id="btn-quiz" class="mode-btn" onclick="app.setMode('quiz')">❓ Vocabulary Quiz</button>
                 </div>
             </div>
 
             <div class="progress-box">
-                <p>Daily Goal: <span id="daily-mastered">0</span> / 10</p>
+                <p>🎯 Daily Goal: <span id="daily-mastered">0</span> / 10</p>
                 <div class="progress-bar-container">
                     <div id="daily-progress-bar" class="progress-bar-fill"></div>
                 </div>
-                <button class="review-btn" onclick="app.startReviewMode()">Review Due (<span id="review-count">0</span>)</button>
+                <button class="review-btn" onclick="app.startReviewMode()">🔄 Review Due (<span id="review-count">0</span>)</button>
                 <button class="manage-list-btn" onclick="app.setMode('manage-review')">⚙️ Manage Study List</button>
             </div>
         </aside>
 
         <main class="study-area">
             <div class="study-header">
-                <h2 id="current-title">Flashcards</h2>
+                <h2 id="current-title">🗂️ Flashcards</h2>
                 <div class="progress-indicator"><span id="mode-current">1</span> / <span id="mode-total">10</span></div>
             </div>
 
             <div id="view-manage-review" class="study-view">
                 <div class="manage-review-container">
                     <div class="manage-header">
-                        <h3>Your "Study Again" List</h3>
+                        <h3>📝 Your "Study Again" List</h3>
                         <button class="clear-btn" onclick="app.clearReviewQueue()">🗑️ Clear All</button>
                     </div>
                     
@@ -85,19 +85,23 @@
                     </div>
 
                     <div class="review-list-wrapper">
-                        <ul id="review-list-ui" class="review-list">
-                            </ul>
+                        <ul id="review-list-ui" class="review-list"></ul>
                     </div>
                 </div>
             </div>
 
             <div id="view-flashcards" class="study-view active">
-                <div class="flashcard-options">
-                    <label class="toggle-label">
-                        <input type="checkbox" id="auto-audio-toggle" onchange="app.toggleAutoAudio()"> Auto-Play Audio
-                    </label>
+                <div class="top-controls">
+                    <button id="auto-play-btn" class="action-btn" onclick="app.toggleAutoPlaySlideshow()">▶️ Slideshow</button>
+                    <button id="fc-auto-audio-btn" class="action-btn" onclick="app.toggleAutoAudio()">🔇 Auto-Audio Off</button>
+                    <button id="undo-btn" class="action-btn" onclick="app.undoLastSwipe()">↩️ Undo Last</button>
                 </div>
                 
+                <div id="fc-session-stats" class="session-stats">
+                    <span class="stat-study">❌ Study More: <span id="stat-study-count">0</span></span>
+                    <span class="stat-known">✅ Known: <span id="stat-known-count">0</span></span>
+                </div>
+
                 <div class="flashcard-container">
                     <div id="flashcard" class="card">
                         <div class="card-inner">
@@ -129,43 +133,67 @@
                     </div>
                     <div id="character-target-div" class="hanzi-box"></div>
                     <div class="writing-controls">
-                        <button onclick="app.hanziWriter.animateCharacter()">Animate</button>
-                        <button id="toggle-outline-btn" onclick="app.toggleOutline()">Hide Outline</button>
-                        <button class="practice-btn" onclick="app.hanziWriter.quiz()">Practice</button>
-                        <button onclick="app.nextItem()">Next →</button>
+                        <button onclick="app.hanziWriter.animateCharacter()">🎬 Animate</button>
+                        <button id="toggle-outline-btn" onclick="app.toggleOutline()">🙈 Hide Outline</button>
+                        <button class="practice-btn" onclick="app.hanziWriter.quiz()">🖋️ Practice</button>
+                        <button onclick="app.nextItem()">⏭️ Next</button>
                     </div>
                 </div>
             </div>
 
             <div id="view-sentences" class="study-view">
+                <div class="top-controls" style="justify-content: center; gap: 10px; margin-bottom: 1rem;">
+                    <button id="sn-auto-play-btn" class="action-btn" onclick="app.toggleSentenceSlideshow()">▶️ Slideshow</button>
+                    <button id="sn-auto-audio-btn" class="action-btn" onclick="app.toggleAutoAudio()">🔇 Auto-Audio Off</button>
+                </div>
                 <div class="sentence-container">
                     <h2 id="sn-chinese" class="chinese-text"></h2>
-                    <button class="audio-btn" onclick="app.playAudio(document.getElementById('sn-chinese').innerText)">🔊 Listen</button>
+                    <button class="audio-btn" onclick="app.playAudio(document.getElementById('sn-chinese').innerText)">🔊</button>
                     <h3 id="sn-pinyin" class="pinyin-text"></h3>
                     <div class="translation-box">
-                        <button id="reveal-translation-btn" onclick="app.revealSentence()">Show Translation</button>
+                        <button id="reveal-translation-btn" onclick="app.revealSentence()">👁️ Show Translation</button>
                         <p id="sn-english" class="english-text hidden"></p>
                     </div>
                 </div>
                 <div class="sentence-controls">
-                    <button onclick="app.prevItem()">← Prev</button>
-                    <button onclick="app.shuffleItems()">Shuffle</button>
-                    <button onclick="app.nextItem()">Next →</button>
+                    <button onclick="app.prevItem()">⏮️ Prev</button>
+                    <button onclick="app.shuffleItems()">🔀 Shuffle</button>
+                    <button onclick="app.nextItem()">⏭️ Next</button>
                 </div>
             </div>
 
             <div id="view-quiz" class="study-view">
-                <div class="quiz-container">
-                    <p id="qz-question-text">Select the correct meaning:</p>
-                    <h1 id="qz-word" class="chinese-text" style="font-size: 3rem; margin-bottom: 20px;"></h1>
-                    <div id="qz-options" class="options-grid"></div>
+                <div id="quiz-settings-ui" class="quiz-settings">
+                    <div class="setting-group">
+                        <label>Question:</label>
+                        <select id="qz-q-type">
+                            <option value="zh">Chinese</option>
+                            <option value="py">Pinyin</option>
+                            <option value="en">English</option>
+                        </select>
+                    </div>
+                    <div class="setting-group">
+                        <label>Answer Format:</label>
+                        <select id="qz-a-type">
+                            <option value="mc">Multiple Choice</option>
+                            <option value="type">Type Answer</option>
+                        </select>
+                    </div>
+                    <div id="quiz-score-ui" class="quiz-score">🏆 Score: 0 / 0</div>
                 </div>
+
+                <div class="qz-word-container">
+                    <h2 id="qz-word"></h2>
+                    <button id="qz-sound-btn" class="icon-btn">🔊</button>
+                </div>
+
+                <div id="qz-options" class="quiz-options"></div>
                 <div id="quiz-feedback" class="quiz-feedback hidden"></div>
             </div>
 
             <div id="view-complete" class="study-view">
                 <div class="completion-message">
-                    <h1 id="completion-title">Session Complete</h1>
+                    <h1 id="completion-title">🏆 Session Complete</h1>
                     <p id="completion-desc">Excellent work. Select a new lesson or mode from the sidebar to continue.</p>
                 </div>
             </div>
