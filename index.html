@@ -1,0 +1,171 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Alads</title>
+    
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="style.css">
+    
+    <script src="chars.js"></script>
+    <script src="new_vocab.js"></script>
+    <script src="sentences.js"></script>
+    <script src="hanzi-writer.min.js"></script>
+</head>
+<body>
+    <nav class="navbar">
+        <div class="nav-left">
+            <button id="mobile-menu-btn" onclick="app.toggleSidebar()">☰</button>
+            <div class="logo">Alads</div>
+        </div>
+        <div class="nav-controls">
+            <div class="streak" title="Daily Streak">🔥 <span id="streak-count">0</span></div>
+            <button id="dark-mode-btn" title="Toggle Dark Mode">☾</button>
+        </div>
+    </nav>
+
+    <div id="app-workspace">
+        <aside class="sidebar" id="sidebar">
+            <div class="control-group">
+                <div class="group-header">
+                    <h3>Course Selection</h3>
+                </div>
+                
+                <div class="chip-label">Books:</div>
+                <div id="book-chips" class="chip-container"></div>
+                
+                <div class="chip-label">
+                    Lessons: 
+                    <button class="text-btn" onclick="app.selectAllLessons()">Select All</button>
+                </div>
+                <div id="lesson-chips" class="chip-container"></div>
+                
+                <button class="apply-btn" onclick="app.applyCourseSelection()">Load Selected Content</button>
+            </div>
+
+            <div class="control-group">
+                <h3>Study Mode</h3>
+                <div class="mode-buttons">
+                    <button id="btn-flashcards" class="mode-btn active" onclick="app.setMode('flashcards')">Flashcards</button>
+                    <button id="btn-writing" class="mode-btn" onclick="app.setMode('writing')">Writing Practice</button>
+                    <button id="btn-sentences" class="mode-btn" onclick="app.setMode('sentences')">Sentences</button>
+                    <button id="btn-quiz" class="mode-btn" onclick="app.setMode('quiz')">Vocabulary Quiz</button>
+                </div>
+            </div>
+
+            <div class="progress-box">
+                <p>Daily Goal: <span id="daily-mastered">0</span> / 10</p>
+                <div class="progress-bar-container">
+                    <div id="daily-progress-bar" class="progress-bar-fill"></div>
+                </div>
+                <button class="review-btn" onclick="app.startReviewMode()">Review Due (<span id="review-count">0</span>)</button>
+                <button class="manage-list-btn" onclick="app.setMode('manage-review')">⚙️ Manage Study List</button>
+            </div>
+        </aside>
+
+        <main class="study-area">
+            <div class="study-header">
+                <h2 id="current-title">Flashcards</h2>
+                <div class="progress-indicator"><span id="mode-current">1</span> / <span id="mode-total">10</span></div>
+            </div>
+
+            <div id="view-manage-review" class="study-view">
+                <div class="manage-review-container">
+                    <div class="manage-header">
+                        <h3>Your "Study Again" List</h3>
+                        <button class="clear-btn" onclick="app.clearReviewQueue()">🗑️ Clear All</button>
+                    </div>
+                    
+                    <div class="add-review-box">
+                        <select id="add-review-select" class="review-select"></select>
+                        <button class="add-btn" onclick="app.addSelectedToReview()">➕ Add Word</button>
+                    </div>
+
+                    <div class="review-list-wrapper">
+                        <ul id="review-list-ui" class="review-list">
+                            </ul>
+                    </div>
+                </div>
+            </div>
+
+            <div id="view-flashcards" class="study-view active">
+                <div class="flashcard-container">
+                    <div id="flashcard" class="card">
+                        <div class="card-inner">
+                            <div class="card-front">
+                                <h1 id="fc-front-text">漢字</h1>
+                            </div>
+                            <div class="card-back">
+                                <h2 id="fc-pinyin">hàn zì</h2>
+                                <p id="fc-meaning">Chinese characters</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="flashcard-controls">
+                    <button class="swipe-btn left" onclick="app.handleSwipe('left')">Study Again</button>
+                    <button class="swipe-btn flip" onclick="app.flipCard()">Flip</button>
+                    <button class="swipe-btn right" onclick="app.handleSwipe('right')">Got It</button>
+                </div>
+                <p class="hint-text">Swipe card left/right or use ← / → keys. Space to flip.</p>
+            </div>
+
+            <div id="view-writing" class="study-view">
+                <div class="writing-container">
+                    <div class="character-info">
+                        <h2 id="wr-pinyin"></h2>
+                        <p id="wr-meaning" style="color: var(--text-muted); margin-bottom: 10px;"></p>
+                    </div>
+                    <div id="character-target-div" class="hanzi-box"></div>
+                    <div class="writing-controls">
+                        <button onclick="app.hanziWriter.animateCharacter()">Animate</button>
+                        <button onclick="app.hanziWriter.quiz()">Practice</button>
+                        <button onclick="app.nextItem()">Next →</button>
+                    </div>
+                </div>
+            </div>
+
+            <div id="view-sentences" class="study-view">
+                <div class="sentence-container">
+                    <h2 id="sn-chinese" class="chinese-text"></h2>
+                    <button class="audio-btn" onclick="app.playAudio(document.getElementById('sn-chinese').innerText)">🔊 Listen</button>
+                    <h3 id="sn-pinyin" class="pinyin-text"></h3>
+                    <div class="translation-box">
+                        <button id="reveal-translation-btn" onclick="app.revealSentence()">Show Translation</button>
+                        <p id="sn-english" class="english-text hidden"></p>
+                    </div>
+                </div>
+                <div class="sentence-controls">
+                    <button onclick="app.prevItem()">← Prev</button>
+                    <button onclick="app.shuffleItems()">Shuffle</button>
+                    <button onclick="app.nextItem()">Next →</button>
+                </div>
+            </div>
+
+            <div id="view-quiz" class="study-view">
+                <div class="quiz-container">
+                    <p id="qz-question-text">Select the correct meaning:</p>
+                    <h1 id="qz-word" class="chinese-text" style="font-size: 3rem; margin-bottom: 20px;"></h1>
+                    <div id="qz-options" class="options-grid"></div>
+                </div>
+                <div id="quiz-feedback" class="quiz-feedback hidden"></div>
+            </div>
+
+            <div id="view-complete" class="study-view">
+                <div class="completion-message">
+                    <h1 id="completion-title">Session Complete</h1>
+                    <p id="completion-desc">Excellent work. Select a new lesson or mode from the sidebar to continue.</p>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <div id="mobile-overlay" onclick="app.toggleSidebar()"></div>
+
+    <canvas id="confetti-canvas"></canvas>
+    <script src="app.js"></script>
+</body>
+</html>
