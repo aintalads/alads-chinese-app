@@ -7,10 +7,16 @@ class ChineseApp {
             currentMode: 'flashcards', 
             isReviewMode: false,
             studyQueue: [], currentIndex: 0, score: 0,
-            progress: this.loadProgress()
+            progress: this.loadProgress(),
+            autoAudio: false,
+            outlineHidden: false
         };
-        this.swipeState = { isDragging: false, startX: 0, currentX: 0 };
+        this.swipeState = { isDragging: false, startX: 0, currentX: 0, startTime: 0 };
         this.hanziWriter = null;
+        
+        // Ensure browser loads voices for iOS/Safari
+        window.speechSynthesis.getVoices(); 
+        
         this.init();
     }
 
@@ -102,13 +108,8 @@ class ChineseApp {
     applyCourseSelection() {
         this.state.isReviewMode = false;
         if(window.innerWidth <= 800) this.toggleSidebar(); 
-        
-        // If we are currently managing review, refresh the dropdown
-        if (this.state.currentMode === 'manage-review') {
-            this.renderManageReview();
-        } else {
-            this.loadCurrentMode();
-        }
+        if (this.state.currentMode === 'manage-review') this.renderManageReview();
+        else this.loadCurrentMode();
     }
 
     toggleSidebar() {
@@ -121,8 +122,6 @@ class ChineseApp {
         this.state.isReviewMode = false;
         
         document.querySelectorAll('.mode-btn').forEach(btn => btn.classList.remove('active'));
-        
-        // Only highlight standard mode buttons, not the manage list gear
         if (mode !== 'manage-review') {
             const activeBtn = document.getElementById(`btn-${mode}`);
             if (activeBtn) activeBtn.classList.add('active');
@@ -149,7 +148,6 @@ class ChineseApp {
         document.querySelectorAll('.study-view').forEach(v => v.classList.remove('active'));
         document.getElementById(`view-${this.state.currentMode}`).classList.add('active');
 
-        // Special check for Manage Review screen
         if (this.state.currentMode === 'manage-review') {
             document.getElementById('current-title').innerText = "Manage Study List";
             document.getElementById('mode-current').innerText = '-';
@@ -202,8 +200,6 @@ class ChineseApp {
     renderManageReview() {
         const listUi = document.getElementById('review-list-ui');
         listUi.innerHTML = '';
-        
-        // Render List Items
         if (this.state.progress.reviewQueue.length === 0) {
             listUi.innerHTML = '<li style="justify-content:center; color: var(--text-muted);">List is empty!</li>';
         } else {
@@ -220,10 +216,8 @@ class ChineseApp {
             });
         }
 
-        // Render Dropdown words to manually Add (pulls from selected books/lessons)
         const selectUi = document.getElementById('add-review-select');
         selectUi.innerHTML = '<option value="">-- Add a word from current selected lessons --</option>';
-        
         let aggregatedVocab = [];
         this.state.selectedBooks.forEach(bId => {
             const book = this.data.books[bId];
@@ -233,7 +227,6 @@ class ChineseApp {
             });
         });
 
-        // Deduplicate and filter out words already in queue
         const uniqueVocab = Array.from(new Map(aggregatedVocab.map(item => [item.id, item])).values());
         uniqueVocab.forEach(item => {
             if (!this.state.progress.reviewQueue.some(r => r.id === item.id)) {
@@ -263,8 +256,6 @@ class ChineseApp {
         const selectUi = document.getElementById('add-review-select');
         const selectedId = selectUi.value;
         if (!selectedId) return;
-
-        // Search our entire vocabulary set to find the matching item object
         let itemToAdd = null;
         for (let bId in this.data.books) {
             for (let lId in this.data.books[bId].lessons) {
@@ -272,9 +263,8 @@ class ChineseApp {
                 if (found) itemToAdd = found;
             }
         }
-
         if (itemToAdd && !this.state.progress.reviewQueue.some(i => i.id === itemToAdd.id)) {
-            this.state.progress.reviewQueue.unshift(itemToAdd); // Adds to the top of the list
+            this.state.progress.reviewQueue.unshift(itemToAdd);
             this.saveProgress();
             this.renderManageReview();
         }
@@ -309,8 +299,6 @@ class ChineseApp {
         document.getElementById('view-complete').classList.add('active');
         document.getElementById('completion-title').innerText = "Nothing Selected";
         document.getElementById('completion-desc').innerText = "There are no words or sentences for the current selection. Try checking different boxes!";
-        document.getElementById('mode-current').innerText = '-';
-        document.getElementById('mode-total').innerText = '-';
     }
 
     showCompletionScreen() {
@@ -318,8 +306,6 @@ class ChineseApp {
         document.getElementById('view-complete').classList.add('active');
         document.getElementById('completion-title').innerText = "Session Complete";
         document.getElementById('completion-desc').innerText = "Excellent work. Adjust your selections or change modes in the menu.";
-        document.getElementById('mode-current').innerText = '-';
-        document.getElementById('mode-total').innerText = '-';
         this.triggerConfetti();
     }
 
@@ -334,17 +320,26 @@ class ChineseApp {
         card.classList.remove('is-flipped');
         card.style.transform = `translateX(0px) rotate(0deg)`;
         card.style.opacity = '1';
+
+        // Auto-play audio if enabled
+        if (this.state.autoAudio) {
+            this.playAudio(item.word || item.simplified);
+        }
     }
 
-    flipCard() { document.getElementById('flashcard').classList.toggle('is-flipped'); }
+    flipCard() { 
+        document.getElementById('flashcard').classList.toggle('is-flipped'); 
+    }
 
     handleSwipe(direction) {
         const card = document.getElementById('flashcard');
         const moveX = direction === 'right' ? 300 : -300;
-        card.style.transition = 'transform 0.4s ease, opacity 0.4s ease';
+        // Faster swiping animation
+        card.style.transition = 'transform 0.2s ease, opacity 0.2s ease'; 
         card.style.transform = `translateX(${moveX}px) rotate(${moveX/10}deg)`;
         card.style.opacity = '0';
 
+        // Faster timeout (150ms instead of 400ms)
         setTimeout(() => {
             const item = this.state.studyQueue[this.state.currentIndex];
             if (direction === 'right') { 
@@ -361,7 +356,7 @@ class ChineseApp {
             this.saveProgress();
             card.style.transition = 'none';
             this.nextItem();
-        }, 400);
+        }, 150);
     }
 
     // --- WRITING ---
@@ -378,6 +373,10 @@ class ChineseApp {
         const mainColor = isDark ? '#E8E6E1' : '#2C2B29'; 
         const radicalColor = isDark ? '#D6D2C4' : '#7A7873'; 
 
+        // Reset outline button state
+        this.state.outlineHidden = false;
+        document.getElementById('toggle-outline-btn').innerText = "Hide Outline";
+
         this.hanziWriter = HanziWriter.create('character-target-div', char, {
             width: 250, height: 250, padding: 15,
             strokeColor: mainColor,
@@ -386,6 +385,19 @@ class ChineseApp {
             showOutline: true,
             outlineColor: isDark ? '#3B3A38' : '#E8E6E1'
         });
+    }
+
+    toggleOutline() {
+        if (!this.hanziWriter) return;
+        this.state.outlineHidden = !this.state.outlineHidden;
+        const btn = document.getElementById('toggle-outline-btn');
+        if (this.state.outlineHidden) {
+            this.hanziWriter.hideOutline();
+            btn.innerText = "Show Outline";
+        } else {
+            this.hanziWriter.showOutline();
+            btn.innerText = "Hide Outline";
+        }
     }
 
     // --- SENTENCES ---
@@ -429,18 +441,45 @@ class ChineseApp {
                 if(!isCorrect) document.querySelectorAll('.option-btn').forEach(b => {
                     if (b.innerText === (item.definition || item.meaning || item.english)) b.classList.add('correct');
                 });
-                setTimeout(() => this.nextItem(), 1500);
+                // Faster transition (500ms instead of 1500ms)
+                setTimeout(() => this.nextItem(), 500);
             };
             optionsContainer.appendChild(btn);
         });
     }
 
+    // --- AUDIO FIXES ---
+    toggleAutoAudio() {
+        this.state.autoAudio = document.getElementById('auto-audio-toggle').checked;
+    }
+
+    playCurrentFlashcardAudio(event) {
+        event.stopPropagation(); // Prevents the card from flipping when clicking the audio button
+        const item = this.state.studyQueue[this.state.currentIndex];
+        this.playAudio(item.word || item.simplified);
+    }
+
     playAudio(text) {
-        if ('speechSynthesis' in window) {
-            const msg = new SpeechSynthesisUtterance(text);
-            msg.lang = 'zh-TW'; 
-            window.speechSynthesis.speak(msg);
+        if (!('speechSynthesis' in window)) return;
+        
+        // Stop any current audio playing
+        window.speechSynthesis.cancel();
+        
+        const msg = new SpeechSynthesisUtterance(text);
+        
+        // Try to force Chinese language matching for iOS/Mac
+        msg.lang = 'zh-TW'; 
+        
+        // Find best available Chinese voice on the device
+        const voices = window.speechSynthesis.getVoices();
+        const zhVoice = voices.find(voice => voice.lang === 'zh-TW') || 
+                        voices.find(voice => voice.lang.includes('zh'));
+        
+        if (zhVoice) {
+            msg.voice = zhVoice;
         }
+
+        window.speechSynthesis.speak(msg);
     }
 
     // --- STORAGE & UTILS ---
@@ -475,6 +514,7 @@ class ChineseApp {
         if(this.state.currentMode === 'writing') this.renderWritingChar();
     }
 
+    // --- EVENT LISTENERS & TOUCH TO FLIP ---
     setupEventListeners() {
         document.getElementById('dark-mode-btn').addEventListener('click', () => this.toggleDarkMode());
         
@@ -486,22 +526,53 @@ class ChineseApp {
         });
 
         const card = document.getElementById('flashcard');
-        const startDrag = (e) => { this.swipeState.isDragging = true; this.swipeState.startX = e.type.includes('mouse') ? e.pageX : e.touches[0].pageX; card.style.transition = 'none'; };
+        
+        const startDrag = (e) => { 
+            if(e.target.tagName.toLowerCase() === 'button') return; // Ignore if clicking audio button
+            this.swipeState.isDragging = true; 
+            this.swipeState.startX = e.type.includes('mouse') ? e.pageX : e.touches[0].pageX; 
+            this.swipeState.startTime = Date.now();
+            card.style.transition = 'none'; 
+        };
+        
         const onDrag = (e) => {
             if (!this.swipeState.isDragging) return;
             const deltaX = (e.type.includes('mouse') ? e.pageX : e.touches[0].pageX) - this.swipeState.startX;
             card.style.transform = `translateX(${deltaX}px) rotate(${deltaX * 0.05}deg)`;
         };
+        
         const endDrag = (e) => {
             if (!this.swipeState.isDragging) return;
             this.swipeState.isDragging = false;
-            const deltaX = (e.type.includes('mouse') ? e.pageX : (e.changedTouches ? e.changedTouches[0].pageX : this.swipeState.startX)) - this.swipeState.startX;
+            
+            const endX = e.type.includes('mouse') ? e.pageX : (e.changedTouches ? e.changedTouches[0].pageX : this.swipeState.startX);
+            const deltaX = endX - this.swipeState.startX;
+            const duration = Date.now() - this.swipeState.startTime;
+
+            // If user barely moved the card (less than 10 pixels), treat it as a CLICK to flip
+            if (Math.abs(deltaX) < 10 && duration < 500) {
+                card.style.transition = 'transform 0.3s'; 
+                card.style.transform = `translateX(0px) rotate(0deg)`;
+                this.flipCard();
+                return;
+            }
+
+            // Otherwise, process as a swipe
             if (deltaX > 100) this.handleSwipe('right');
             else if (deltaX < -100) this.handleSwipe('left');
-            else { card.style.transition = 'transform 0.3s'; card.style.transform = `translateX(0px) rotate(0deg)`; }
+            else { 
+                card.style.transition = 'transform 0.3s'; 
+                card.style.transform = `translateX(0px) rotate(0deg)`; 
+            }
         };
-        card.addEventListener('mousedown', startDrag); document.addEventListener('mousemove', onDrag); document.addEventListener('mouseup', endDrag);
-        card.addEventListener('touchstart', startDrag); document.addEventListener('touchmove', onDrag); document.addEventListener('touchend', endDrag);
+
+        card.addEventListener('mousedown', startDrag); 
+        document.addEventListener('mousemove', onDrag); 
+        document.addEventListener('mouseup', endDrag);
+        
+        card.addEventListener('touchstart', startDrag, {passive: true}); 
+        document.addEventListener('touchmove', onDrag, {passive: true}); 
+        document.addEventListener('touchend', endDrag);
     }
 
     triggerConfetti() {
