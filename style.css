@@ -248,6 +248,11 @@ details[open].control-group .dropdown-content { display: block; animation: slide
         flex: 1 1 0%; 
         width: 33.3%; /* Exactly one third each */
         min-width: 0; 
+        transition: flex 0.4s cubic-bezier(0.25, 1, 0.5, 1);
+    }
+
+    details[open].control-group {
+        flex: 4 1 0%; /* Takes 4x more space than the closed tabs */
     }
 
     .control-group summary { 
