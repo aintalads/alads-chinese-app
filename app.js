@@ -754,14 +754,50 @@ class ChineseApp {
 
     saveProgress() { localStorage.setItem('aladsProgress', JSON.stringify(this.state.progress)); this.updateProgressUI(); }
     updateProgressUI() {
+        // --- 1. YOUR EXISTING CODE (Keeps Streak & Sidebar working) ---
         const s = document.getElementById('streak-count');
         if(s) s.innerText = this.state.progress.streak;
+        
         const r = document.getElementById('review-count');
         if(r) r.innerText = this.state.progress.reviewQueue.length;
+        
         const d = document.getElementById('daily-mastered');
         if(d) d.innerText = this.state.progress.dailyMastered;
+        
         const pb = document.getElementById('daily-progress-bar');
         if(pb) pb.style.width = `${Math.min((this.state.progress.dailyMastered / 10) * 100, 100)}%`;
+
+        // --- 2. NEW CODE FOR THE HEADER NUMBERS ---
+        const total = this.state.studyQueue ? this.state.studyQueue.length : 0;
+        const current = this.state.currentIndex + 1;
+        
+        // Update the top right progress (e.g., 1 / 10)
+        const mCurrent = document.getElementById('mode-current');
+        if (mCurrent) mCurrent.innerText = total === 0 ? 0 : Math.min(current, total);
+        
+        const mTotal = document.getElementById('mode-total');
+        if (mTotal) mTotal.innerText = total;
+
+        // Update the Known / Study More numbers
+        const knownCountSpan = document.getElementById('stat-known-count');
+        const studyCountSpan = document.getElementById('stat-study-count');
+        
+        if (knownCountSpan && studyCountSpan && this.state.studyQueue) {
+            let known = 0;
+            let unknown = 0;
+            
+            // Count how many words are known vs unknown in the current session
+            this.state.studyQueue.forEach(word => {
+                if (this.state.progress.knownWords && this.state.progress.knownWords.includes(word)) {
+                    known++;
+                } else {
+                    unknown++;
+                }
+            });
+            
+            knownCountSpan.innerText = known;
+            studyCountSpan.innerText = unknown;
+        }
     }
 
     setupEventListeners() {
