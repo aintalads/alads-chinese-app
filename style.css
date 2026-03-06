@@ -94,13 +94,14 @@ body { background-color: var(--bg-color); color: var(--text-main); line-height: 
 details[open] summary .toggle-icon { transform: rotate(180deg); }
 
 /* Inner Dropdown Content (FROSTED GLASS EFFECT) */
+/* Inner Dropdown Content (FROSTED GLASS EFFECT) */
 .dropdown-content, .progress-box { 
     position: absolute; 
     top: calc(100% + 10px); 
     left: 0; 
     width: 100%; 
-    background: rgba(255, 255, 255, 0.85); /* Fallback */
-    background: color-mix(in srgb, var(--card-bg) 85%, transparent); /* Slightly less transparent for readability */
+    background: rgba(255, 255, 255, 0.85);
+    background: color-mix(in srgb, var(--card-bg) 85%, transparent); 
     backdrop-filter: blur(16px);
     -webkit-backdrop-filter: blur(16px);
     z-index: 999; 
@@ -109,8 +110,10 @@ details[open] summary .toggle-icon { transform: rotate(180deg); }
     border: 1px solid color-mix(in srgb, var(--border-color) 60%, transparent);
     padding: 20px;
     box-sizing: border-box;
-    max-height: 50vh; /* Prevents it from reaching the bottom of the screen */
-    overflow-y: auto; /* Adds a smooth internal scrollbar when content is long */
+    
+    max-height: 50vh; 
+    overflow-y: auto; 
+    -webkit-overflow-scrolling: touch; /* <--- ADDED: Smooth momentum scrolling on mobile */
 }
 
 details.control-group .dropdown-content { display: none; }
@@ -231,6 +234,17 @@ details[open].control-group .dropdown-content { display: block; animation: slide
     #app-workspace { margin: 10px auto; padding: 0 10px; }
     .card { width: 100%; max-width: 340px; }
     .study-header { flex-direction: column; gap: 10px; align-items: flex-start; }
+    .dropdown-content, .progress-box {
+        width: calc(100vw - 20px); /* Stretches to full screen width */
+        left: 50%; /* Centers it perfectly */
+        transform: translateX(-50%);
+        max-height: 65vh; /* Gives you plenty of vertical room to scroll */
+        padding: 15px;
+    }
+
+    /* Make the buttons inside a bit larger for comfortable thumb tapping */
+    .chip { padding: 10px 16px; font-size: 1rem; }
+    .mode-btn { padding: 14px; font-size: 1.05rem; }
 }
 
 /* --- Manage Study List View --- */
