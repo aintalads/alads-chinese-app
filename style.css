@@ -54,26 +54,58 @@ body { background-color: var(--bg-color); color: var(--text-main); line-height: 
 .streak { font-size: 1rem; font-weight: 600; color: var(--text-muted); }
 #dark-mode-btn { background: none; border: none; font-size: 1.2rem; cursor: pointer; color: var(--text-main); }
 
-/* Hide mobile menus permanently since we are using Top Tabs now */
 #mobile-menu-btn, .icon-btn-clean, #mobile-overlay { display: none !important; }
 
-/* Main Workspace - Changed to Column for Top Tabs */
 #app-workspace { display: flex; flex-direction: column; max-width: 1000px; margin: 20px auto; gap: 20px; padding: 0 20px; min-height: calc(100vh - 100px); }
 
-/* --- 3 HORIZONTAL TOP TABS --- */
-.sidebar { width: 100%; display: flex; flex-direction: row; gap: 15px; flex-shrink: 0; margin-bottom: 10px; }
-.control-group { flex: 1; background: var(--card-bg); border-radius: var(--border-radius-sm); border: 1px solid var(--border-color); box-shadow: var(--shadow-sm); height: fit-content; }
+/* ==========================================
+   --- 3 HORIZONTAL TOP TABS (OVERLAY LAYOUT) ---
+   ========================================== */
+.sidebar { 
+    width: 100%; 
+    display: flex; 
+    flex-direction: row; 
+    gap: 15px; 
+    flex-shrink: 0; 
+    margin-bottom: 10px; 
+    position: relative; /* Context for the absolute dropdowns */
+    z-index: 500; 
+}
+
+.control-group { 
+    flex: 1; 
+    background: var(--card-bg); 
+    border-radius: var(--border-radius-sm); 
+    border: 1px solid var(--border-color); 
+    box-shadow: var(--shadow-sm); 
+    position: static; /* Crucial: allows child dropdowns to anchor to .sidebar instead of the button */
+}
 
 /* Accordion Tab Headers */
 .control-group summary { list-style: none; cursor: pointer; display: flex; justify-content: center; align-items: center; gap: 10px; padding: 15px; font-weight: 700; color: var(--primary-color); background: rgba(12, 122, 121, 0.04); font-size: 1rem; border-radius: var(--border-radius-sm); user-select: none; outline: none; }
+.control-group summary h3 { margin: 0; font-size: 1rem; }
 .control-group summary::-webkit-details-marker { display: none; }
 .toggle-icon { font-size: 0.8rem; transition: transform 0.4s cubic-bezier(0.34, 1.56, 0.64, 1); }
 details[open] summary .toggle-icon { transform: rotate(180deg); }
-details[open].control-group summary { border-bottom-left-radius: 0; border-bottom-right-radius: 0; border-bottom: 1px solid var(--border-color); }
 
-/* Inner Dropdown Content */
-.dropdown-content { padding: 15px; }
-.progress-box { margin: 0; border: none; box-shadow: none; padding: 15px; }
+/* Inner Dropdown Content (ABSOLUTE OVERLAY) */
+.dropdown-content, .progress-box { 
+    position: absolute; 
+    top: calc(100% + 10px); 
+    left: 0; 
+    width: 100%; 
+    background: var(--card-bg); 
+    z-index: 999; 
+    box-shadow: 0 16px 40px rgba(0,0,0,0.25); 
+    border-radius: var(--border-radius-sm); 
+    border: 1px solid var(--border-color);
+    padding: 20px;
+    box-sizing: border-box;
+}
+
+/* Hide content normally, let <details open> naturally display it */
+details.control-group .dropdown-content { display: none; }
+details[open].control-group .dropdown-content { display: block; animation: slideDown 0.2s ease; }
 
 /* Multi-select Chips */
 .chip-label { font-size: 0.9rem; font-weight: 600; margin-bottom: 10px; display: flex; justify-content: space-between; align-items: center; }
@@ -100,7 +132,7 @@ details[open].control-group summary { border-bottom-left-radius: 0; border-botto
 .review-btn:hover { border-color: var(--primary-color); }
 
 /* Main Study Area */
-.study-area { flex-grow: 1; display: flex; flex-direction: column; }
+.study-area { flex-grow: 1; display: flex; flex-direction: column; position: relative; z-index: 1; }
 
 /* HEADER WITH SIDE-ALIGNED STATS */
 .study-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 25px; padding-bottom: 15px; border-bottom: 2px solid var(--border-color); flex-wrap: wrap; gap: 10px; }
@@ -120,15 +152,30 @@ details[open].control-group summary { border-bottom-left-radius: 0; border-botto
 .dropdown-item:hover { background: var(--bg-color); }
 @keyframes slideDown { from { opacity: 0; transform: translateY(-10px); } to { opacity: 1; transform: translateY(0); } }
 
-/* Flashcards */
-.flashcard-container { display: flex; justify-content: center; align-items: center; perspective: 1000px; height: 380px; margin-bottom: 40px; touch-action: pan-y; }
-.card { width: 340px; height: 100%; cursor: pointer; transition: transform 0.1s; position: relative; margin: 0 auto; }
+/* ==========================================
+   --- FLASHCARDS & SWIPE FIXES ---
+   ========================================== */
+.flashcard-container { display: flex; justify-content: center; align-items: center; perspective: 1000px; height: 380px; margin-bottom: 40px; }
+.card { 
+    width: 340px; 
+    height: 100%; 
+    cursor: pointer; 
+    transition: transform 0.1s; 
+    position: relative; 
+    margin: 0 auto; 
+    user-select: none; /* Stops text highlight while swiping */
+    -webkit-user-select: none;
+    touch-action: pan-y; /* Default fallback */
+}
 .card-inner { width: 100%; height: 100%; transition: transform 0.6s cubic-bezier(0.34, 1.56, 0.64, 1), box-shadow 0.3s ease; transform-style: preserve-3d; position: relative; box-shadow: var(--shadow-md); border-radius: 28px; }
 .card:hover .card-inner, .card:active .card-inner { box-shadow: 0 16px 40px rgba(12, 122, 121, 0.15); transform: translateY(-5px); }
 .card.is-flipped .card-inner { transform: rotateY(180deg); }
 .card.is-flipped:hover .card-inner { transform: rotateY(180deg) translateY(-5px); }
+
+/* Swipe Fix: Ensure browser never scrolls when touching the front of the card */
+.card-front { touch-action: none; }
 .card-front, .card-back { width: 100%; height: 100%; position: absolute; backface-visibility: hidden; display: flex; flex-direction: column; justify-content: center; align-items: center; background: var(--card-bg); border-radius: 28px; padding: 30px; text-align: center; border: 1px solid var(--border-color); }
-.card-back { transform: rotateY(180deg); overflow-y: auto; }
+.card-back { transform: rotateY(180deg); overflow-y: auto; touch-action: pan-y; /* Allow scrolling the back */ }
 
 /* Ensure Chinese Text in Flashcards pops out nicely with the new font */
 .card-front h1 { font-size: 5rem; font-weight: 500; margin: 0; color: var(--text-main); }
@@ -158,7 +205,6 @@ details[open].control-group summary { border-bottom-left-radius: 0; border-botto
 .sentence-controls button, #reveal-translation-btn { background: var(--primary-color); color: var(--card-bg); border: none; padding: 10px 20px; border-radius: 9999px; font-weight: 600; transition: 0.2s; cursor: pointer;}
 .audio-btn { background: var(--accent-color); color: var(--text-main); border: none; border-radius: 9999px; padding: 6px 16px; font-size: 0.9rem; font-weight: 600; margin-bottom: 20px; cursor: pointer;}
 
-
 /* Completion View */
 .completion-message { text-align: center; padding: 60px 20px; }
 .completion-message h1 { color: var(--text-main); font-size: 2.5rem; margin-bottom: 15px; }
@@ -166,9 +212,18 @@ details[open].control-group summary { border-bottom-left-radius: 0; border-botto
 
 #confetti-canvas { position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; pointer-events: none; z-index: 9999; display: none; }
 
-/* Mobile Responsiveness (Stacked Accordion Folders) */
+/* ==========================================
+   --- MOBILE RESPONSIVENESS (SIDE-BY-SIDE TABS) ---
+   ========================================== */
 @media (max-width: 800px) {
-    .sidebar { flex-direction: column; gap: 10px; }
+    /* Keep tabs side-by-side on phone */
+    .sidebar { flex-direction: row; gap: 8px; } 
+    
+    /* Shrink the tab buttons so they fit nicely */
+    .control-group summary { padding: 10px 5px; flex-direction: column; gap: 4px; }
+    .control-group summary h3 { font-size: 0.8rem; text-align: center; }
+    .toggle-icon { display: none; } /* Hide dropdown arrow on phones to save space */
+    
     #app-workspace { margin: 10px auto; padding: 0 10px; }
     .card { width: 100%; max-width: 340px; }
     .study-header { flex-direction: column; gap: 10px; align-items: flex-start; }
@@ -209,139 +264,57 @@ details[open].control-group summary { border-bottom-left-radius: 0; border-botto
 .practice-btn { background: var(--primary-color) !important; color: var(--card-bg) !important; border-radius: 9999px !important; }
 
 /* Auto-Play Button Styles */
-.auto-play-btn {
-    background: transparent;
-    border: 2px solid var(--primary-color);
-    color: var(--text-main);
-    padding: 8px 16px;
-    border-radius: 9999px;
-    font-weight: bold;
-    cursor: pointer;
-    transition: 0.3s ease;
-    margin-bottom: 15px;
-}
-.auto-play-btn.active {
-    background: var(--primary-color);
-    color: #ffffff;
-    border-color: var(--primary-color);
-}
+.auto-play-btn { background: transparent; border: 2px solid var(--primary-color); color: var(--text-main); padding: 8px 16px; border-radius: 9999px; font-weight: bold; cursor: pointer; transition: 0.3s ease; margin-bottom: 15px; }
+.auto-play-btn.active { background: var(--primary-color); color: #ffffff; border-color: var(--primary-color); }
 
 .top-controls { display: flex; gap: 10px; justify-content: center; margin-bottom: 15px; flex-wrap: wrap; }
 
 /* Professional Transparent Bubble Buttons */
-button {
-    border-radius: 9999px; 
-    padding: 10px 20px;
-    font-weight: 600;
-    cursor: pointer;
-    transition: all 0.2s ease-in-out;
-    backdrop-filter: blur(4px); 
-    font-family: inherit;
-    font-size: 0.95rem;
-}
+button { border-radius: 9999px; padding: 10px 20px; font-weight: 600; cursor: pointer; transition: all 0.2s ease-in-out; backdrop-filter: blur(4px); font-family: inherit; font-size: 0.95rem; }
 
 /* Base style for general action buttons (Blue theme) */
-.action-btn, .add-btn, .clear-btn, .manage-list-btn, .apply-btn, .review-btn, .practice-btn {
-    background-color: rgba(0, 120, 215, 0.1); 
-    border: 1px solid rgba(0, 120, 215, 0.3);
-    color: #005a9e; 
-}
-
-.action-btn:hover, .apply-btn:hover {
-    background-color: rgba(0, 120, 215, 0.2);
-    border-color: rgba(0, 120, 215, 0.5);
-    transform: translateY(-2px); 
-}
+.action-btn, .add-btn, .clear-btn, .manage-list-btn, .apply-btn, .review-btn, .practice-btn { background-color: rgba(0, 120, 215, 0.1); border: 1px solid rgba(0, 120, 215, 0.3); color: #005a9e; }
+.action-btn:hover, .apply-btn:hover { background-color: rgba(0, 120, 215, 0.2); border-color: rgba(0, 120, 215, 0.5); transform: translateY(-2px); }
 
 /* "Got It" button (Green theme) */
-.swipe-btn.right {
-    background-color: rgba(40, 167, 69, 0.1);
-    border: 1px solid rgba(40, 167, 69, 0.3);
-    color: #1e7e34;
-}
-
-.swipe-btn.right:hover {
-    background-color: rgba(40, 167, 69, 0.2);
-    border-color: rgba(40, 167, 69, 0.5);
-    transform: translateY(-2px);
-}
+.swipe-btn.right { background-color: rgba(40, 167, 69, 0.1); border: 1px solid rgba(40, 167, 69, 0.3); color: #1e7e34; }
+.swipe-btn.right:hover { background-color: rgba(40, 167, 69, 0.2); border-color: rgba(40, 167, 69, 0.5); transform: translateY(-2px); }
 
 /* "Study Again" button (Red theme) */
-.swipe-btn.left {
-    background-color: rgba(220, 53, 69, 0.1);
-    border: 1px solid rgba(220, 53, 69, 0.3);
-    color: #bd2130;
-}
-
-.swipe-btn.left:hover {
-    background-color: rgba(220, 53, 69, 0.2);
-    border-color: rgba(220, 53, 69, 0.5);
-    transform: translateY(-2px);
-}
+.swipe-btn.left { background-color: rgba(220, 53, 69, 0.1); border: 1px solid rgba(220, 53, 69, 0.3); color: #bd2130; }
+.swipe-btn.left:hover { background-color: rgba(220, 53, 69, 0.2); border-color: rgba(220, 53, 69, 0.5); transform: translateY(-2px); }
 
 /* Neutral Flip / Nav buttons */
-.swipe-btn.flip, .sentence-controls button, .writing-controls button {
-    background-color: rgba(108, 117, 125, 0.1);
-    border: 1px solid rgba(108, 117, 125, 0.3);
-    color: #495057;
-}
-
-.swipe-btn.flip:hover, .sentence-controls button:hover, .writing-controls button:hover {
-    background-color: rgba(108, 117, 125, 0.2);
-    transform: translateY(-2px);
-}
+.swipe-btn.flip, .sentence-controls button, .writing-controls button { background-color: rgba(108, 117, 125, 0.1); border: 1px solid rgba(108, 117, 125, 0.3); color: #495057; }
+.swipe-btn.flip:hover, .sentence-controls button:hover, .writing-controls button:hover { background-color: rgba(108, 117, 125, 0.2); transform: translateY(-2px); }
 
 /* Tablet and Desktop Scaling */
 @media (min-width: 1024px) {
-    .flashcard-container {
-        height: 500px; 
-        perspective: 1500px;
-    }
-
-    .card {
-        width: 450px; 
-        height: 100%;
-    }
-
-    #fc-front-text {
-        font-size: 6rem; 
-    }
-
-    #fc-pinyin {
-        font-size: 2.5rem;
-    }
-
-    #fc-meaning {
-        font-size: 1.8rem;
-    }
+    .flashcard-container { height: 500px; perspective: 1500px; }
+    .card { width: 450px; height: 100%; }
+    #fc-front-text { font-size: 6rem; }
+    #fc-pinyin { font-size: 2.5rem; }
+    #fc-meaning { font-size: 1.8rem; }
 }
 
 /* ==========================================
    --- UPGRADED QUIZ DESIGN (BIGGER SIZE) ---
    ========================================== */
-
-/* Settings Menu */
 .quiz-settings { display: flex; justify-content: center; align-items: center; gap: 20px; padding: 15px; margin-bottom: 30px; background: linear-gradient(135deg, #f8f9fa, #e9ecef); border-radius: 12px; box-shadow: 0 4px 6px rgba(0,0,0,0.05); flex-wrap: wrap; border: 1px solid #dee2e6; }
 .setting-group label { font-weight: 600; margin-right: 8px; color: #495057; }
 .setting-group select { padding: 10px 14px; border-radius: 8px; border: 1px solid #ced4da; background-color: white; cursor: pointer; outline: none; transition: border-color 0.2s; font-size: 1rem; }
 .setting-group select:focus { border-color: #007bff; }
-
-/* Score Display */
 .quiz-score { font-weight: bold; color: #fff; background-color: #007bff; padding: 10px 20px; border-radius: 20px; font-size: 1.2rem; box-shadow: 0 2px 4px rgba(0,123,255,0.3); }
 
-/* Question Area */
 .qz-word-container { display: flex; justify-content: center; align-items: center; margin-bottom: 40px; padding: 30px 20px; background-color: white; border-radius: 20px; box-shadow: 0 6px 20px rgba(0,0,0,0.08); }
-.qz-word-container h2 { margin: 0; font-size: 5rem; color: #212529; } /* INCREASED TEXT SIZE */
+.qz-word-container h2 { margin: 0; font-size: 5rem; color: #212529; } 
 .icon-btn { background: #f1f3f5; border: none; cursor: pointer; font-size: 1.8rem; margin-left: 20px; width: 60px; height: 60px; border-radius: 50%; transition: background 0.2s, transform 0.1s; display: flex; justify-content: center; align-items: center;}
 .icon-btn:hover { background: #e2e6ea; }
 .icon-btn:active { transform: scale(0.95); }
 
-/* Multiple Choice Grid */
-.quiz-options { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; width: 100%; max-width: 750px; margin: 0 auto; } /* WIDER SPREAD */
-.option-btn { padding: 20px 25px; font-size: 1.3rem; border-radius: 16px; border: 2px solid #e9ecef; background-color: white; cursor: pointer; transition: all 0.2s ease; font-weight: 500; } /* BIGGER BUTTONS */
+.quiz-options { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; width: 100%; max-width: 750px; margin: 0 auto; } 
+.option-btn { padding: 20px 25px; font-size: 1.3rem; border-radius: 16px; border: 2px solid #e9ecef; background-color: white; cursor: pointer; transition: all 0.2s ease; font-weight: 500; } 
 .option-btn:hover:not(:disabled) { border-color: #007bff; background-color: #f8f9fa; transform: translateY(-3px); box-shadow: 0 6px 12px rgba(0,0,0,0.08); }
-
-/* Typing Mode Input */
 .quiz-input { width: 100%; max-width: 600px; padding: 20px; font-size: 1.5rem; margin: 0 auto 20px auto; display: block; border-radius: 16px; border: 2px solid #ced4da; outline: none; transition: border-color 0.2s, box-shadow 0.2s; text-align: center; }
 .quiz-input:focus { border-color: #007bff; box-shadow: 0 0 0 4px rgba(0,123,255,0.25); }
 .quiz-feedback { text-align: center; margin-top: 20px; font-size: 1.5rem; padding: 20px; border-radius: 12px; }
@@ -349,8 +322,6 @@ button {
 /* ==========================================
    --- PREMIUM THEMES & EXTRA FEATURES ---
    ========================================== */
-
-/* 1. Theme Variables (Default Light) */
 :root {
     --bg-main: #f4f7f6;
     --nav-bg: #ffffff;
@@ -361,51 +332,11 @@ button {
     --accent-color: rgba(0,0,0,0.05);
 }
 
-/* Dark Mode Theme */
-body.theme-dark {
-    --bg-main: #121212;
-    --nav-bg: #1e1e1e;
-    --text-main: #e0e0e0;
-    --text-muted: #a0a0a0;
-    --card-bg: #2d2d2d;
-    --primary-color: #4da3ff;
-    --accent-color: rgba(255,255,255,0.08);
-}
+body.theme-dark { --bg-main: #121212; --nav-bg: #1e1e1e; --text-main: #e0e0e0; --text-muted: #a0a0a0; --card-bg: #2d2d2d; --primary-color: #4da3ff; --accent-color: rgba(255,255,255,0.08); }
+body.theme-matcha { --bg-main: #f5f5dc; --nav-bg: #e8ecd7; --text-main: #2b3a1d; --text-muted: #4f5a43; --card-bg: #ffffff; --primary-color: #556b2f; --accent-color: #dcedc8; }
+body.theme-sakura { --bg-main: #fff0f5; --nav-bg: #ffe4e1; --text-main: #4a2c3a; --text-muted: #8a5a70; --card-bg: #ffffff; --primary-color: #ff69b4; --accent-color: #ffd1dc; }
+body.theme-midnight { --bg-main: #0f172a; --nav-bg: #1e293b; --text-main: #e2e8f0; --text-muted: #94a3b8; --card-bg: #334155; --primary-color: #8b5cf6; --accent-color: rgba(255,255,255,0.1); }
 
-/* Matcha Theme 🍵 */
-body.theme-matcha {
-    --bg-main: #f5f5dc; 
-    --nav-bg: #e8ecd7;
-    --text-main: #2b3a1d;
-    --text-muted: #4f5a43;
-    --card-bg: #ffffff;
-    --primary-color: #556b2f;
-    --accent-color: #dcedc8;
-}
-
-/* Sakura Theme 🌸 */
-body.theme-sakura {
-    --bg-main: #fff0f5;
-    --nav-bg: #ffe4e1;
-    --text-main: #4a2c3a;
-    --text-muted: #8a5a70;
-    --card-bg: #ffffff;
-    --primary-color: #ff69b4;
-    --accent-color: #ffd1dc;
-}
-
-/* Midnight Theme 🌌 */
-body.theme-midnight {
-    --bg-main: #0f172a;
-    --nav-bg: #1e293b;
-    --text-main: #e2e8f0;
-    --text-muted: #94a3b8;
-    --card-bg: #334155;
-    --primary-color: #8b5cf6;
-    --accent-color: rgba(255,255,255,0.1);
-}
-
-/* Apply variables to major elements dynamically */
 body { background-color: var(--bg-main); color: var(--text-main); }
 .navbar { background-color: var(--nav-bg); }
 .sidebar { background-color: var(--nav-bg); }
@@ -413,20 +344,11 @@ body { background-color: var(--bg-main); color: var(--text-main); }
 .quiz-settings { background-color: var(--nav-bg); }
 .qz-word-container { background-color: var(--card-bg); color: var(--text-main); }
 
-/* Theme Dropdown UI */
-.theme-dropdown {
-    padding: 8px 12px;
-    border-radius: 8px;
-    border: 1px solid #ccc;
-    background-color: var(--card-bg);
-    color: var(--text-main);
-    font-weight: bold;
-    cursor: pointer;
-    outline: none;
-    margin-left: 15px;
-}
+.theme-dropdown { padding: 8px 12px; border-radius: 8px; border: 1px solid #ccc; background-color: var(--card-bg); color: var(--text-main); font-weight: bold; cursor: pointer; outline: none; margin-left: 15px; }
 
-/* Flashcard Radicals & Sentences Boxes */
+/* ==========================================
+   --- MAGNIFYING EXAMPLE SENTENCES ---
+   ========================================== */
 .extra-info-box {
     margin-top: 15px;
     padding: 12px;
@@ -436,52 +358,45 @@ body { background-color: var(--bg-main); color: var(--text-main); }
     text-align: left;
     line-height: 1.4;
     border-left: 4px solid var(--primary-color);
+    cursor: zoom-in;
+    transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
+    position: relative; 
 }
 .extra-info-box.hidden { display: none; }
-.extra-info-box strong { color: var(--primary-color); }
+.extra-info-box strong { color: var(--primary-color); transition: all 0.3s ease; }
 
-/* Autoplay Speed Selector Styling */
-.speed-select {
-    padding: 8px 12px;
-    border-radius: 8px;
-    border: 1px solid #ccc;
+.extra-info-box.magnified {
+    font-size: 1.5rem;
+    line-height: 1.6;
+    padding: 20px;
     background-color: var(--card-bg);
-    color: var(--text-main);
-    font-weight: 600;
-    cursor: pointer;
-    outline: none;
-    font-size: 0.95rem;
+    border: 2px solid var(--primary-color);
+    border-left: 8px solid var(--primary-color);
+    box-shadow: 0 10px 25px rgba(0,0,0,0.15);
+    cursor: zoom-out;
+    margin-top: 20px;
+    margin-bottom: 10px;
 }
+.extra-info-box.magnified strong { font-size: 1.8rem; }
+.extra-info-box::after { content: '🔍'; position: absolute; top: 8px; right: 8px; font-size: 1rem; opacity: 0.4; transition: 0.2s; }
+.extra-info-box:hover::after { opacity: 1; }
+.extra-info-box.magnified::after { content: '✖️'; opacity: 0.6; font-size: 0.9rem; }
+
+.speed-select { padding: 8px 12px; border-radius: 8px; border: 1px solid #ccc; background-color: var(--card-bg); color: var(--text-main); font-weight: 600; cursor: pointer; outline: none; font-size: 0.95rem; }
 .speed-select:focus { border-color: var(--primary-color); }
 
-/* ==========================================
-   --- SMARTPHONE LAYOUT FIXES (Max width 768px) ---
-   ========================================== */
-
 @media (max-width: 768px) {
-    /* Shrink the flashcard so it perfectly fits phone screens without overflowing */
-    .card {
-        height: 50vh !important; 
-        min-height: 320px !important;
-        max-height: 450px !important;
-        width: 90vw !important;
-        margin: 0 auto;
-    }
-
-    /* Make text inside the flashcard fit better */
+    .card { height: 50vh !important; min-height: 320px !important; max-height: 450px !important; width: 90vw !important; margin: 0 auto; }
     #fc-front-text { font-size: 3.5rem !important; }
     #fc-pinyin { font-size: 1.5rem !important; }
     #fc-meaning { font-size: 1.1rem !important; }
-
-    /* Fix Top Controls: Make the 4 buttons stack neatly into a 2x2 grid */
+    .extra-info-box.magnified { font-size: 1.3rem !important; }
+    .extra-info-box.magnified strong { font-size: 1.5rem !important; }
     .top-controls { flex-wrap: wrap; justify-content: center; gap: 8px; }
-    .top-controls .action-btn, 
-    .top-controls .speed-select { flex: 1 1 45%; font-size: 0.85rem; padding: 8px 5px; text-align: center; }
-
-    /* Fix Quiz Layout */
+    .top-controls .action-btn, .top-controls .speed-select { flex: 1 1 45%; font-size: 0.85rem; padding: 8px 5px; text-align: center; }
     .quiz-options { grid-template-columns: 1fr; gap: 12px; }
-    .option-btn { padding: 16px 20px; font-size: 1.2rem; } /* BIGGER ON PHONE TOO */
+    .option-btn { padding: 16px 20px; font-size: 1.2rem; } 
     .quiz-settings { flex-direction: column; gap: 12px; align-items: stretch; }
     .setting-group { display: flex; justify-content: space-between; align-items: center; }
-    .qz-word-container h2 { font-size: 3.2rem !important; } /* BIGGER QUESTION TEXT ON PHONE */
+    .qz-word-container h2 { font-size: 3.2rem !important; } 
 }
