@@ -391,41 +391,47 @@ class ChineseApp {
 
     /* --- MOBILE AUDIO FIX --- */
     playAudio(text, speedPref = 'normal') {
-        if (!text || !window.speechSynthesis) return;
+    if (!text || !window.speechSynthesis) return;
 
-        // 1. CRITICAL: Cancel current speech and clear the queue
-        window.speechSynthesis.cancel();
+    // 1. Force stop any current speech
+    window.speechSynthesis.cancel();
 
-        // 2. Wrap in a tiny timeout (fix for iOS Safari skipping)
-        setTimeout(() => {
-            const utterance = new SpeechSynthesisUtterance(text);
+    // 2. Tiny delay helps Android and iOS hardware reset properly
+    setTimeout(() => {
+        const utterance = new SpeechSynthesisUtterance(text);
 
-            // 3. Set speed logic
-            let rate = 0.9; 
-            if (speedPref === 'slow') rate = 0.5; 
-            if (speedPref === 'fast') rate = 1.2;
-            utterance.rate = rate;
+        // 3. Set Rate based on your dropdown
+        let rate = 0.9; 
+        if (speedPref === 'slow') rate = 0.5; 
+        if (speedPref === 'fast') rate = 1.2;
+        utterance.rate = rate;
 
-            // 4. FIND THE "NICE" VOICE (iOS Specific)
-            const voices = window.speechSynthesis.getVoices();
-            
-            // On iPhone, we want "Mei-Jia" (Taiwan) or "Sin-ji" (HK) for best quality
-            let premiumVoice = voices.find(v => v.name.includes('Mei-Jia') || v.name.includes('Sin-ji'));
-            
-            // Fallback to any Traditional Chinese voice
-            if (!premiumVoice) {
-                premiumVoice = voices.find(v => v.lang === 'zh-TW' || v.lang === 'zh-HK');
-            }
+        // 4. THE UNIVERSAL VOICE HUNTER
+        const voices = window.speechSynthesis.getVoices();
+        
+        // This looks for the best voice in this order:
+        // 1. Apple Premium (iPhone) 
+        // 2. Google Native (Android/Chrome)
+        // 3. Microsoft Natural (Windows Laptop)
+        let bestVoice = voices.find(v => 
+            (v.lang.includes('zh-TW') || v.lang.includes('zh-HK')) && 
+            (v.name.includes('Premium') || v.name.includes('Google') || v.name.includes('Siri'))
+        );
 
-            if (premiumVoice) {
-                utterance.voice = premiumVoice;
-            } else {
-                utterance.lang = 'zh-TW';
-            }
+        // Fallback: Any Traditional Chinese voice if premium isn't found
+        if (!bestVoice) {
+            bestVoice = voices.find(v => v.lang === 'zh-TW' || v.lang === 'zh-HK' || v.lang.includes('zh-Hant'));
+        }
 
-            window.speechSynthesis.speak(utterance);
-        }, 50); // The 50ms delay gives iOS time to reset the audio hardware
-    }
+        if (bestVoice) {
+            utterance.voice = bestVoice;
+        } else {
+            utterance.lang = 'zh-TW'; // Basic fallback
+        }
+
+        window.speechSynthesis.speak(utterance);
+    }, 50);
+}
 
     renderFlashcard() {
         var item = this.state.studyQueue[this.state.currentIndex];
