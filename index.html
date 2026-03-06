@@ -2,13 +2,14 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Alads | Chinese Learning</title>
     
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;500;600;700&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="style.css">
+    
+    <link rel="stylesheet" href="style.css?v=2">
     
     <script src="chars.js"></script>
     <script src="new_vocab.js"></script>
@@ -18,18 +19,24 @@
 <body>
     <nav class="navbar">
         <div class="nav-left">
-            <button id="mobile-menu-btn" onclick="app.toggleSidebar()">☰ Menu</button>
+            <button id="mobile-menu-btn" class="icon-btn-clean" onclick="app.toggleSidebar()" aria-label="Menu">
+                <svg viewBox="0 0 24 24" width="28" height="28" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round">
+                    <line x1="3" y1="12" x2="21" y2="12"></line>
+                    <line x1="3" y1="6" x2="21" y2="6"></line>
+                    <line x1="3" y1="18" x2="21" y2="18"></line>
+                </svg>
+            </button>
             <div class="logo">Alads</div>
         </div>
         <div class="nav-controls">
-            <div class="streak" title="Daily Streak">🔥 Streak: <span id="streak-count">0</span></div>
+            <div class="streak" title="Daily Streak">🔥 <span id="streak-count">0</span></div>
             
             <select id="theme-selector" class="theme-dropdown" onchange="app.changeTheme(this.value)">
-                <option value="default">🌤️ Light Mode</option>
-                <option value="dark">🌙 Dark Mode</option>
-                <option value="matcha">🍵 Matcha Theme</option>
-                <option value="sakura">🌸 Sakura Theme</option>
-                <option value="midnight">🌌 Midnight Theme</option>
+                <option value="default">🌤️ Light</option>
+                <option value="dark">🌙 Dark</option>
+                <option value="matcha">🍵 Matcha</option>
+                <option value="sakura">🌸 Sakura</option>
+                <option value="midnight">🌌 Night</option>
             </select>
         </div>
     </nav>
@@ -47,11 +54,11 @@
                 
                 <div class="chip-label">
                     📝 Lessons: 
-                    <button class="text-btn" onclick="app.selectAllLessons()">☑️ Select / Deselect All</button>
+                    <button class="text-btn" onclick="app.selectAllLessons()">☑️ Select All</button>
                 </div>
                 <div id="lesson-chips" class="chip-container"></div>
                 
-                <button class="apply-btn" onclick="app.applyCourseSelection()">🚀 Load Selected Content</button>
+                <button class="apply-btn" onclick="app.applyCourseSelection()">🚀 Load Content</button>
             </details>
 
             <details class="control-group" open>
@@ -68,12 +75,12 @@
             </details>
 
             <div class="progress-box">
-                <p>🎯 Daily Goal: <span id="daily-mastered">0</span> / 10</p>
+                <p>🎯 Goal: <span id="daily-mastered">0</span> / 10</p>
                 <div class="progress-bar-container">
                     <div id="daily-progress-bar" class="progress-bar-fill"></div>
                 </div>
-                <button class="review-btn" onclick="app.startReviewMode()">🔄 Review Due (<span id="review-count">0</span>)</button>
-                <button class="manage-list-btn" onclick="app.setMode('manage-review')">⚙️ Manage Study List</button>
+                <button class="review-btn" onclick="app.startReviewMode()">🔄 Review (<span id="review-count">0</span>)</button>
+                <button class="manage-list-btn" onclick="app.setMode('manage-review')">⚙️ Manage List</button>
             </div>
         </aside>
 
@@ -86,13 +93,13 @@
             <div id="view-manage-review" class="study-view">
                 <div class="manage-review-container">
                     <div class="manage-header">
-                        <h3>📝 Your "Study Again" List</h3>
-                        <button class="clear-btn" onclick="app.clearReviewQueue()">🗑️ Clear All</button>
+                        <h3>📝 "Study Again" List</h3>
+                        <button class="clear-btn" onclick="app.clearReviewQueue()">🗑️ Clear</button>
                     </div>
                     
                     <div class="add-review-box">
                         <select id="add-review-select" class="review-select"></select>
-                        <button class="add-btn" onclick="app.addSelectedToReview()">➕ Add Word</button>
+                        <button class="add-btn" onclick="app.addSelectedToReview()">➕ Add</button>
                     </div>
 
                     <div class="review-list-wrapper">
@@ -103,16 +110,23 @@
 
             <div id="view-flashcards" class="study-view active">
                 <div class="top-controls">
-                    <button id="auto-play-btn" class="action-btn" onclick="app.toggleAutoPlaySlideshow()">▶️ Slideshow</button>
-                    
-                    <select id="fc-speed-select" class="speed-select">
-                        <option value="slow">🐢 Slow</option>
-                        <option value="normal" selected>🚶 Normal</option>
-                        <option value="fast">🐇 Fast</option>
-                    </select>
-
-                    <button id="fc-auto-audio-btn" class="action-btn" onclick="app.toggleAutoAudio()">🔇 Auto-Audio Off</button>
                     <button id="undo-btn" class="action-btn" onclick="app.undoLastSwipe()">↩️ Undo Last</button>
+                    
+                    <div class="dropdown">
+                        <button class="action-btn dropdown-toggle" onclick="this.nextElementSibling.classList.toggle('show')">⚙️ Settings</button>
+                        <div class="dropdown-menu">
+                            <button id="auto-play-btn" class="dropdown-item" onclick="app.toggleAutoPlaySlideshow()">▶️ Auto-Slideshow</button>
+                            <div class="dropdown-item-group">
+                                <label style="font-size: 0.8rem; color: var(--text-muted); padding-left: 12px;">Speed:</label>
+                                <select id="fc-speed-select" class="speed-select" style="width: 100%; border:none; margin-top: 5px;">
+                                    <option value="slow">🐢 Slow</option>
+                                    <option value="normal" selected>🚶 Normal</option>
+                                    <option value="fast">🐇 Fast</option>
+                                </select>
+                            </div>
+                            <button id="fc-auto-audio-btn" class="dropdown-item" onclick="app.toggleAutoAudio()">🔇 Auto-Audio Off</button>
+                        </div>
+                    </div>
                 </div>
                 
                 <div id="fc-session-stats" class="session-stats">
@@ -164,15 +178,21 @@
 
             <div id="view-sentences" class="study-view">
                 <div class="top-controls" style="justify-content: center; gap: 10px; margin-bottom: 1rem;">
-                    <button id="sn-auto-play-btn" class="action-btn" onclick="app.toggleSentenceSlideshow()">▶️ Slideshow</button>
-                    
-                    <select id="sn-speed-select" class="speed-select">
-                        <option value="slow">🐢 Slow</option>
-                        <option value="normal" selected>🚶 Normal</option>
-                        <option value="fast">🐇 Fast</option>
-                    </select>
-
-                    <button id="sn-auto-audio-btn" class="action-btn" onclick="app.toggleAutoAudio()">🔇 Auto-Audio Off</button>
+                     <div class="dropdown">
+                        <button class="action-btn dropdown-toggle" onclick="this.nextElementSibling.classList.toggle('show')">⚙️ Settings</button>
+                        <div class="dropdown-menu">
+                            <button id="sn-auto-play-btn" class="dropdown-item" onclick="app.toggleSentenceSlideshow()">▶️ Auto-Slideshow</button>
+                            <div class="dropdown-item-group">
+                                <label style="font-size: 0.8rem; color: var(--text-muted); padding-left: 12px;">Speed:</label>
+                                <select id="sn-speed-select" class="speed-select" style="width: 100%; border:none; margin-top: 5px;">
+                                    <option value="slow">🐢 Slow</option>
+                                    <option value="normal" selected>🚶 Normal</option>
+                                    <option value="fast">🐇 Fast</option>
+                                </select>
+                            </div>
+                            <button id="sn-auto-audio-btn" class="dropdown-item" onclick="app.toggleAutoAudio()">🔇 Auto-Audio Off</button>
+                        </div>
+                    </div>
                 </div>
                 <div class="sentence-container">
                     <h2 id="sn-chinese" class="chinese-text"></h2>
@@ -231,6 +251,7 @@
     <div id="mobile-overlay" onclick="app.toggleSidebar()"></div>
 
     <canvas id="confetti-canvas"></canvas>
-    <script src="app.js"></script>
+    
+    <script src="app.js?v=2"></script>
 </body>
 </html>
