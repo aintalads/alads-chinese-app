@@ -44,13 +44,14 @@ body.dark-mode {
 
 *:focus { outline: none !important; }
 
-/* GLOBALLY DISABLE HORIZONTAL SCROLLING */
+/* GLOBALLY DISABLE HORIZONTAL SCROLLING (STRICT) */
 html, body { 
     background-color: var(--bg-color); 
     color: var(--text-main); 
     line-height: 1.5; 
     transition: background 0.3s, color 0.3s; 
-    overflow-x: hidden; /* ABSOLUTELY NO HORIZONTAL SWIPING */
+    overflow-x: hidden !important; /* STRICTLY NO HORIZONTAL SWIPING */
+    max-width: 100vw;
     width: 100%;
 }
 
@@ -64,7 +65,7 @@ html, body {
 
 #mobile-menu-btn, .icon-btn-clean, #mobile-overlay { display: none !important; }
 
-#app-workspace { display: flex; flex-direction: column; max-width: 1000px; margin: 20px auto; gap: 20px; padding: 0 20px; min-height: calc(100vh - 100px); }
+#app-workspace { display: flex; flex-direction: column; max-width: 1000px; margin: 20px auto; gap: 20px; padding: 0 20px; min-height: calc(100vh - 100px); overflow-x: hidden; }
 
 /* ==========================================
    --- 3 HORIZONTAL TOP TABS ---
@@ -225,38 +226,48 @@ details[open].control-group .dropdown-content { display: block; animation: slide
 #confetti-canvas { position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; pointer-events: none; z-index: 9999; display: none; }
 
 /* ==========================================
-   --- MOBILE RESPONSIVENESS (NO HORIZONTAL SWIPING!) ---
+   --- STRICT MOBILE RESPONSIVENESS (NO HORIZONTAL SWIPE) ---
    ========================================== */
 @media (max-width: 800px) {
-    /* Guarantees that the app workspace never expands beyond the screen */
-    #app-workspace { padding: 0 10px; width: 100%; box-sizing: border-box; }
+    #app-workspace { 
+        padding: 0 10px; 
+        width: 100%; 
+        max-width: 100vw; /* Hard limit */
+        box-sizing: border-box; 
+    }
     
     .sidebar { 
         flex-direction: row; 
-        gap: 6px; 
+        gap: 5px; /* TIGHTENED GAP to allow buttons to be wider */
         width: 100%; 
-        flex-wrap: nowrap; /* Forces them to stay on one line */
+        flex-wrap: nowrap; 
+        justify-content: space-between;
     } 
     
     .control-group { 
-        flex: 1 1 0; /* CRITICAL FIX: Forces all 3 tabs to be EXACTLY equal width */
-        min-width: 0; /* Prevents long text from expanding the button and causing horizontal scrolling */
+        flex: 1 1 0%; 
+        width: 33.3%; /* Exactly one third each */
+        min-width: 0; 
     }
 
     .control-group summary { 
-        padding: 10px 2px; 
+        padding: 10px 2px; /* Less side padding gives text more room */
         flex-direction: column; 
         gap: 2px; 
-        height: 100%; /* Keeps all tabs the same height */
+        height: 100%; 
+        width: 100%;
+        box-sizing: border-box;
     }
 
     .control-group summary h3 { 
-        font-size: 0.75rem; 
+        font-size: 0.85rem; /* Larger, readable text */
         text-align: center; 
-        white-space: nowrap; /* Keeps text on one line */
+        white-space: nowrap; 
         overflow: hidden; 
-        text-overflow: ellipsis; /* Adds '...' if text is slightly too long, completely killing horizontal swiping */
+        text-overflow: ellipsis; 
         width: 100%;
+        margin: 0;
+        padding: 0;
     }
 
     .toggle-icon { display: none; } 
@@ -406,19 +417,3 @@ body { background-color: var(--bg-main); color: var(--text-main); }
 
 .speed-select { padding: 8px 12px; border-radius: 8px; border: 1px solid #ccc; background-color: var(--card-bg); color: var(--text-main); font-weight: 600; cursor: pointer; outline: none; font-size: 0.95rem; }
 .speed-select:focus { border-color: var(--primary-color); }
-
-@media (max-width: 768px) {
-    .card { height: 50vh !important; min-height: 320px !important; max-height: 450px !important; width: 90vw !important; margin: 0 auto; }
-    #fc-front-text { font-size: 3.5rem !important; }
-    #fc-pinyin { font-size: 1.5rem !important; }
-    #fc-meaning { font-size: 1.1rem !important; }
-    .extra-info-box.magnified { font-size: 1.3rem !important; }
-    .extra-info-box.magnified strong { font-size: 1.5rem !important; }
-    .top-controls { flex-wrap: wrap; justify-content: center; gap: 8px; }
-    .top-controls .action-btn, .top-controls .speed-select { flex: 1 1 45%; font-size: 0.85rem; padding: 8px 5px; text-align: center; }
-    .quiz-options { grid-template-columns: 1fr; gap: 12px; }
-    .option-btn { padding: 16px 20px; font-size: 1.2rem; } 
-    .quiz-settings { flex-direction: column; gap: 12px; align-items: stretch; }
-    .setting-group { display: flex; justify-content: space-between; align-items: center; }
-    .qz-word-container h2 { font-size: 3.2rem !important; } 
-}
