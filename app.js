@@ -1,6 +1,27 @@
 class ChineseApp {
     constructor() {
 
+        // Inside constructor()
+        this.audioUnlocked = false;
+
+        // Special iOS Voice Loader
+        const loadVoices = () => {
+            const voices = window.speechSynthesis.getVoices();
+            if (voices.length > 0) {
+                console.log("iPhone Voices Loaded:", voices.length);
+            }
+        };
+        window.speechSynthesis.onvoiceschanged = loadVoices;
+        loadVoices();
+
+        // One-time tap to unlock high-quality audio on iPhone
+        document.addEventListener('touchstart', () => {
+            if (this.audioUnlocked) return;
+            const silence = new SpeechSynthesisUtterance('');
+            window.speechSynthesis.speak(silence);
+            this.audioUnlocked = true;
+        }, { once: true });
+
         window.speechSynthesis.getVoices(); 
         if (speechSynthesis.onvoiceschanged !== undefined) {
             speechSynthesis.onvoiceschanged = () => window.speechSynthesis.getVoices();
@@ -369,27 +390,41 @@ class ChineseApp {
     }
 
     /* --- MOBILE AUDIO FIX --- */
-    playAudio(text, lang = 'zh-CN', callback = null) {
-        if (!text) return;
-        window.speechSynthesis.cancel(); 
-        
-        const msg = new SpeechSynthesisUtterance(text);
-        msg.lang = lang; // Defaults to zh-CN which has better mobile support
-        msg.rate = 0.85; 
+    playAudio(text, speedPref = 'normal') {
+        if (!text || !window.speechSynthesis) return;
 
-        // Force the browser to find a matching voice (Crucial for mobile phones)
-        const voices = window.speechSynthesis.getVoices();
-        if (voices.length > 0) {
-            let targetVoice = voices.find(v => v.lang.replace('_', '-').toLowerCase().includes(lang.toLowerCase()));
-            if (!targetVoice && lang.includes('zh')) {
-                // If specific Chinese dialect fails, grab ANY available Chinese voice
-                targetVoice = voices.find(v => v.lang.includes('zh'));
+        // 1. CRITICAL: Cancel current speech and clear the queue
+        window.speechSynthesis.cancel();
+
+        // 2. Wrap in a tiny timeout (fix for iOS Safari skipping)
+        setTimeout(() => {
+            const utterance = new SpeechSynthesisUtterance(text);
+
+            // 3. Set speed logic
+            let rate = 0.9; 
+            if (speedPref === 'slow') rate = 0.5; 
+            if (speedPref === 'fast') rate = 1.2;
+            utterance.rate = rate;
+
+            // 4. FIND THE "NICE" VOICE (iOS Specific)
+            const voices = window.speechSynthesis.getVoices();
+            
+            // On iPhone, we want "Mei-Jia" (Taiwan) or "Sin-ji" (HK) for best quality
+            let premiumVoice = voices.find(v => v.name.includes('Mei-Jia') || v.name.includes('Sin-ji'));
+            
+            // Fallback to any Traditional Chinese voice
+            if (!premiumVoice) {
+                premiumVoice = voices.find(v => v.lang === 'zh-TW' || v.lang === 'zh-HK');
             }
-            if (targetVoice) msg.voice = targetVoice;
-        }
 
-        msg.onend = () => { if (callback) callback(); };
-        window.speechSynthesis.speak(msg);
+            if (premiumVoice) {
+                utterance.voice = premiumVoice;
+            } else {
+                utterance.lang = 'zh-TW';
+            }
+
+            window.speechSynthesis.speak(utterance);
+        }, 50); // The 50ms delay gives iOS time to reset the audio hardware
     }
 
     renderFlashcard() {
@@ -937,10 +972,11 @@ class ChineseApp {
 
     // --- Wrapper for the Flashcard Speaker Button ---
     playCurrentFlashcardAudio(event) {
-        if (event) event.stopPropagation(); // Stops the card from flipping when you click the speaker
+        if (event) event.stopPropagation();
         
+        // Ensure we grab the text from the FRONT of the card
         const text = document.getElementById('fc-front-text').innerText;
-        const speed = document.getElementById('fc-speed-select').value;
+        const speed = document.getElementById('fc-speed-select') ? document.getElementById('fc-speed-select').value : 'normal';
         
         this.playAudio(text, speed);
     }
