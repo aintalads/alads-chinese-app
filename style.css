@@ -44,9 +44,17 @@ body.dark-mode {
 
 *:focus { outline: none !important; }
 
-body { background-color: var(--bg-color); color: var(--text-main); line-height: 1.5; transition: background 0.3s, color 0.3s; overflow-x: hidden; }
+/* GLOBALLY DISABLE HORIZONTAL SCROLLING */
+html, body { 
+    background-color: var(--bg-color); 
+    color: var(--text-main); 
+    line-height: 1.5; 
+    transition: background 0.3s, color 0.3s; 
+    overflow-x: hidden; /* ABSOLUTELY NO HORIZONTAL SWIPING */
+    width: 100%;
+}
 
-/* Navbar - Fixed floating z-index to 1000 */
+/* Navbar */
 .navbar { display: flex; justify-content: space-between; align-items: center; padding: 15px 5%; background: var(--card-bg); border-bottom: 1px solid var(--border-color); position: sticky; top: 0; z-index: 1000; box-shadow: var(--shadow-sm); }
 .nav-left { display: flex; align-items: center; gap: 15px; }
 .logo { font-size: 1.5rem; font-weight: 700; color: var(--text-main); }
@@ -59,7 +67,7 @@ body { background-color: var(--bg-color); color: var(--text-main); line-height: 
 #app-workspace { display: flex; flex-direction: column; max-width: 1000px; margin: 20px auto; gap: 20px; padding: 0 20px; min-height: calc(100vh - 100px); }
 
 /* ==========================================
-   --- 3 HORIZONTAL TOP TABS (FLAWLESS MOBILE OVERLAY) ---
+   --- 3 HORIZONTAL TOP TABS ---
    ========================================== */
 .sidebar { 
     width: 100%; 
@@ -68,13 +76,13 @@ body { background-color: var(--bg-color); color: var(--text-main); line-height: 
     gap: 15px; 
     flex-shrink: 0; 
     margin-bottom: 10px; 
-    position: relative; /* CRITICAL: Anchors the dropdowns here */
+    position: relative; 
     z-index: 500; 
 }
 
 .control-group { 
     flex: 1; 
-    position: static; /* CRITICAL: Allows dropdowns to escape the button bounds */
+    position: static; 
     background: rgba(255, 255, 255, 0.7); 
     background: color-mix(in srgb, var(--card-bg) 75%, transparent); 
     backdrop-filter: blur(12px); 
@@ -91,14 +99,13 @@ body { background-color: var(--bg-color); color: var(--text-main); line-height: 
 .toggle-icon { font-size: 0.8rem; transition: transform 0.4s cubic-bezier(0.34, 1.56, 0.64, 1); }
 details[open] summary .toggle-icon { transform: rotate(180deg); }
 
-/* FLAWLESS DROPDOWN - No jumping, proper scrolling, locked width */
 .dropdown-content, .progress-box { 
     position: absolute; 
     top: calc(100% + 10px); 
     left: 0; 
     right: 0; 
     width: 100%; 
-    box-sizing: border-box; /* Prevents padding from causing cut-offs */
+    box-sizing: border-box; 
     background: rgba(255, 255, 255, 0.85); 
     background: color-mix(in srgb, var(--card-bg) 85%, transparent); 
     backdrop-filter: blur(16px);
@@ -108,22 +115,19 @@ details[open] summary .toggle-icon { transform: rotate(180deg); }
     border-radius: var(--border-radius-sm); 
     border: 1px solid color-mix(in srgb, var(--border-color) 60%, transparent);
     padding: 20px;
-    
-    max-height: 55vh; /* PERFECT HEIGHT: Just over half the screen */
-    overflow-y: auto; /* Smooth internal scrolling */
+    max-height: 55vh; 
+    overflow-y: auto; 
     -webkit-overflow-scrolling: touch; 
 }
 
 details.control-group .dropdown-content { display: none; }
 details[open].control-group .dropdown-content { display: block; animation: slideDownFixed 0.25s ease; }
 
-/* FIX: Using margin instead of transform stops the nasty right-to-left jump! */
 @keyframes slideDownFixed { 
     from { opacity: 0; margin-top: -15px; } 
     to { opacity: 1; margin-top: 0; } 
 }
 
-/* Multi-select Chips */
 .chip-label { font-size: 0.9rem; font-weight: 600; margin-bottom: 10px; display: flex; justify-content: space-between; align-items: center; }
 .text-btn { background: none; border: none; color: var(--primary-color); font-size: 0.8rem; cursor: pointer; text-decoration: underline; }
 .chip-container { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 10px; }
@@ -134,23 +138,19 @@ details[open].control-group .dropdown-content { display: block; animation: slide
 .apply-btn { width: 100%; padding: 12px; background: var(--primary-color); color: var(--card-bg); border: none; border-radius: 9999px; font-weight: 600; cursor: pointer; margin-top: 5px; transition: 0.2s; }
 .apply-btn:hover { background: var(--primary-hover); }
 
-/* Mode Buttons */
 .mode-buttons { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
 .mode-btn { background: var(--bg-color); color: var(--text-muted); padding: 12px; border-radius: 12px; text-align: center; font-size: 0.95rem; border: none; transition: 0.2s; font-weight: 600; cursor: pointer; }
 .mode-btn:hover { background: var(--accent-color); color: var(--text-main); }
 .mode-btn.active { background: var(--text-main); color: var(--bg-color); }
 
-/* Progress inside Review Tab */
 .progress-box p { font-size: 0.9rem; font-weight: 600; margin-bottom: 8px; }
 .progress-bar-container { height: 6px; background: var(--border-color); border-radius: 4px; overflow: hidden; margin-bottom: 15px; }
 .progress-bar-fill { height: 100%; background: var(--primary-color); width: 0%; transition: width 0.5s ease; }
 .review-btn { background: var(--bg-color); color: var(--text-main); border: 1px solid var(--border-color); width: 100%; padding: 12px; border-radius: 9999px; font-size: 0.95rem; font-weight: 600; cursor: pointer; transition: 0.2s; }
 .review-btn:hover { border-color: var(--primary-color); }
 
-/* Main Study Area */
 .study-area { flex-grow: 1; display: flex; flex-direction: column; position: relative; z-index: 1; }
 
-/* HEADER WITH SIDE-ALIGNED STATS */
 .study-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 25px; padding-bottom: 15px; border-bottom: 2px solid var(--border-color); flex-wrap: wrap; gap: 10px; }
 .study-header h2 { font-size: 1.5rem; font-weight: 700; color: var(--text-main); margin: 0; }
 .progress-indicator { font-size: 1rem; font-weight: 700; color: var(--primary-color); background: var(--card-bg); padding: 8px 18px; border-radius: 12px; border: 1px solid var(--border-color); box-shadow: var(--shadow-sm); }
@@ -159,7 +159,6 @@ details[open].control-group .dropdown-content { display: block; animation: slide
 .study-view.active { display: flex; flex-direction: column; justify-content: center; }
 @keyframes fadeIn { from { opacity: 0; transform: translateY(5px); } to { opacity: 1; transform: translateY(0); } }
 
-/* --- NEW SETTINGS DROPDOWN MENU --- */
 .dropdown { position: relative; display: inline-block; }
 .dropdown-menu { display: none; position: absolute; right: 0; top: 110%; background: var(--card-bg); min-width: 200px; box-shadow: var(--shadow-md); border-radius: var(--border-radius-sm); z-index: 100; overflow: hidden; border: 1px solid var(--border-color); animation: slideDownFixed 0.2s ease; }
 .dropdown-menu.show { display: flex; flex-direction: column; }
@@ -226,15 +225,42 @@ details[open].control-group .dropdown-content { display: block; animation: slide
 #confetti-canvas { position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; pointer-events: none; z-index: 9999; display: none; }
 
 /* ==========================================
-   --- MOBILE RESPONSIVENESS (SIDE-BY-SIDE TABS) ---
+   --- MOBILE RESPONSIVENESS (NO HORIZONTAL SWIPING!) ---
    ========================================== */
 @media (max-width: 800px) {
-    .sidebar { flex-direction: row; gap: 8px; } 
-    .control-group summary { padding: 10px 5px; flex-direction: column; gap: 4px; }
-    .control-group summary h3 { font-size: 0.8rem; text-align: center; }
+    /* Guarantees that the app workspace never expands beyond the screen */
+    #app-workspace { padding: 0 10px; width: 100%; box-sizing: border-box; }
+    
+    .sidebar { 
+        flex-direction: row; 
+        gap: 6px; 
+        width: 100%; 
+        flex-wrap: nowrap; /* Forces them to stay on one line */
+    } 
+    
+    .control-group { 
+        flex: 1 1 0; /* CRITICAL FIX: Forces all 3 tabs to be EXACTLY equal width */
+        min-width: 0; /* Prevents long text from expanding the button and causing horizontal scrolling */
+    }
+
+    .control-group summary { 
+        padding: 10px 2px; 
+        flex-direction: column; 
+        gap: 2px; 
+        height: 100%; /* Keeps all tabs the same height */
+    }
+
+    .control-group summary h3 { 
+        font-size: 0.75rem; 
+        text-align: center; 
+        white-space: nowrap; /* Keeps text on one line */
+        overflow: hidden; 
+        text-overflow: ellipsis; /* Adds '...' if text is slightly too long, completely killing horizontal swiping */
+        width: 100%;
+    }
+
     .toggle-icon { display: none; } 
     
-    #app-workspace { margin: 10px auto; padding: 0 10px; }
     .card { width: 100%; max-width: 340px; }
     .study-header { flex-direction: column; gap: 10px; align-items: flex-start; }
 }
