@@ -109,6 +109,8 @@ details[open] summary .toggle-icon { transform: rotate(180deg); }
     border: 1px solid color-mix(in srgb, var(--border-color) 60%, transparent);
     padding: 20px;
     box-sizing: border-box;
+    max-height: 50vh; /* Prevents it from reaching the bottom of the screen */
+    overflow-y: auto; /* Adds a smooth internal scrollbar when content is long */
 }
 
 details.control-group .dropdown-content { display: none; }
