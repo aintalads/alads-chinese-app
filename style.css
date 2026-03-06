@@ -46,7 +46,7 @@ body.dark-mode {
 
 body { background-color: var(--bg-color); color: var(--text-main); line-height: 1.5; transition: background 0.3s, color 0.3s; overflow-x: hidden; }
 
-/* Navbar - Fixed floating z-index to 1000 so it stays above everything */
+/* Navbar - Fixed floating z-index to 1000 */
 .navbar { display: flex; justify-content: space-between; align-items: center; padding: 15px 5%; background: var(--card-bg); border-bottom: 1px solid var(--border-color); position: sticky; top: 0; z-index: 1000; box-shadow: var(--shadow-sm); }
 .nav-left { display: flex; align-items: center; gap: 15px; }
 .logo { font-size: 1.5rem; font-weight: 700; color: var(--text-main); }
@@ -59,7 +59,7 @@ body { background-color: var(--bg-color); color: var(--text-main); line-height: 
 #app-workspace { display: flex; flex-direction: column; max-width: 1000px; margin: 20px auto; gap: 20px; padding: 0 20px; min-height: calc(100vh - 100px); }
 
 /* ==========================================
-   --- 3 HORIZONTAL TOP TABS (GLASSMORPHISM) ---
+   --- 3 HORIZONTAL TOP TABS (FLAWLESS MOBILE OVERLAY) ---
    ========================================== */
 .sidebar { 
     width: 100%; 
@@ -68,24 +68,22 @@ body { background-color: var(--bg-color); color: var(--text-main); line-height: 
     gap: 15px; 
     flex-shrink: 0; 
     margin-bottom: 10px; 
-    position: relative; 
+    position: relative; /* CRITICAL: Anchors the dropdowns here */
     z-index: 500; 
 }
 
-/* FROSTED GLASS EFFECT APPLIED HERE */
 .control-group { 
     flex: 1; 
-    background: rgba(255, 255, 255, 0.7); /* Fallback */
-    background: color-mix(in srgb, var(--card-bg) 75%, transparent); /* Dynamically matches theme with 75% opacity */
-    backdrop-filter: blur(12px); /* The Frosted Glass Blur */
-    -webkit-backdrop-filter: blur(12px); /* For Apple devices */
+    position: static; /* CRITICAL: Allows dropdowns to escape the button bounds */
+    background: rgba(255, 255, 255, 0.7); 
+    background: color-mix(in srgb, var(--card-bg) 75%, transparent); 
+    backdrop-filter: blur(12px); 
+    -webkit-backdrop-filter: blur(12px); 
     border-radius: var(--border-radius-sm); 
-    border: 1px solid color-mix(in srgb, var(--border-color) 60%, transparent); /* Subtle transparent border */
-    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.08); /* Soft shadow to lift it */
-    position: static; 
+    border: 1px solid color-mix(in srgb, var(--border-color) 60%, transparent); 
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.08); 
 }
 
-/* Accordion Tab Headers */
 .control-group summary { list-style: none; cursor: pointer; display: flex; justify-content: center; align-items: center; gap: 10px; padding: 15px; font-weight: 700; color: var(--primary-color); background: rgba(12, 122, 121, 0.04); font-size: 1rem; border-radius: var(--border-radius-sm); user-select: none; outline: none; transition: background 0.3s;}
 .control-group summary:hover { background: rgba(12, 122, 121, 0.08); }
 .control-group summary h3 { margin: 0; font-size: 1rem; }
@@ -93,15 +91,15 @@ body { background-color: var(--bg-color); color: var(--text-main); line-height: 
 .toggle-icon { font-size: 0.8rem; transition: transform 0.4s cubic-bezier(0.34, 1.56, 0.64, 1); }
 details[open] summary .toggle-icon { transform: rotate(180deg); }
 
-/* Inner Dropdown Content (FROSTED GLASS EFFECT) */
-/* Inner Dropdown Content (FROSTED GLASS EFFECT) */
+/* FLAWLESS DROPDOWN - No jumping, proper scrolling, locked width */
 .dropdown-content, .progress-box { 
     position: absolute; 
     top: calc(100% + 10px); 
     left: 0; 
+    right: 0; 
     width: 100%; 
-    transform: none;
-    background: rgba(255, 255, 255, 0.85);
+    box-sizing: border-box; /* Prevents padding from causing cut-offs */
+    background: rgba(255, 255, 255, 0.85); 
     background: color-mix(in srgb, var(--card-bg) 85%, transparent); 
     backdrop-filter: blur(16px);
     -webkit-backdrop-filter: blur(16px);
@@ -109,16 +107,21 @@ details[open] summary .toggle-icon { transform: rotate(180deg); }
     box-shadow: 0 16px 40px rgba(0,0,0,0.25); 
     border-radius: var(--border-radius-sm); 
     border: 1px solid color-mix(in srgb, var(--border-color) 60%, transparent);
-    padding: 15px;
-    box-sizing: border-box;
+    padding: 20px;
     
-    max-height: 65vh; 
-    overflow-y: auto; 
-    -webkit-overflow-scrolling: touch; /* <--- ADDED: Smooth momentum scrolling on mobile */
+    max-height: 55vh; /* PERFECT HEIGHT: Just over half the screen */
+    overflow-y: auto; /* Smooth internal scrolling */
+    -webkit-overflow-scrolling: touch; 
 }
 
 details.control-group .dropdown-content { display: none; }
-details[open].control-group .dropdown-content { display: block; animation: slideDown 0.2s ease; }
+details[open].control-group .dropdown-content { display: block; animation: slideDownFixed 0.25s ease; }
+
+/* FIX: Using margin instead of transform stops the nasty right-to-left jump! */
+@keyframes slideDownFixed { 
+    from { opacity: 0; margin-top: -15px; } 
+    to { opacity: 1; margin-top: 0; } 
+}
 
 /* Multi-select Chips */
 .chip-label { font-size: 0.9rem; font-weight: 600; margin-bottom: 10px; display: flex; justify-content: space-between; align-items: center; }
@@ -158,12 +161,11 @@ details[open].control-group .dropdown-content { display: block; animation: slide
 
 /* --- NEW SETTINGS DROPDOWN MENU --- */
 .dropdown { position: relative; display: inline-block; }
-.dropdown-menu { display: none; position: absolute; right: 0; top: 110%; background: var(--card-bg); min-width: 200px; box-shadow: var(--shadow-md); border-radius: var(--border-radius-sm); z-index: 100; overflow: hidden; border: 1px solid var(--border-color); animation: slideDown 0.2s ease; }
+.dropdown-menu { display: none; position: absolute; right: 0; top: 110%; background: var(--card-bg); min-width: 200px; box-shadow: var(--shadow-md); border-radius: var(--border-radius-sm); z-index: 100; overflow: hidden; border: 1px solid var(--border-color); animation: slideDownFixed 0.2s ease; }
 .dropdown-menu.show { display: flex; flex-direction: column; }
 .dropdown-item { padding: 14px 16px; border: none; background: none; text-align: left; width: 100%; cursor: pointer; color: var(--text-main); font-size: 0.95rem; transition: background 0.2s; border-radius: 0; font-weight: 500; }
 .dropdown-item-group { padding: 10px 4px; border-bottom: 1px solid var(--border-color); border-top: 1px solid var(--border-color);}
 .dropdown-item:hover { background: var(--bg-color); }
-@keyframes slideDown { from { opacity: 0; transform: translateY(-10px); } to { opacity: 1; transform: translateY(0); } }
 
 /* ==========================================
    --- FLASHCARDS & SWIPE FIXES ---
@@ -235,34 +237,20 @@ details[open].control-group .dropdown-content { display: block; animation: slide
     #app-workspace { margin: 10px auto; padding: 0 10px; }
     .card { width: 100%; max-width: 340px; }
     .study-header { flex-direction: column; gap: 10px; align-items: flex-start; }
-    .dropdown-content, .progress-box {
-        width: calc(100vw - 20px); /* Stretches to full screen width */
-        left: 50%; /* Centers it perfectly */
-        transform: translateX(-50%);
-        max-height: 65vh; /* Gives you plenty of vertical room to scroll */
-        padding: 15px;
-    }
-
-    /* Make the buttons inside a bit larger for comfortable thumb tapping */
-    .chip { padding: 10px 16px; font-size: 1rem; }
-    .mode-btn { padding: 14px; font-size: 1.05rem; }
 }
 
 /* --- Manage Study List View --- */
 .manage-list-btn { background: transparent; color: var(--text-muted); border: 1px solid var(--border-color); width: 100%; padding: 10px; border-radius: 9999px; font-size: 0.9rem; font-weight: 600; cursor: pointer; margin-top: 10px; transition: 0.2s; }
 .manage-list-btn:hover { background: var(--border-color); color: var(--text-main); }
-
 .manage-review-container { background: var(--card-bg); padding: 30px; border-radius: var(--border-radius); border: 1px solid var(--border-color); box-shadow: var(--shadow-sm); max-width: 600px; margin: 0 auto; width: 100%; }
 .manage-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; border-bottom: 1px solid var(--border-color); padding-bottom: 15px; }
 .manage-header h3 { color: var(--text-main); font-size: 1.2rem; }
 .clear-btn { background: var(--wrong-color); color: white; border: none; padding: 8px 16px; border-radius: 9999px; font-weight: 600; cursor: pointer; transition: 0.2s; }
 .clear-btn:hover { opacity: 0.9; }
-
 .add-review-box { display: flex; gap: 10px; margin-bottom: 20px; flex-wrap: wrap; }
 .review-select { flex-grow: 1; margin-bottom: 0; min-width: 200px; }
 .add-btn { background: var(--correct-color); color: white; border: none; padding: 10px 16px; border-radius: 9999px; font-weight: 600; cursor: pointer; transition: 0.2s; }
 .add-btn:hover { opacity: 0.9; }
-
 .review-list-wrapper { max-height: 400px; overflow-y: auto; border: 1px solid var(--border-color); border-radius: 16px; background: var(--bg-color); }
 .review-list { list-style: none; margin: 0; padding: 0; }
 .review-list li { display: flex; justify-content: space-between; align-items: center; padding: 12px 15px; border-bottom: 1px solid var(--border-color); }
@@ -273,9 +261,6 @@ details[open].control-group .dropdown-content { display: block; animation: slide
 .remove-btn:hover { background: var(--wrong-color); color: white; }
 
 /* --- New Features Styles --- */
-.flashcard-options { display: flex; justify-content: center; margin-bottom: 10px; }
-.toggle-label { font-size: 0.9rem; color: var(--text-muted); font-weight: 600; cursor: pointer; display: flex; align-items: center; gap: 8px; }
-
 .card-audio-btn { position: absolute; top: 15px; right: 15px; background: var(--accent-color); border: none; border-radius: 50%; width: 40px; height: 40px; font-size: 1.2rem; cursor: pointer; display: flex; justify-content: center; align-items: center; transition: 0.2s; z-index: 10; }
 .card-audio-btn:hover { transform: scale(1.1); background: var(--border-color); }
 
@@ -288,26 +273,17 @@ details[open].control-group .dropdown-content { display: block; animation: slide
 
 .top-controls { display: flex; gap: 10px; justify-content: center; margin-bottom: 15px; flex-wrap: wrap; }
 
-/* Professional Transparent Bubble Buttons */
 button { border-radius: 9999px; padding: 10px 20px; font-weight: 600; cursor: pointer; transition: all 0.2s ease-in-out; backdrop-filter: blur(4px); font-family: inherit; font-size: 0.95rem; }
 
-/* Base style for general action buttons (Blue theme) */
 .action-btn, .add-btn, .clear-btn, .manage-list-btn, .apply-btn, .review-btn, .practice-btn { background-color: rgba(0, 120, 215, 0.1); border: 1px solid rgba(0, 120, 215, 0.3); color: #005a9e; }
 .action-btn:hover, .apply-btn:hover { background-color: rgba(0, 120, 215, 0.2); border-color: rgba(0, 120, 215, 0.5); transform: translateY(-2px); }
-
-/* "Got It" button (Green theme) */
 .swipe-btn.right { background-color: rgba(40, 167, 69, 0.1); border: 1px solid rgba(40, 167, 69, 0.3); color: #1e7e34; }
 .swipe-btn.right:hover { background-color: rgba(40, 167, 69, 0.2); border-color: rgba(40, 167, 69, 0.5); transform: translateY(-2px); }
-
-/* "Study Again" button (Red theme) */
 .swipe-btn.left { background-color: rgba(220, 53, 69, 0.1); border: 1px solid rgba(220, 53, 69, 0.3); color: #bd2130; }
 .swipe-btn.left:hover { background-color: rgba(220, 53, 69, 0.2); border-color: rgba(220, 53, 69, 0.5); transform: translateY(-2px); }
-
-/* Neutral Flip / Nav buttons */
 .swipe-btn.flip, .sentence-controls button, .writing-controls button { background-color: rgba(108, 117, 125, 0.1); border: 1px solid rgba(108, 117, 125, 0.3); color: #495057; }
 .swipe-btn.flip:hover, .sentence-controls button:hover, .writing-controls button:hover { background-color: rgba(108, 117, 125, 0.2); transform: translateY(-2px); }
 
-/* Tablet and Desktop Scaling */
 @media (min-width: 1024px) {
     .flashcard-container { height: 500px; perspective: 1500px; }
     .card { width: 450px; height: 100%; }
