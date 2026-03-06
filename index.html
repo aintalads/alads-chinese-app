@@ -42,52 +42,71 @@
     </nav>
 
     <div id="app-workspace">
+        
         <aside class="sidebar" id="sidebar">
-            <details class="control-group" open>
+            <details class="control-group">
                 <summary class="group-header">
-                    <h3>📚 Course Selection</h3>
+                    <h3>📚 Books</h3>
                     <span class="toggle-icon">▼</span>
                 </summary>
-                
-                <div class="chip-label">📖 Books:</div>
-                <div id="book-chips" class="chip-container"></div>
-                
-                <div class="chip-label">
-                    📝 Lessons: 
-                    <button class="text-btn" onclick="app.selectAllLessons()">☑️ Select All</button>
-                </div>
-                <div id="lesson-chips" class="chip-container"></div>
-                
-                <button class="apply-btn" onclick="app.applyCourseSelection()">🚀 Load Content</button>
-            </details>
-
-            <details class="control-group" open>
-                <summary class="group-header">
-                    <h3>🕹️ Study Mode</h3>
-                    <span class="toggle-icon">▼</span>
-                </summary>
-                <div class="mode-buttons">
-                    <button id="btn-flashcards" class="mode-btn active" onclick="app.setMode('flashcards')">🗂️ Flashcards</button>
-                    <button id="btn-writing" class="mode-btn" onclick="app.setMode('writing')">✍️ Writing Practice</button>
-                    <button id="btn-sentences" class="mode-btn" onclick="app.setMode('sentences')">💬 Sentences</button>
-                    <button id="btn-quiz" class="mode-btn" onclick="app.setMode('quiz')">❓ Vocabulary Quiz</button>
+                <div class="dropdown-content">
+                    <div class="chip-label">📖 Books:</div>
+                    <div id="book-chips" class="chip-container"></div>
+                    
+                    <div class="chip-label">
+                        📝 Lessons: 
+                        <button class="text-btn" onclick="app.selectAllLessons()">☑️ Select All</button>
+                    </div>
+                    <div id="lesson-chips" class="chip-container"></div>
+                    
+                    <button class="apply-btn" onclick="app.applyCourseSelection()">🚀 Load Content</button>
                 </div>
             </details>
 
-            <div class="progress-box">
-                <p>🎯 Goal: <span id="daily-mastered">0</span> / 10</p>
-                <div class="progress-bar-container">
-                    <div id="daily-progress-bar" class="progress-bar-fill"></div>
+            <details class="control-group">
+                <summary class="group-header">
+                    <h3>🕹️ Mode</h3>
+                    <span class="toggle-icon">▼</span>
+                </summary>
+                <div class="dropdown-content">
+                    <div class="mode-buttons">
+                        <button id="btn-flashcards" class="mode-btn active" onclick="app.setMode('flashcards')">🗂️ Flashcards</button>
+                        <button id="btn-writing" class="mode-btn" onclick="app.setMode('writing')">✍️ Writing Practice</button>
+                        <button id="btn-sentences" class="mode-btn" onclick="app.setMode('sentences')">💬 Sentences</button>
+                        <button id="btn-quiz" class="mode-btn" onclick="app.setMode('quiz')">❓ Vocabulary Quiz</button>
+                    </div>
                 </div>
-                <button class="review-btn" onclick="app.startReviewMode()">🔄 Review (<span id="review-count">0</span>)</button>
-                <button class="manage-list-btn" onclick="app.setMode('manage-review')">⚙️ Manage List</button>
-            </div>
+            </details>
+
+            <details class="control-group">
+                <summary class="group-header">
+                    <h3>🔄 Review (<span id="review-count">0</span>)</h3>
+                    <span class="toggle-icon">▼</span>
+                </summary>
+                <div class="dropdown-content progress-box" style="margin: 0; border: none; box-shadow: none; padding: 15px;">
+                    <p style="margin-bottom: 5px;">🎯 Goal: <span id="daily-mastered">0</span> / 10</p>
+                    <div class="progress-bar-container" style="margin-bottom: 15px;">
+                        <div id="daily-progress-bar" class="progress-bar-fill"></div>
+                    </div>
+                    <button class="review-btn" onclick="app.startReviewMode()" style="margin-bottom: 10px;">🔄 Start Review</button>
+                    <button class="manage-list-btn" onclick="app.setMode('manage-review')">⚙️ Manage List</button>
+                </div>
+            </details>
         </aside>
 
         <main class="study-area">
+            
             <div class="study-header">
                 <h2 id="current-title">🗂️ Flashcards</h2>
-                <div class="progress-indicator"><span id="mode-current">1</span> / <span id="mode-total">10</span></div>
+                
+                <div style="display: flex; gap: 15px; align-items: center;">
+                    <div id="fc-session-stats" style="display: flex; gap: 12px; font-weight: bold; font-size: 1.1rem; color: var(--text-muted);">
+                        <span title="Study More (Unknown)">❌ <span id="stat-study-count">0</span></span>
+                        <span title="Known Words">✅ <span id="stat-known-count">0</span></span>
+                    </div>
+                    
+                    <div class="progress-indicator"><span id="mode-current">1</span> / <span id="mode-total">10</span></div>
+                </div>
             </div>
 
             <div id="view-manage-review" class="study-view">
@@ -129,11 +148,6 @@
                     </div>
                 </div>
                 
-                <div id="fc-session-stats" class="session-stats">
-                    <span class="stat-study">❌ Study More: <span id="stat-study-count">0</span></span>
-                    <span class="stat-known">✅ Known: <span id="stat-known-count">0</span></span>
-                </div>
-
                 <div class="flashcard-container">
                     <div id="flashcard" class="card">
                         <div class="card-inner">
