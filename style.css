@@ -343,8 +343,35 @@ button { border-radius: 9999px; padding: 10px 20px; font-weight: 600; cursor: po
 .setting-group select:focus { border-color: #007bff; }
 .quiz-score { font-weight: bold; color: #fff; background-color: #007bff; padding: 10px 20px; border-radius: 20px; font-size: 1.2rem; box-shadow: 0 2px 4px rgba(0,123,255,0.3); }
 
-.qz-word-container { display: flex; justify-content: center; align-items: center; margin-bottom: 40px; padding: 30px 20px; background-color: white; border-radius: 20px; box-shadow: 0 6px 20px rgba(0,0,0,0.08); }
-.qz-word-container h2 { margin: 0; font-size: 5rem; color: #212529; } 
+.qz-word-container { 
+    display: flex; 
+    flex-direction: column; /* Stacks the text and audio button vertically if it gets tight */
+    justify-content: center; 
+    align-items: center; 
+    margin-bottom: 25px; 
+    padding: 25px; 
+    background-color: var(--card-bg); 
+    border-radius: 20px; 
+    box-shadow: 0 6px 20px rgba(0,0,0,0.08); 
+    min-height: 180px; /* Made slightly taller for 2-line sentences */
+    width: 100%;
+    box-sizing: border-box;
+    overflow: hidden;  
+}
+
+.qz-word-container h2 { 
+    margin: 0; 
+    /* THE FIX: clamp lets the font be 5rem for short words, but shinks it for long ones */
+    font-size: clamp(1.8rem, 8vw, 4.5rem); 
+    color: #212529; 
+    text-align: center;
+    line-height: 1.2;
+    width: 100%;
+    
+    /* THE FIX: Allows the sentence to wrap and stay inside the box */
+    word-break: break-word; 
+    white-space: normal; 
+}
 .icon-btn { background: #f1f3f5; border: none; cursor: pointer; font-size: 1.8rem; margin-left: 20px; width: 60px; height: 60px; border-radius: 50%; transition: background 0.2s, transform 0.1s; display: flex; justify-content: center; align-items: center;}
 .icon-btn:hover { background: #e2e6ea; }
 .icon-btn:active { transform: scale(0.95); }
