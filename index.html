@@ -36,10 +36,11 @@
 
     <div id="app-workspace">
         <aside class="sidebar" id="sidebar">
-            <div class="control-group">
-                <div class="group-header">
+            <details class="control-group" open>
+                <summary class="group-header">
                     <h3>📚 Course Selection</h3>
-                </div>
+                    <span class="toggle-icon">▼</span>
+                </summary>
                 
                 <div class="chip-label">📖 Books:</div>
                 <div id="book-chips" class="chip-container"></div>
@@ -51,17 +52,20 @@
                 <div id="lesson-chips" class="chip-container"></div>
                 
                 <button class="apply-btn" onclick="app.applyCourseSelection()">🚀 Load Selected Content</button>
-            </div>
+            </details>
 
-            <div class="control-group">
-                <h3>🕹️ Study Mode</h3>
+            <details class="control-group" open>
+                <summary class="group-header">
+                    <h3>🕹️ Study Mode</h3>
+                    <span class="toggle-icon">▼</span>
+                </summary>
                 <div class="mode-buttons">
                     <button id="btn-flashcards" class="mode-btn active" onclick="app.setMode('flashcards')">🗂️ Flashcards</button>
                     <button id="btn-writing" class="mode-btn" onclick="app.setMode('writing')">✍️ Writing Practice</button>
                     <button id="btn-sentences" class="mode-btn" onclick="app.setMode('sentences')">💬 Sentences</button>
                     <button id="btn-quiz" class="mode-btn" onclick="app.setMode('quiz')">❓ Vocabulary Quiz</button>
                 </div>
-            </div>
+            </details>
 
             <div class="progress-box">
                 <p>🎯 Daily Goal: <span id="daily-mastered">0</span> / 10</p>
