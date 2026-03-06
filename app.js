@@ -544,7 +544,7 @@ class ChineseApp {
         const isDark = document.body.className.includes('dark') || document.body.className.includes('midnight');
 
         this.hanziWriter = HanziWriter.create('character-target-div', char, {
-            width: 250, height: 250, padding: 15, drawingWidth: 35,
+            width: 250, height: 250, padding: 15, drawingWidth: 55,
             strokeColor: isDark ? '#E8E6E1' : '#000000',
             radicalColor: isDark ? '#5EBBBA' : '#007bff', 
             showOutline: !this.state.outlineHidden,
