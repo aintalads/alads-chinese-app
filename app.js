@@ -1,6 +1,7 @@
 class ChineseApp {
     constructor() {
         this.data = { books: {} };
+        
         this.state = {
             selectedBooks: new Set(),
             selectedLessons: new Set(),
