@@ -46,8 +46,8 @@ body.dark-mode {
 
 body { background-color: var(--bg-color); color: var(--text-main); line-height: 1.5; transition: background 0.3s, color 0.3s; overflow-x: hidden; }
 
-/* Navbar */
-.navbar { display: flex; justify-content: space-between; align-items: center; padding: 15px 5%; background: var(--card-bg); border-bottom: 1px solid var(--border-color); position: sticky; top: 0; z-index: 100; box-shadow: var(--shadow-sm); }
+/* Navbar - Fixed floating z-index to 1000 so it stays above everything */
+.navbar { display: flex; justify-content: space-between; align-items: center; padding: 15px 5%; background: var(--card-bg); border-bottom: 1px solid var(--border-color); position: sticky; top: 0; z-index: 1000; box-shadow: var(--shadow-sm); }
 .nav-left { display: flex; align-items: center; gap: 15px; }
 .logo { font-size: 1.5rem; font-weight: 700; color: var(--text-main); }
 .nav-controls { display: flex; gap: 20px; align-items: center; }
@@ -59,7 +59,7 @@ body { background-color: var(--bg-color); color: var(--text-main); line-height: 
 #app-workspace { display: flex; flex-direction: column; max-width: 1000px; margin: 20px auto; gap: 20px; padding: 0 20px; min-height: calc(100vh - 100px); }
 
 /* ==========================================
-   --- 3 HORIZONTAL TOP TABS (OVERLAY LAYOUT) ---
+   --- 3 HORIZONTAL TOP TABS (GLASSMORPHISM) ---
    ========================================== */
 .sidebar { 
     width: 100%; 
@@ -68,42 +68,49 @@ body { background-color: var(--bg-color); color: var(--text-main); line-height: 
     gap: 15px; 
     flex-shrink: 0; 
     margin-bottom: 10px; 
-    position: relative; /* Context for the absolute dropdowns */
+    position: relative; 
     z-index: 500; 
 }
 
+/* FROSTED GLASS EFFECT APPLIED HERE */
 .control-group { 
     flex: 1; 
-    background: var(--card-bg); 
+    background: rgba(255, 255, 255, 0.7); /* Fallback */
+    background: color-mix(in srgb, var(--card-bg) 75%, transparent); /* Dynamically matches theme with 75% opacity */
+    backdrop-filter: blur(12px); /* The Frosted Glass Blur */
+    -webkit-backdrop-filter: blur(12px); /* For Apple devices */
     border-radius: var(--border-radius-sm); 
-    border: 1px solid var(--border-color); 
-    box-shadow: var(--shadow-sm); 
-    position: static; /* Crucial: allows child dropdowns to anchor to .sidebar instead of the button */
+    border: 1px solid color-mix(in srgb, var(--border-color) 60%, transparent); /* Subtle transparent border */
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.08); /* Soft shadow to lift it */
+    position: static; 
 }
 
 /* Accordion Tab Headers */
-.control-group summary { list-style: none; cursor: pointer; display: flex; justify-content: center; align-items: center; gap: 10px; padding: 15px; font-weight: 700; color: var(--primary-color); background: rgba(12, 122, 121, 0.04); font-size: 1rem; border-radius: var(--border-radius-sm); user-select: none; outline: none; }
+.control-group summary { list-style: none; cursor: pointer; display: flex; justify-content: center; align-items: center; gap: 10px; padding: 15px; font-weight: 700; color: var(--primary-color); background: rgba(12, 122, 121, 0.04); font-size: 1rem; border-radius: var(--border-radius-sm); user-select: none; outline: none; transition: background 0.3s;}
+.control-group summary:hover { background: rgba(12, 122, 121, 0.08); }
 .control-group summary h3 { margin: 0; font-size: 1rem; }
 .control-group summary::-webkit-details-marker { display: none; }
 .toggle-icon { font-size: 0.8rem; transition: transform 0.4s cubic-bezier(0.34, 1.56, 0.64, 1); }
 details[open] summary .toggle-icon { transform: rotate(180deg); }
 
-/* Inner Dropdown Content (ABSOLUTE OVERLAY) */
+/* Inner Dropdown Content (FROSTED GLASS EFFECT) */
 .dropdown-content, .progress-box { 
     position: absolute; 
     top: calc(100% + 10px); 
     left: 0; 
     width: 100%; 
-    background: var(--card-bg); 
+    background: rgba(255, 255, 255, 0.85); /* Fallback */
+    background: color-mix(in srgb, var(--card-bg) 85%, transparent); /* Slightly less transparent for readability */
+    backdrop-filter: blur(16px);
+    -webkit-backdrop-filter: blur(16px);
     z-index: 999; 
     box-shadow: 0 16px 40px rgba(0,0,0,0.25); 
     border-radius: var(--border-radius-sm); 
-    border: 1px solid var(--border-color);
+    border: 1px solid color-mix(in srgb, var(--border-color) 60%, transparent);
     padding: 20px;
     box-sizing: border-box;
 }
 
-/* Hide content normally, let <details open> naturally display it */
 details.control-group .dropdown-content { display: none; }
 details[open].control-group .dropdown-content { display: block; animation: slideDown 0.2s ease; }
 
@@ -163,21 +170,19 @@ details[open].control-group .dropdown-content { display: block; animation: slide
     transition: transform 0.1s; 
     position: relative; 
     margin: 0 auto; 
-    user-select: none; /* Stops text highlight while swiping */
+    user-select: none; 
     -webkit-user-select: none;
-    touch-action: pan-y; /* Default fallback */
+    touch-action: pan-y; 
 }
 .card-inner { width: 100%; height: 100%; transition: transform 0.6s cubic-bezier(0.34, 1.56, 0.64, 1), box-shadow 0.3s ease; transform-style: preserve-3d; position: relative; box-shadow: var(--shadow-md); border-radius: 28px; }
 .card:hover .card-inner, .card:active .card-inner { box-shadow: 0 16px 40px rgba(12, 122, 121, 0.15); transform: translateY(-5px); }
 .card.is-flipped .card-inner { transform: rotateY(180deg); }
 .card.is-flipped:hover .card-inner { transform: rotateY(180deg) translateY(-5px); }
 
-/* Swipe Fix: Ensure browser never scrolls when touching the front of the card */
 .card-front { touch-action: none; }
 .card-front, .card-back { width: 100%; height: 100%; position: absolute; backface-visibility: hidden; display: flex; flex-direction: column; justify-content: center; align-items: center; background: var(--card-bg); border-radius: 28px; padding: 30px; text-align: center; border: 1px solid var(--border-color); }
-.card-back { transform: rotateY(180deg); overflow-y: auto; touch-action: pan-y; /* Allow scrolling the back */ }
+.card-back { transform: rotateY(180deg); overflow-y: auto; touch-action: pan-y; }
 
-/* Ensure Chinese Text in Flashcards pops out nicely with the new font */
 .card-front h1 { font-size: 5rem; font-weight: 500; margin: 0; color: var(--text-main); }
 .card-back h2 { font-size: 2.5rem; color: var(--text-main); font-weight: 500; margin-bottom: 15px; }
 .card-back p { font-size: 1.5rem; color: var(--text-muted); }
@@ -216,13 +221,10 @@ details[open].control-group .dropdown-content { display: block; animation: slide
    --- MOBILE RESPONSIVENESS (SIDE-BY-SIDE TABS) ---
    ========================================== */
 @media (max-width: 800px) {
-    /* Keep tabs side-by-side on phone */
     .sidebar { flex-direction: row; gap: 8px; } 
-    
-    /* Shrink the tab buttons so they fit nicely */
     .control-group summary { padding: 10px 5px; flex-direction: column; gap: 4px; }
     .control-group summary h3 { font-size: 0.8rem; text-align: center; }
-    .toggle-icon { display: none; } /* Hide dropdown arrow on phones to save space */
+    .toggle-icon { display: none; } 
     
     #app-workspace { margin: 10px auto; padding: 0 10px; }
     .card { width: 100%; max-width: 340px; }
@@ -339,7 +341,6 @@ body.theme-midnight { --bg-main: #0f172a; --nav-bg: #1e293b; --text-main: #e2e8f
 
 body { background-color: var(--bg-main); color: var(--text-main); }
 .navbar { background-color: var(--nav-bg); }
-.sidebar { background-color: var(--nav-bg); }
 .card-inner .card-front, .card-inner .card-back { background-color: var(--card-bg); color: var(--text-main); }
 .quiz-settings { background-color: var(--nav-bg); }
 .qz-word-container { background-color: var(--card-bg); color: var(--text-main); }
@@ -359,7 +360,8 @@ body { background-color: var(--bg-main); color: var(--text-main); }
     line-height: 1.4;
     border-left: 4px solid var(--primary-color);
     cursor: zoom-in;
-    transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
+    transition: all 0.35s cubic-bezier(0.4, 0, 0.2, 1);
+    transform-origin: top center;
     position: relative; 
 }
 .extra-info-box.hidden { display: none; }
@@ -372,10 +374,11 @@ body { background-color: var(--bg-main); color: var(--text-main); }
     background-color: var(--card-bg);
     border: 2px solid var(--primary-color);
     border-left: 8px solid var(--primary-color);
-    box-shadow: 0 10px 25px rgba(0,0,0,0.15);
+    box-shadow: 0 12px 30px rgba(0,0,0,0.15);
     cursor: zoom-out;
     margin-top: 20px;
     margin-bottom: 10px;
+    transform: scale(1.02);
 }
 .extra-info-box.magnified strong { font-size: 1.8rem; }
 .extra-info-box::after { content: '🔍'; position: absolute; top: 8px; right: 8px; font-size: 1rem; opacity: 0.4; transition: 0.2s; }
