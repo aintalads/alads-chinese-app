@@ -828,8 +828,12 @@ class ChineseApp {
 
         activeCard.addEventListener('pointerdown', (e) => {
             if(e.target.tagName.toLowerCase() === 'button') return; 
+            // Ignore right-clicks to prevent bugs on desktop
+            if (e.pointerType === 'mouse' && e.button !== 0) return; 
+
             this.swipeState.isDragging = true;
-            startX = e.clientX; startTime = Date.now();
+            startX = e.clientX; 
+            startTime = Date.now();
             activeCard.style.transition = 'none';
             activeCard.setPointerCapture(e.pointerId); 
         });
@@ -839,26 +843,44 @@ class ChineseApp {
             const deltaX = e.clientX - startX;
             activeCard.style.transform = `translateX(${deltaX}px) rotate(${deltaX * 0.05}deg)`;
             
+            // Keep your awesome box shadow effects!
             if (deltaX > 20) activeCard.style.boxShadow = `0 0 40px rgba(0, 255, 0, ${Math.min(deltaX/100, 0.8)})`;
             else if (deltaX < -20) activeCard.style.boxShadow = `0 0 40px rgba(255, 0, 0, ${Math.min(Math.abs(deltaX)/100, 0.8)})`;
             else activeCard.style.boxShadow = 'none';
         });
         
-        activeCard.addEventListener('pointerup', (e) => {
+        // --- THE FIX: Create a reusable endSwipe function ---
+        const endSwipe = (e) => {
             if (!this.swipeState.isDragging) return;
             this.swipeState.isDragging = false;
             activeCard.releasePointerCapture(e.pointerId);
             const deltaX = e.clientX - startX;
+            
+            // Instantly clear the glowing shadow
             activeCard.style.boxShadow = 'none'; 
             
-            if (Math.abs(deltaX) < 15 && (Date.now() - startTime) < 400) this.flipCard();
-            else if (deltaX > 100) this.handleSwipe('right');
-            else if (deltaX < -100) this.handleSwipe('left');
+            if (Math.abs(deltaX) < 15 && (Date.now() - startTime) < 400) {
+                // It was a quick tap, so flip the card
+                activeCard.style.transition = 'transform 0.3s ease, box-shadow 0.3s ease'; 
+                activeCard.style.transform = 'translateX(0) rotate(0)';
+                this.flipCard();
+            } 
+            else if (deltaX > 80) { // Changed to 80 so it's slightly easier to swipe on phones!
+                this.handleSwipe('right');
+            } 
+            else if (deltaX < -80) { 
+                this.handleSwipe('left');
+            } 
             else { 
+                // Cancelled swipe (didn't drag far enough or finger slipped): Snap back to center
                 activeCard.style.transition = 'transform 0.3s ease, box-shadow 0.3s ease'; 
                 activeCard.style.transform = 'translateX(0) rotate(0)'; 
             }
-        });
+        };
+
+        // --- Attach to BOTH pointerup AND pointercancel so it never gets stuck ---
+        activeCard.addEventListener('pointerup', endSwipe);
+        activeCard.addEventListener('pointercancel', endSwipe);
     }
 
     triggerConfetti() {
