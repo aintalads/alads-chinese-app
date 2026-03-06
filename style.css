@@ -100,6 +100,7 @@ details[open] summary .toggle-icon { transform: rotate(180deg); }
     top: calc(100% + 10px); 
     left: 0; 
     width: 100%; 
+    transform: none;
     background: rgba(255, 255, 255, 0.85);
     background: color-mix(in srgb, var(--card-bg) 85%, transparent); 
     backdrop-filter: blur(16px);
@@ -108,10 +109,10 @@ details[open] summary .toggle-icon { transform: rotate(180deg); }
     box-shadow: 0 16px 40px rgba(0,0,0,0.25); 
     border-radius: var(--border-radius-sm); 
     border: 1px solid color-mix(in srgb, var(--border-color) 60%, transparent);
-    padding: 20px;
+    padding: 15px;
     box-sizing: border-box;
     
-    max-height: 50vh; 
+    max-height: 65vh; 
     overflow-y: auto; 
     -webkit-overflow-scrolling: touch; /* <--- ADDED: Smooth momentum scrolling on mobile */
 }
