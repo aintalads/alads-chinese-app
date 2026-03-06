@@ -11,7 +11,7 @@
     --primary-color: var(--surfie-green);
     --secondary-color: var(--atoll);
     --accent-color: var(--fountain-blue);
-    --bg-color: #f4f6f8; /* Slightly off-white to make cards pop */
+    --bg-color: #f4f6f8; 
     --card-bg: #ffffff;
     --text-main: var(--black);
     --text-muted: var(--gray);
@@ -30,7 +30,7 @@ body.dark-mode {
     --text-main: #ffffff;
     --text-muted: #d0d0d0;
     --border-color: var(--atoll);
-    --primary-color: var(--fountain-blue); /* Lighter blue for dark mode */
+    --primary-color: var(--fountain-blue); 
 }
 
 /* --- UPDATED FONT FAMILY FOR CHINESE --- */
@@ -39,7 +39,10 @@ body.dark-mode {
     margin: 0; 
     padding: 0; 
     font-family: 'Noto Sans TC', 'PingFang TC', 'Microsoft JhengHei', -apple-system, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; 
+    -webkit-tap-highlight-color: transparent; 
 }
+
+*:focus { outline: none !important; }
 
 body { background-color: var(--bg-color); color: var(--text-main); line-height: 1.5; transition: background 0.3s, color 0.3s; overflow-x: hidden; }
 
@@ -50,44 +53,46 @@ body { background-color: var(--bg-color); color: var(--text-main); line-height: 
 .nav-controls { display: flex; gap: 20px; align-items: center; }
 .streak { font-size: 1rem; font-weight: 600; color: var(--text-muted); }
 #dark-mode-btn { background: none; border: none; font-size: 1.2rem; cursor: pointer; color: var(--text-main); }
-#mobile-menu-btn { display: none; background: none; border: none; font-size: 1.5rem; cursor: pointer; color: var(--text-main); }
 
-/* Modern SVG Menu Icon */
-.icon-btn-clean { display: none; background: none; border: none; color: var(--text-main); cursor: pointer; padding: 5px; transition: transform 0.2s; }
-.icon-btn-clean:active { transform: scale(0.9); }
+/* Hide mobile menus permanently since we are using Top Tabs now */
+#mobile-menu-btn, .icon-btn-clean, #mobile-overlay { display: none !important; }
 
-/* Main Workspace */
-#app-workspace { display: flex; max-width: 1200px; margin: 30px auto; gap: 40px; padding: 0 20px; min-height: calc(100vh - 100px); }
+/* Main Workspace - Changed to Column for Top Tabs */
+#app-workspace { display: flex; flex-direction: column; max-width: 1000px; margin: 20px auto; gap: 20px; padding: 0 20px; min-height: calc(100vh - 100px); }
 
-/* Sidebar Controls */
-.sidebar { width: 320px; display: flex; flex-direction: column; gap: 20px; flex-shrink: 0; transition: left 0.3s ease; }
-.control-group, .progress-box { background: var(--card-bg); padding: 25px; border-radius: var(--border-radius); border: 1px solid var(--border-color); box-shadow: var(--shadow-sm); }
-.control-group h3 { font-size: 0.9rem; text-transform: uppercase; letter-spacing: 1px; color: var(--text-muted); margin-bottom: 15px;}
+/* --- 3 HORIZONTAL TOP TABS --- */
+.sidebar { width: 100%; display: flex; flex-direction: row; gap: 15px; flex-shrink: 0; margin-bottom: 10px; }
+.control-group { flex: 1; background: var(--card-bg); border-radius: var(--border-radius-sm); border: 1px solid var(--border-color); box-shadow: var(--shadow-sm); height: fit-content; }
 
-/* Collapsible Details Setup */
-details.control-group summary { list-style: none; cursor: pointer; display: flex; justify-content: space-between; align-items: center; user-select: none; outline: none; }
-details.control-group summary::-webkit-details-marker { display: none; }
+/* Accordion Tab Headers */
+.control-group summary { list-style: none; cursor: pointer; display: flex; justify-content: center; align-items: center; gap: 10px; padding: 15px; font-weight: 700; color: var(--primary-color); background: rgba(12, 122, 121, 0.04); font-size: 1rem; border-radius: var(--border-radius-sm); user-select: none; outline: none; }
+.control-group summary::-webkit-details-marker { display: none; }
 .toggle-icon { font-size: 0.8rem; transition: transform 0.4s cubic-bezier(0.34, 1.56, 0.64, 1); }
 details[open] summary .toggle-icon { transform: rotate(180deg); }
+details[open].control-group summary { border-bottom-left-radius: 0; border-bottom-right-radius: 0; border-bottom: 1px solid var(--border-color); }
+
+/* Inner Dropdown Content */
+.dropdown-content { padding: 15px; }
+.progress-box { margin: 0; border: none; box-shadow: none; padding: 15px; }
 
 /* Multi-select Chips */
-.chip-label { font-size: 0.9rem; font-weight: 600; margin: 15px 0 8px 0; display: flex; justify-content: space-between; align-items: center; }
+.chip-label { font-size: 0.9rem; font-weight: 600; margin-bottom: 10px; display: flex; justify-content: space-between; align-items: center; }
 .text-btn { background: none; border: none; color: var(--primary-color); font-size: 0.8rem; cursor: pointer; text-decoration: underline; }
 .chip-container { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 10px; }
 .chip { padding: 8px 14px; border: 1px solid var(--border-color); border-radius: 9999px; font-size: 0.9rem; cursor: pointer; user-select: none; transition: 0.2s; background: var(--bg-color); color: var(--text-main); }
 .chip:hover { border-color: var(--primary-color); }
 .chip.active { background: var(--primary-color); color: var(--card-bg); border-color: var(--primary-color); }
 
-.apply-btn { width: 100%; padding: 12px; background: var(--primary-color); color: var(--card-bg); border: none; border-radius: 9999px; font-weight: 600; cursor: pointer; margin-top: 15px; transition: 0.2s; }
+.apply-btn { width: 100%; padding: 12px; background: var(--primary-color); color: var(--card-bg); border: none; border-radius: 9999px; font-weight: 600; cursor: pointer; margin-top: 5px; transition: 0.2s; }
 .apply-btn:hover { background: var(--primary-hover); }
 
 /* Mode Buttons */
-.mode-buttons { display: flex; flex-direction: column; gap: 8px; }
-.mode-btn { background: transparent; color: var(--text-muted); padding: 12px 16px; border-radius: 9999px; text-align: left; font-size: 1rem; border: none; transition: 0.2s; font-weight: 500; cursor: pointer; }
+.mode-buttons { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+.mode-btn { background: var(--bg-color); color: var(--text-muted); padding: 12px; border-radius: 12px; text-align: center; font-size: 0.95rem; border: none; transition: 0.2s; font-weight: 600; cursor: pointer; }
 .mode-btn:hover { background: var(--accent-color); color: var(--text-main); }
 .mode-btn.active { background: var(--text-main); color: var(--bg-color); }
 
-/* Progress */
+/* Progress inside Review Tab */
 .progress-box p { font-size: 0.9rem; font-weight: 600; margin-bottom: 8px; }
 .progress-bar-container { height: 6px; background: var(--border-color); border-radius: 4px; overflow: hidden; margin-bottom: 15px; }
 .progress-bar-fill { height: 100%; background: var(--primary-color); width: 0%; transition: width 0.5s ease; }
@@ -96,12 +101,14 @@ details[open] summary .toggle-icon { transform: rotate(180deg); }
 
 /* Main Study Area */
 .study-area { flex-grow: 1; display: flex; flex-direction: column; }
-.study-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; padding-bottom: 15px; border-bottom: 1px solid var(--border-color); }
-.study-header h2 { font-size: 1.5rem; font-weight: 600; color: var(--text-main); }
-.progress-indicator { font-size: 0.9rem; font-weight: 600; color: var(--text-muted); background: var(--accent-color); padding: 6px 14px; border-radius: 20px; }
+
+/* HEADER WITH SIDE-ALIGNED STATS */
+.study-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 25px; padding-bottom: 15px; border-bottom: 2px solid var(--border-color); flex-wrap: wrap; gap: 10px; }
+.study-header h2 { font-size: 1.5rem; font-weight: 700; color: var(--text-main); margin: 0; }
+.progress-indicator { font-size: 1rem; font-weight: 700; color: var(--primary-color); background: var(--card-bg); padding: 8px 18px; border-radius: 12px; border: 1px solid var(--border-color); box-shadow: var(--shadow-sm); }
+
 .study-view { display: none; animation: fadeIn 0.3s ease-out; flex-grow: 1; }
 .study-view.active { display: flex; flex-direction: column; justify-content: center; }
-
 @keyframes fadeIn { from { opacity: 0; transform: translateY(5px); } to { opacity: 1; transform: translateY(0); } }
 
 /* --- NEW SETTINGS DROPDOWN MENU --- */
@@ -114,14 +121,14 @@ details[open] summary .toggle-icon { transform: rotate(180deg); }
 @keyframes slideDown { from { opacity: 0; transform: translateY(-10px); } to { opacity: 1; transform: translateY(0); } }
 
 /* Flashcards */
-.flashcard-container { display: flex; justify-content: center; align-items: center; perspective: 1000px; height: 380px; margin-bottom: 40px; touch-action: none; }
-.card { width: 340px; height: 100%; cursor: pointer; transition: transform 0.1s; position: relative; }
+.flashcard-container { display: flex; justify-content: center; align-items: center; perspective: 1000px; height: 380px; margin-bottom: 40px; touch-action: pan-y; }
+.card { width: 340px; height: 100%; cursor: pointer; transition: transform 0.1s; position: relative; margin: 0 auto; }
 .card-inner { width: 100%; height: 100%; transition: transform 0.6s cubic-bezier(0.34, 1.56, 0.64, 1), box-shadow 0.3s ease; transform-style: preserve-3d; position: relative; box-shadow: var(--shadow-md); border-radius: 28px; }
 .card:hover .card-inner, .card:active .card-inner { box-shadow: 0 16px 40px rgba(12, 122, 121, 0.15); transform: translateY(-5px); }
 .card.is-flipped .card-inner { transform: rotateY(180deg); }
 .card.is-flipped:hover .card-inner { transform: rotateY(180deg) translateY(-5px); }
 .card-front, .card-back { width: 100%; height: 100%; position: absolute; backface-visibility: hidden; display: flex; flex-direction: column; justify-content: center; align-items: center; background: var(--card-bg); border-radius: 28px; padding: 30px; text-align: center; border: 1px solid var(--border-color); }
-.card-back { transform: rotateY(180deg); }
+.card-back { transform: rotateY(180deg); overflow-y: auto; }
 
 /* Ensure Chinese Text in Flashcards pops out nicely with the new font */
 .card-front h1 { font-size: 5rem; font-weight: 500; margin: 0; color: var(--text-main); }
@@ -151,15 +158,6 @@ details[open] summary .toggle-icon { transform: rotate(180deg); }
 .sentence-controls button, #reveal-translation-btn { background: var(--primary-color); color: var(--card-bg); border: none; padding: 10px 20px; border-radius: 9999px; font-weight: 600; transition: 0.2s; cursor: pointer;}
 .audio-btn { background: var(--accent-color); color: var(--text-main); border: none; border-radius: 9999px; padding: 6px 16px; font-size: 0.9rem; font-weight: 600; margin-bottom: 20px; cursor: pointer;}
 
-/* Quiz Mode */
-.quiz-container { max-width: 500px; margin: 0 auto; text-align: center; }
-#qz-question-text { color: var(--text-muted); font-size: 1.1rem; font-weight: 500; margin-bottom: 10px; }
-.options-grid { display: grid; grid-template-columns: 1fr; gap: 12px; margin-top: 30px; }
-.option-btn { background: var(--card-bg); color: var(--text-main); border: 1px solid var(--border-color); font-size: 1.1rem; padding: 16px; border-radius: 20px; transition: 0.2s; font-weight: 500; cursor: pointer;}
-.option-btn:hover { border-color: var(--primary-color); }
-.option-btn.correct { background: var(--correct-color) !important; color: white !important; border-color: var(--correct-color); }
-.option-btn.wrong { background: var(--wrong-color) !important; color: white !important; border-color: var(--wrong-color); }
-.quiz-feedback { margin-top: 25px; font-size: 1.2rem; font-weight: 600; text-align: center; }
 
 /* Completion View */
 .completion-message { text-align: center; padding: 60px 20px; }
@@ -168,31 +166,9 @@ details[open] summary .toggle-icon { transform: rotate(180deg); }
 
 #confetti-canvas { position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; pointer-events: none; z-index: 9999; display: none; }
 
-/* Mobile Overlay */
-#mobile-overlay { display: none; position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background: rgba(0,0,0,0.5); z-index: 900; }
-
-/* Mobile Responsiveness */
+/* Mobile Responsiveness (Stacked Accordion Folders) */
 @media (max-width: 800px) {
-    #mobile-menu-btn { display: block; }
-    .icon-btn-clean { display: block; } /* Show modern icon instead on mobile */
-    
-    .sidebar {
-        position: fixed;
-        left: -100%; 
-        top: 60px;
-        height: calc(100vh - 60px);
-        background: var(--bg-color);
-        z-index: 999;
-        padding: 20px;
-        box-shadow: 4px 0 15px rgba(0,0,0,0.1);
-        overflow-y: auto;
-        width: 85%;
-        max-width: 350px;
-    }
-    
-    .sidebar.open { left: 0; }
-    #mobile-overlay.active { display: block; }
-    
+    .sidebar { flex-direction: column; gap: 10px; }
     #app-workspace { margin: 10px auto; padding: 0 10px; }
     .card { width: 100%; max-width: 340px; }
     .study-header { flex-direction: column; gap: 10px; align-items: flex-start; }
@@ -220,7 +196,9 @@ details[open] summary .toggle-icon { transform: rotate(180deg); }
 .review-item-text { font-weight: 600; color: var(--text-main); font-size: 1.1rem; display: flex; gap: 10px; align-items: center; flex-wrap: wrap;}
 .review-item-pinyin { font-weight: 400; color: var(--text-muted); font-size: 0.95rem; }
 .remove-btn { background: transparent; color: var(--wrong-color); border: 1px solid var(--wrong-color); padding: 5px 12px; border-radius: 6px; cursor: pointer; font-size: 0.8rem; font-weight: 600; transition: 0.2s; }
-.remove-btn:hover { background: var(--wrong-color); color: white; }/* --- New Features Styles --- */
+.remove-btn:hover { background: var(--wrong-color); color: white; }
+
+/* --- New Features Styles --- */
 .flashcard-options { display: flex; justify-content: center; margin-bottom: 10px; }
 .toggle-label { font-size: 0.9rem; color: var(--text-muted); font-weight: 600; cursor: pointer; display: flex; align-items: center; gap: 8px; }
 
@@ -249,32 +227,30 @@ details[open] summary .toggle-icon { transform: rotate(180deg); }
 }
 
 .top-controls { display: flex; gap: 10px; justify-content: center; margin-bottom: 15px; flex-wrap: wrap; }
-.action-btn { background: transparent; border: 2px solid var(--primary-color); color: var(--text-main); padding: 8px 16px; border-radius: 9999px; font-weight: bold; cursor: pointer; transition: 0.3s ease; }
-.action-btn.active { background: var(--primary-color); color: #ffffff; }
-.action-btn:hover { background: var(--primary-color); color: #ffffff; }
+
 /* Professional Transparent Bubble Buttons */
 button {
-    border-radius: 9999px; /* Gives it the perfect bubble/pill shape */
+    border-radius: 9999px; 
     padding: 10px 20px;
     font-weight: 600;
     cursor: pointer;
     transition: all 0.2s ease-in-out;
-    backdrop-filter: blur(4px); /* Creates a subtle frosted glass effect */
+    backdrop-filter: blur(4px); 
     font-family: inherit;
     font-size: 0.95rem;
 }
 
 /* Base style for general action buttons (Blue theme) */
-.action-btn, .mode-btn, .add-btn, .clear-btn, .manage-list-btn, .apply-btn, .review-btn, .practice-btn {
+.action-btn, .add-btn, .clear-btn, .manage-list-btn, .apply-btn, .review-btn, .practice-btn {
     background-color: rgba(0, 120, 215, 0.1); 
     border: 1px solid rgba(0, 120, 215, 0.3);
     color: #005a9e; 
 }
 
-.action-btn:hover, .mode-btn:hover, .apply-btn:hover {
+.action-btn:hover, .apply-btn:hover {
     background-color: rgba(0, 120, 215, 0.2);
     border-color: rgba(0, 120, 215, 0.5);
-    transform: translateY(-2px); /* Slight lift on hover */
+    transform: translateY(-2px); 
 }
 
 /* "Got It" button (Green theme) */
@@ -314,20 +290,21 @@ button {
     background-color: rgba(108, 117, 125, 0.2);
     transform: translateY(-2px);
 }
+
 /* Tablet and Desktop Scaling */
 @media (min-width: 1024px) {
     .flashcard-container {
-        height: 500px; /* Increased from default */
+        height: 500px; 
         perspective: 1500px;
     }
 
     .card {
-        width: 450px; /* Larger width for laptop */
+        width: 450px; 
         height: 100%;
     }
 
     #fc-front-text {
-        font-size: 6rem; /* Huge characters on big screens */
+        font-size: 6rem; 
     }
 
     #fc-pinyin {
@@ -338,137 +315,38 @@ button {
         font-size: 1.8rem;
     }
 }
+
 /* ==========================================
-   --- UPGRADED QUIZ DESIGN ---
+   --- UPGRADED QUIZ DESIGN (BIGGER SIZE) ---
    ========================================== */
 
 /* Settings Menu */
-.quiz-settings {
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    gap: 20px;
-    padding: 15px;
-    margin-bottom: 30px;
-    background: linear-gradient(135deg, #f8f9fa, #e9ecef);
-    border-radius: 12px;
-    box-shadow: 0 4px 6px rgba(0,0,0,0.05);
-    flex-wrap: wrap;
-    border: 1px solid #dee2e6;
-}
-.setting-group label {
-    font-weight: 600;
-    margin-right: 8px;
-    color: #495057;
-}
-.setting-group select {
-    padding: 8px 12px;
-    border-radius: 8px;
-    border: 1px solid #ced4da;
-    background-color: white;
-    cursor: pointer;
-    outline: none;
-    transition: border-color 0.2s;
-}
-.setting-group select:focus {
-    border-color: #007bff;
-}
+.quiz-settings { display: flex; justify-content: center; align-items: center; gap: 20px; padding: 15px; margin-bottom: 30px; background: linear-gradient(135deg, #f8f9fa, #e9ecef); border-radius: 12px; box-shadow: 0 4px 6px rgba(0,0,0,0.05); flex-wrap: wrap; border: 1px solid #dee2e6; }
+.setting-group label { font-weight: 600; margin-right: 8px; color: #495057; }
+.setting-group select { padding: 10px 14px; border-radius: 8px; border: 1px solid #ced4da; background-color: white; cursor: pointer; outline: none; transition: border-color 0.2s; font-size: 1rem; }
+.setting-group select:focus { border-color: #007bff; }
 
 /* Score Display */
-.quiz-score {
-    font-weight: bold;
-    color: #fff;
-    background-color: #007bff;
-    padding: 8px 15px;
-    border-radius: 20px;
-    font-size: 1.1rem;
-    box-shadow: 0 2px 4px rgba(0,123,255,0.3);
-}
+.quiz-score { font-weight: bold; color: #fff; background-color: #007bff; padding: 10px 20px; border-radius: 20px; font-size: 1.2rem; box-shadow: 0 2px 4px rgba(0,123,255,0.3); }
 
 /* Question Area */
-.qz-word-container {
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    margin-bottom: 30px;
-    padding: 20px;
-    background-color: white;
-    border-radius: 16px;
-    box-shadow: 0 4px 15px rgba(0,0,0,0.05);
-}
-.qz-word-container h2 {
-    margin: 0;
-    font-size: 3.5rem;
-    color: #212529;
-}
-.icon-btn {
-    background: #f1f3f5;
-    border: none;
-    cursor: pointer;
-    font-size: 1.5rem;
-    margin-left: 15px;
-    width: 50px;
-    height: 50px;
-    border-radius: 50%;
-    transition: background 0.2s, transform 0.1s;
-}
-.icon-btn:hover {
-    background: #e2e6ea;
-}
-.icon-btn:active {
-    transform: scale(0.95);
-}
+.qz-word-container { display: flex; justify-content: center; align-items: center; margin-bottom: 40px; padding: 30px 20px; background-color: white; border-radius: 20px; box-shadow: 0 6px 20px rgba(0,0,0,0.08); }
+.qz-word-container h2 { margin: 0; font-size: 5rem; color: #212529; } /* INCREASED TEXT SIZE */
+.icon-btn { background: #f1f3f5; border: none; cursor: pointer; font-size: 1.8rem; margin-left: 20px; width: 60px; height: 60px; border-radius: 50%; transition: background 0.2s, transform 0.1s; display: flex; justify-content: center; align-items: center;}
+.icon-btn:hover { background: #e2e6ea; }
+.icon-btn:active { transform: scale(0.95); }
 
 /* Multiple Choice Grid */
-.quiz-options {
-    display: grid;
-    grid-template-columns: 1fr 1fr; /* 2x2 Grid */
-    gap: 15px;
-    width: 100%;
-    max-width: 600px;
-    margin: 0 auto;
-}
-.option-btn {
-    padding: 15px 20px;
-    font-size: 1.1rem;
-    border-radius: 12px;
-    border: 2px solid #e9ecef;
-    background-color: white;
-    cursor: pointer;
-    transition: all 0.2s ease;
-    font-weight: 500;
-}
-.option-btn:hover:not(:disabled) {
-    border-color: #007bff;
-    background-color: #f8f9fa;
-    transform: translateY(-2px);
-    box-shadow: 0 4px 8px rgba(0,0,0,0.05);
-}
+.quiz-options { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; width: 100%; max-width: 750px; margin: 0 auto; } /* WIDER SPREAD */
+.option-btn { padding: 20px 25px; font-size: 1.3rem; border-radius: 16px; border: 2px solid #e9ecef; background-color: white; cursor: pointer; transition: all 0.2s ease; font-weight: 500; } /* BIGGER BUTTONS */
+.option-btn:hover:not(:disabled) { border-color: #007bff; background-color: #f8f9fa; transform: translateY(-3px); box-shadow: 0 6px 12px rgba(0,0,0,0.08); }
 
 /* Typing Mode Input */
-.quiz-input {
-    width: 100%;
-    max-width: 500px;
-    padding: 15px;
-    font-size: 1.2rem;
-    margin: 0 auto 15px auto;
-    display: block;
-    border-radius: 12px;
-    border: 2px solid #ced4da;
-    outline: none;
-    transition: border-color 0.2s, box-shadow 0.2s;
-}
-.quiz-input:focus {
-    border-color: #007bff;
-    box-shadow: 0 0 0 3px rgba(0,123,255,0.25);
-}
-.quiz-feedback {
-    text-align: center;
-    margin-top: 15px;
-    font-size: 1.2rem;
-    padding: 15px;
-    border-radius: 8px;
-}/* ==========================================
+.quiz-input { width: 100%; max-width: 600px; padding: 20px; font-size: 1.5rem; margin: 0 auto 20px auto; display: block; border-radius: 16px; border: 2px solid #ced4da; outline: none; transition: border-color 0.2s, box-shadow 0.2s; text-align: center; }
+.quiz-input:focus { border-color: #007bff; box-shadow: 0 0 0 4px rgba(0,123,255,0.25); }
+.quiz-feedback { text-align: center; margin-top: 20px; font-size: 1.5rem; padding: 20px; border-radius: 12px; }
+
+/* ==========================================
    --- PREMIUM THEMES & EXTRA FEATURES ---
    ========================================== */
 
@@ -559,12 +437,8 @@ body { background-color: var(--bg-main); color: var(--text-main); }
     line-height: 1.4;
     border-left: 4px solid var(--primary-color);
 }
-.extra-info-box.hidden {
-    display: none;
-}
-.extra-info-box strong {
-    color: var(--primary-color);
-}
+.extra-info-box.hidden { display: none; }
+.extra-info-box strong { color: var(--primary-color); }
 
 /* Autoplay Speed Selector Styling */
 .speed-select {
@@ -578,18 +452,11 @@ body { background-color: var(--bg-main); color: var(--text-main); }
     outline: none;
     font-size: 0.95rem;
 }
-.speed-select:focus {
-    border-color: var(--primary-color);
-}
+.speed-select:focus { border-color: var(--primary-color); }
 
 /* ==========================================
    --- SMARTPHONE LAYOUT FIXES (Max width 768px) ---
    ========================================== */
-
-/* This stops the browser from scrolling when you try to swipe! */
-#flashcard {
-    touch-action: pan-y; /* Allows vertical scroll inside, but captures horizontal swipes */
-}
 
 @media (max-width: 768px) {
     /* Shrink the flashcard so it perfectly fits phone screens without overflowing */
@@ -607,46 +474,14 @@ body { background-color: var(--bg-main); color: var(--text-main); }
     #fc-meaning { font-size: 1.1rem !important; }
 
     /* Fix Top Controls: Make the 4 buttons stack neatly into a 2x2 grid */
-    .top-controls {
-        flex-wrap: wrap;
-        justify-content: center;
-        gap: 8px;
-    }
+    .top-controls { flex-wrap: wrap; justify-content: center; gap: 8px; }
     .top-controls .action-btn, 
-    .top-controls .speed-select {
-        flex: 1 1 45%; 
-        font-size: 0.85rem;
-        padding: 8px 5px;
-        text-align: center;
-    }
-
-    /* Fix Flashcard Stats */
-    .session-stats {
-        gap: 15px;
-        font-size: 0.9rem;
-        padding: 8px 15px;
-    }
+    .top-controls .speed-select { flex: 1 1 45%; font-size: 0.85rem; padding: 8px 5px; text-align: center; }
 
     /* Fix Quiz Layout */
-    .quiz-options {
-        grid-template-columns: 1fr; /* 1 Column instead of 2 */
-        gap: 10px;
-    }
-    .option-btn {
-        padding: 12px;
-        font-size: 1rem;
-    }
-
-    .quiz-settings {
-        flex-direction: column;
-        gap: 12px;
-        align-items: stretch;
-    }
-    .setting-group {
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-    }
-    
-    .qz-word-container h2 { font-size: 2rem !important; }
+    .quiz-options { grid-template-columns: 1fr; gap: 12px; }
+    .option-btn { padding: 16px 20px; font-size: 1.2rem; } /* BIGGER ON PHONE TOO */
+    .quiz-settings { flex-direction: column; gap: 12px; align-items: stretch; }
+    .setting-group { display: flex; justify-content: space-between; align-items: center; }
+    .qz-word-container h2 { font-size: 3.2rem !important; } /* BIGGER QUESTION TEXT ON PHONE */
 }
