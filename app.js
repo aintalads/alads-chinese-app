@@ -1,5 +1,19 @@
 class ChineseApp {
     constructor() {
+
+        window.speechSynthesis.getVoices(); 
+        if (speechSynthesis.onvoiceschanged !== undefined) {
+            speechSynthesis.onvoiceschanged = () => window.speechSynthesis.getVoices();
+        }
+
+        // Unlock audio on the very first tap anywhere on the screen
+        document.body.addEventListener('pointerdown', () => {
+            if (this.audioUnlocked) return;
+            const unlockMsg = new SpeechSynthesisUtterance('');
+            unlockMsg.volume = 0; // Silent play
+            window.speechSynthesis.speak(unlockMsg);
+            this.audioUnlocked = true;
+        }, { once: true });
         this.data = { books: {} };
         
         this.state = {
@@ -882,7 +896,62 @@ class ChineseApp {
         activeCard.addEventListener('pointerup', endSwipe);
         activeCard.addEventListener('pointercancel', endSwipe);
     }
+// ==========================================
+    // --- SPEECH SYNTHESIS ENGINE ---
+    // ==========================================
 
+    playAudio(text, speedPref = 'normal') {
+        if (!text || !window.speechSynthesis) return;
+
+        // 1. Instantly cancel any audio that is currently playing so they don't overlap
+        window.speechSynthesis.cancel();
+
+        const utterance = new SpeechSynthesisUtterance(text);
+
+        // 2. Set the Speed based on the dropdown menu
+        let rate = 1.0;
+        if (speedPref === 'slow') rate = 0.5; // Slower for clear pronunciation
+        if (speedPref === 'fast') rate = 1.3;
+        utterance.rate = rate;
+
+        // 3. Find the best Mandarin voice
+        const voices = window.speechSynthesis.getVoices();
+        
+        // Prioritize a natural-sounding Taiwanese/Traditional Mandarin voice 
+        let zhVoice = voices.find(v => v.lang === 'zh-TW' || v.lang === 'zh_TW');
+        
+        // Fallback to any available Chinese voice if that exact one isn't found
+        if (!zhVoice) {
+            zhVoice = voices.find(v => v.lang.includes('zh'));
+        }
+
+        if (zhVoice) {
+            utterance.voice = zhVoice;
+        } else {
+            utterance.lang = 'zh-TW'; // Ultimate fallback to let the browser figure it out
+        }
+
+        // 4. Speak!
+        window.speechSynthesis.speak(utterance);
+    }
+
+    // --- Wrapper for the Flashcard Speaker Button ---
+    playCurrentFlashcardAudio(event) {
+        if (event) event.stopPropagation(); // Stops the card from flipping when you click the speaker
+        
+        const text = document.getElementById('fc-front-text').innerText;
+        const speed = document.getElementById('fc-speed-select').value;
+        
+        this.playAudio(text, speed);
+    }
+
+    // --- Wrapper for the Sentence Speaker Button ---
+    playSentenceAudio() {
+        const text = document.getElementById('sn-chinese').innerText;
+        const speed = document.getElementById('sn-speed-select').value;
+        
+        this.playAudio(text, speed);
+    }
     triggerConfetti() {
         const canvas = document.getElementById('confetti-canvas');
         if (!canvas) return; 
