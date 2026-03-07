@@ -31,6 +31,11 @@
                 <option value="sakura">🌸 Sakura</option>
                 <option value="midnight">🌌 Night</option>
             </select>
+            <a href="mailto:aladendmohr@gmail.com?subject=App%20Suggestions:%20Mandarin%20Flashcards" 
+       style="text-decoration: none; font-size: 1.2rem; cursor: pointer; padding: 5px;" 
+       title="Send Suggestions">
+       💡
+    </a>
         </div>
     </nav>
 
@@ -229,16 +234,22 @@
                     <div class="setting-group">
                         <label>Answer Format:</label>
                         <select id="qz-a-type">
-                            <option value="mc">Multiple Choice</option>
-                            <option value="type">Type Answer</option>
-                        </select>
+    <option value="mc">Multiple Choice (Meaning)</option>
+    <option value="mc-py">Multiple Choice (Pinyin)</option>
+    <option value="type">Type Answer</option>
+</select>
                     </div>
                     <div id="quiz-score-ui" class="quiz-score">🏆 Score: 0 / 0</div>
                 </div>
 
                 <div class="qz-word-container">
                     <h2 id="qz-word"></h2>
-                    <button id="qz-sound-btn" class="icon-btn">🔊</button>
+                    <div id="qz-pinyin-hint" class="hidden"></div>
+                    
+                    <div class="qz-actions">
+                        <button id="qz-sound-btn" class="icon-btn">🔊</button>
+                        <button id="qz-pinyin-btn" class="icon-btn" onclick="app.togglePinyinHint()">拼</button>
+                    </div>
                 </div>
 
                 <div id="qz-options" class="quiz-options"></div>
@@ -264,7 +275,7 @@
         }
     </script>
     
-    <script src="app.js?v=10"></script>
+    <script src="app.js?v=50"></script>
 </body>
 </html>
 
