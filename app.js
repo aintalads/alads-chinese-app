@@ -36,6 +36,13 @@ class ChineseApp {
             this.audioUnlocked = true;
         }, { once: true });
         this.data = { books: {} };
+
+        const savedReview = localStorage.getItem('mandarinReviewList');
+        if (savedReview) {
+            this.data.review = JSON.parse(savedReview);
+        } else {
+            this.data.review = [];
+        }
         
         this.state = {
             selectedBooks: new Set(),
@@ -361,7 +368,90 @@ class ChineseApp {
         if (this.state.currentMode === 'quiz') this.renderQuiz();
     }
 
-    nextItem() { this.state.currentIndex++; this.renderCurrentItem(); }
+    showCompletion() {
+        // Hide all views and show the complete view
+        document.querySelectorAll('.study-view').forEach(v => v.classList.remove('active'));
+        const completeView = document.getElementById('view-complete');
+        if (completeView) completeView.classList.add('active');
+
+        const msgContainer = document.querySelector('.completion-message');
+        if (!msgContainer) return;
+
+        // 1. Calculate Scores
+        const total = this.state.studyQueue.length;
+        const right = this.state.score || 0;
+        const wrong = total - right;
+        const mode = this.state.currentMode;
+
+        // 2. Build the Title & Score Reveal
+        let contentHTML = `<h1 style="font-size: 2.5rem; margin-bottom: 10px;">
+            ${mode === 'quiz' ? '🎯 Quiz Complete!' : '🏆 Session Finished!'}
+        </h1>`;
+
+        if (mode === 'quiz') {
+            contentHTML += `
+                <p style="font-size: 1.2rem; color: var(--text-muted); margin-bottom: 20px;">Here is your final score:</p>
+                <div style="background: var(--bg-color); padding: 20px; border-radius: 16px; display: inline-block; margin-bottom: 30px;">
+                    <strong style="color: #28a745; font-size: 1.8rem; margin-right: 20px;">✅ ${right} Right</strong>
+                    <strong style="color: #dc3545; font-size: 1.8rem;">❌ ${wrong} Wrong</strong>
+                </div>
+            `;
+        } else {
+            contentHTML += `<p style="font-size: 1.2rem; color: var(--text-muted); margin-bottom: 30px;">Excellent work. You have reviewed all items in this set.</p>`;
+        }
+
+        // 3. Build the Action Buttons
+        contentHTML += `
+            <div style="display: flex; gap: 15px; justify-content: center; flex-wrap: wrap;">
+                <button class="action-btn" onclick="app.state.currentIndex = 0; app.state.score = 0; app.setMode('${mode}')">
+                    🔁 Restart This Session
+                </button>
+                
+                <button class="action-btn" id="direct-review-btn" style="background-color: var(--primary-color); color: white;">
+                    🎯 Start Reviewing Unknown Words
+                </button>
+                
+                ${mode !== 'flashcards' ? `<button class="action-btn" onclick="app.setMode('flashcards')">🗂️ Study Flashcards</button>` : ''}
+            </div>
+        `;
+
+        msgContainer.innerHTML = contentHTML;
+
+        // 4. The Logic to Directly Start Reviewing
+        document.getElementById('direct-review-btn').onclick = () => {
+            // Grab the unknown words (Assuming they are stored in this.data.review)
+            let reviewList = this.data.review || []; 
+            
+            if (reviewList.length === 0) {
+                alert("Awesome job! 🎉 You don't have any unknown words to review right now.");
+                return;
+            }
+            
+            // Instantly load the review words into the active queue and start Flashcards!
+            this.state.studyQueue = [...reviewList];
+            this.state.currentIndex = 0;
+            this.state.score = 0;
+            this.setMode('flashcards'); 
+        };
+
+        if (typeof this.triggerConfetti === 'function') this.triggerConfetti();
+    }
+
+    nextItem() {
+        this.state.currentIndex++;
+        
+        // If we reached the end of the study queue, show the epic completion screen!
+        if (this.state.currentIndex >= this.state.studyQueue.length) {
+            this.showCompletion(); 
+            return;
+        }
+        
+        // Otherwise, keep rendering the next item...
+        if (this.state.currentMode === 'flashcards') this.renderFlashcard();
+        else if (this.state.currentMode === 'writing') this.renderWriting();
+        else if (this.state.currentMode === 'sentences') this.renderSentence();
+        else if (this.state.currentMode === 'quiz') this.renderQuiz();
+    }
     prevItem() { if(this.state.currentIndex > 0) { this.state.currentIndex--; this.renderCurrentItem(); } }
     shuffleItems() { this.state.studyQueue.sort(() => Math.random() - 0.5); this.state.currentIndex = 0; this.renderCurrentItem(); }
 
@@ -387,6 +477,16 @@ class ChineseApp {
             const btn = document.getElementById(id);
             if (btn) { btn.innerText = text; btn.classList.toggle('active', this.state.autoAudio); }
         });
+    }
+
+    // --- TOGGLE PINYIN HINT IN QUIZ ---
+    togglePinyinHint() {
+        const hintEl = document.getElementById('qz-pinyin-hint');
+        if (hintEl.classList.contains('hidden')) {
+            hintEl.classList.remove('hidden');
+        } else {
+            hintEl.classList.add('hidden');
+        }
     }
 
     /* --- MOBILE AUDIO FIX --- */
@@ -495,38 +595,36 @@ class ChineseApp {
     }
 
     handleSwipe(direction) {
-        if (this.state.isAnimating) return; 
-        this.state.isAnimating = true;
+        const activeCard = document.getElementById('flashcard');
+        if (!activeCard) return;
+
+        // 1. Grab the current word you are looking at
+        const currentItem = this.state.studyQueue[this.state.currentIndex];
         
-        this.playSound(direction === 'right' ? 'swipe-right' : 'swipe-left');
+        // Ensure our review array exists
+        if (!this.data.review) this.data.review = [];
 
-        const item = this.state.studyQueue[this.state.currentIndex];
-        if (item) this.state.history.push({ index: this.state.currentIndex, item: item, direction: direction });
-        else { this.state.isAnimating = false; this.nextItem(); return; }
-
-        const card = document.getElementById('flashcard');
-        const moveX = direction === 'right' ? 350 : -350;
-        if(card) {
-            card.style.transition = 'transform 0.3s ease, opacity 0.3s ease'; 
-            card.style.transform = `translateX(${moveX}px) rotate(${moveX/10}deg)`;
-            card.style.opacity = '0';
+        // 2. Add or Remove from the Review List
+        if (direction === 'left') {
+            // SWIPED LEFT: Add to the review list (if it isn't already there)
+            if (!this.data.review.some(item => item.id === currentItem.id)) {
+                this.data.review.push(currentItem);
+            }
+        } else if (direction === 'right') {
+            // SWIPED RIGHT: You mastered it! Remove it from the review list
+            this.data.review = this.data.review.filter(item => item.id !== currentItem.id);
         }
 
-        setTimeout(() => {
-            if (direction === 'right') { 
-                if (!this.state.progress.mastered.some(i => i.id === item.id)) {
-                    this.state.progress.mastered.push(item);
-                    this.state.progress.dailyMastered += 1;
-                }
-                this.state.progress.reviewQueue = this.state.progress.reviewQueue.filter(i => i.id !== item.id);
-            } else { 
-                if (!this.state.progress.reviewQueue.some(i => i.id === item.id)) this.state.progress.reviewQueue.push(item);
-            }
-            this.saveProgress();
-            if(card) card.style.transition = 'none';
-            this.nextItem();
-            this.state.isAnimating = false; 
-        }, 250);
+        // 3. ✨ THE MAGIC SAVE LINE: Save the updated list to your phone's hard drive
+        localStorage.setItem('mandarinReviewList', JSON.stringify(this.data.review));
+
+        // 4. Animate the card flying off the screen
+        activeCard.style.transition = 'transform 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275), opacity 0.4s ease';
+        activeCard.style.opacity = '0';
+        activeCard.style.transform = `translateX(${direction === 'left' ? '-150%' : '150%'}) rotate(${direction === 'left' ? '-20deg' : '20deg'})`;
+
+        // 5. Move to the next word after the animation finishes
+        setTimeout(() => this.nextItem(), 300);
     }
 
     undoLastSwipe() {
@@ -673,8 +771,18 @@ class ChineseApp {
         });
     }
 
-    renderQuiz() {
-        var item = this.state.studyQueue[this.state.currentIndex];
+    togglePinyinHint() {
+        const hintEl = document.getElementById('qz-pinyin-hint');
+        if (hintEl) {
+            if (hintEl.classList.contains('hidden')) {
+                hintEl.classList.remove('hidden');
+            } else {
+                hintEl.classList.add('hidden');
+            }
+        }
+    }
+
+    renderQuiz() {var item = this.state.studyQueue[this.state.currentIndex];
         if (!item) return;
 
         var qTypeSelect = document.getElementById('qz-q-type');
@@ -694,7 +802,9 @@ class ChineseApp {
         var questionText = ""; var correctMeaning = "";
         
         if (qType === 'zh') {
-            questionText = item.word || item.simplified; correctMeaning = item.definition || item.meaning || item.english || "";
+            questionText = item.word || item.simplified; 
+            // If they chose Pinyin as the answer format, set the correct meaning to Pinyin!
+            correctMeaning = (aType === 'mc-py') ? item.pinyin : (item.definition || item.meaning || item.english || "");
         } else if (qType === 'py') {
             questionText = item.pinyin; correctMeaning = item.definition || item.meaning || item.english || "";
         } else if (qType === 'en') {
@@ -703,6 +813,21 @@ class ChineseApp {
 
         document.getElementById('qz-word').innerText = questionText;
         
+        // --- NEW: PINYIN HINT BUTTON LOGIC ---
+        var pinyinBtn = document.getElementById('qz-pinyin-btn');
+        var hintEl = document.getElementById('qz-pinyin-hint');
+        
+        if (hintEl) {
+            hintEl.classList.add('hidden'); // Always hide when a new question loads
+            hintEl.innerText = item.pinyin || ""; // Set the text to the current word's Pinyin
+            
+            if (qType === 'zh') {
+                if (pinyinBtn) pinyinBtn.style.display = 'inline-block';
+            } else {
+                if (pinyinBtn) pinyinBtn.style.display = 'none';
+            }
+        }
+
         // --- QUIZ AUDIO FIX --- 
         document.getElementById('qz-sound-btn').onclick = () => this.playAudio(item.word || item.simplified, 'zh-CN');
         if (this.state.autoAudio) this.playAudio(item.word || item.simplified, 'zh-CN');
@@ -747,6 +872,9 @@ class ChineseApp {
                     feedback.innerHTML = `❌ <b>Incorrect.</b><br>Right answer: <b>${correctMeaning}</b>`;
                     feedback.style.backgroundColor = '#f8d7da'; feedback.style.color = '#721c24';
                     inputField.style.borderColor = '#dc3545';
+                    
+                    // --- NEW: AUTO-REVEAL PINYIN IF WRONG ---
+                    if (hintEl && qType === 'zh') hintEl.classList.remove('hidden');
                 }
                 document.getElementById('quiz-score-ui').innerText = `🏆 Score: ${this.state.score} / ${this.state.studyQueue.length}`;
                 submitBtn.disabled = true; inputField.disabled = true;
@@ -771,6 +899,14 @@ class ChineseApp {
                 if (qType === 'en') btn.innerText = `${opt.word || opt.simplified} (${opt.pinyin})`;
                 else btn.innerText = opt.definition || opt.meaning || opt.english;
 
+                if (aType === 'mc-py') {
+                    btn.innerText = opt.pinyin; // Shows Pinyin choices!
+                } else if (qType === 'en') {
+                    btn.innerText = `${opt.word || opt.simplified} (${opt.pinyin})`;
+                } else {
+                    btn.innerText = opt.definition || opt.meaning || opt.english;
+                }
+
                 btn.onclick = () => {
                     Array.from(optionsContainer.children).forEach(child => child.disabled = true);
                     if (opt.id === item.id) {
@@ -785,12 +921,78 @@ class ChineseApp {
                                 child.style.backgroundColor = '#d4edda'; child.style.borderColor = '#28a745';
                             }
                         });
+                        
+                        // --- NEW: AUTO-REVEAL PINYIN IF WRONG ---
+                        if (hintEl && qType === 'zh') hintEl.classList.remove('hidden');
                     }
                     document.getElementById('quiz-score-ui').innerText = `🏆 Score: ${this.state.score} / ${this.state.studyQueue.length}`;
-                    setTimeout(() => this.nextItem(), 1000);
+                    setTimeout(() => this.nextItem(), 1500); // Increased slightly so you have time to read the Pinyin!
                 };
                 optionsContainer.appendChild(btn);
             });
+        }}
+
+        // --- 3. DYNAMIC COMPLETION SCREEN & SUGGESTIONS ---
+    showCompletion() {
+        // Hide all views and show the complete view
+        document.querySelectorAll('.study-view').forEach(v => v.classList.remove('active'));
+        document.getElementById('view-complete').classList.add('active');
+        
+        const title = document.getElementById('completion-title');
+        const desc = document.getElementById('completion-desc');
+        const mode = this.state.currentMode;
+        
+        // Clean up old buttons
+        let btnContainer = document.getElementById('completion-suggestions');
+        if (!btnContainer) {
+            btnContainer = document.createElement('div');
+            btnContainer.id = 'completion-suggestions';
+            btnContainer.style.cssText = 'margin-top: 30px; display: flex; gap: 15px; justify-content: center; flex-wrap: wrap;';
+            document.querySelector('.completion-message').appendChild(btnContainer);
+        }
+        btnContainer.innerHTML = ''; 
+
+        // Score Reveal Logic for Quiz Mode
+        if (mode === 'quiz') {
+            const total = this.state.studyQueue.length;
+            const right = this.state.score || 0;
+            const wrong = total - right;
+            title.innerText = "🎯 Quiz Complete!";
+            desc.innerHTML = `Great effort! Here is your final score:<br><br>
+                              <strong style="color: #28a745; font-size: 1.5rem;">✅ Right: ${right}</strong> &nbsp;|&nbsp; 
+                              <strong style="color: #dc3545; font-size: 1.5rem;">❌ Wrong: ${wrong}</strong>`;
+        } else {
+            title.innerText = "🏆 Session Complete";
+            desc.innerText = "Excellent work. You have reviewed all items in this set.";
+        }
+
+        // --- ADD SUGGESTION BUTTONS ---
+        
+        // Button 1: Restart Current Session
+        const restartBtn = document.createElement('button');
+        restartBtn.className = 'action-btn';
+        restartBtn.innerHTML = '🔁 Restart Session';
+        restartBtn.onclick = () => {
+            this.state.currentIndex = 0;
+            this.state.score = 0;
+            this.setMode(mode); // Reloads the current mode
+        };
+        btnContainer.appendChild(restartBtn);
+
+        // Button 2: Go to Manage Review (Unknown Words)
+        const reviewBtn = document.createElement('button');
+        reviewBtn.className = 'action-btn';
+        reviewBtn.innerHTML = '⚙️ Manage "Study Again" List';
+        reviewBtn.onclick = () => { this.setMode('manage-review'); };
+        btnContainer.appendChild(reviewBtn);
+
+        // Button 3: Switch to Flashcards (if not already there)
+        if (mode !== 'flashcards') {
+            const fcBtn = document.createElement('button');
+            fcBtn.className = 'action-btn';
+            fcBtn.innerHTML = '🗂️ Study Flashcards';
+            fcBtn.onclick = () => { this.setMode('flashcards'); };
+            btnContainer.appendChild(fcBtn);
         }
     }
 
@@ -905,31 +1107,42 @@ class ChineseApp {
         });
         
         // --- THE FIX: Create a reusable endSwipe function ---
-        const endSwipe = (e) => {
+       const endSwipe = (e) => {
             if (!this.swipeState.isDragging) return;
             this.swipeState.isDragging = false;
-            activeCard.releasePointerCapture(e.pointerId);
+            
+            // Safely release the pointer
+            try { activeCard.releasePointerCapture(e.pointerId); } catch(err) {}
+            
             const deltaX = e.clientX - startX;
+            
+            // Calculate a smart threshold (80 pixels OR 25% of the screen, whichever is smaller)
+            const swipeThreshold = Math.min(80, window.innerWidth * 0.25);
             
             // Instantly clear the glowing shadow
             activeCard.style.boxShadow = 'none'; 
             
             if (Math.abs(deltaX) < 15 && (Date.now() - startTime) < 400) {
                 // It was a quick tap, so flip the card
-                activeCard.style.transition = 'transform 0.3s ease, box-shadow 0.3s ease'; 
-                activeCard.style.transform = 'translateX(0) rotate(0)';
+                activeCard.style.transition = 'transform 0.3s ease'; 
+                activeCard.style.transform = ''; // Bulletproof reset
                 this.flipCard();
             } 
-            else if (deltaX > 80) { // Changed to 80 so it's slightly easier to swipe on phones!
+            else if (deltaX > swipeThreshold) { 
+                // Swiped right (Got it)
+                if (navigator.vibrate) navigator.vibrate(50); 
                 this.handleSwipe('right');
             } 
-            else if (deltaX < -80) { 
+            else if (deltaX < -swipeThreshold) { 
+                // Swiped left (Study again)
+                if (navigator.vibrate) navigator.vibrate([50, 50, 50]); 
                 this.handleSwipe('left');
             } 
             else { 
-                // Cancelled swipe (didn't drag far enough or finger slipped): Snap back to center
-                activeCard.style.transition = 'transform 0.3s ease, box-shadow 0.3s ease'; 
-                activeCard.style.transform = 'translateX(0) rotate(0)'; 
+                // Didn't swipe far enough: Snap back to center!
+                // Added a "spring" cubic-bezier curve so it bounces back naturally
+                activeCard.style.transition = 'transform 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275), box-shadow 0.3s ease'; 
+                activeCard.style.transform = ''; // Completely deletes the dragging offset
             }
         };
 
