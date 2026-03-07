@@ -295,7 +295,7 @@ class ChineseApp {
                 });
             });
 
-            document.getElementById('current-title').innerText = `📚 Study Session`;
+            document.getElementById('current-title').innerText = `📚 TOCL-EASY`;
             
             if (this.state.currentMode === 'sentences') {
                 this.state.studyQueue = [...aggregatedSentences].sort(() => Math.random() - 0.5);
@@ -369,23 +369,39 @@ class ChineseApp {
     }
 
     showCompletion() {
-        // Hide all views and show the complete view
+        // 1. Hide all current screens
         document.querySelectorAll('.study-view').forEach(v => v.classList.remove('active'));
-        const completeView = document.getElementById('view-complete');
-        if (completeView) completeView.classList.add('active');
+        
+        // 2. Find the Complete View (or build it if it's missing!)
+        let completeView = document.getElementById('view-complete');
+        if (!completeView) {
+            completeView = document.createElement('div');
+            completeView.id = 'view-complete';
+            completeView.className = 'study-view active';
+            document.querySelector('.main-content') ? document.querySelector('.main-content').appendChild(completeView) : document.body.appendChild(completeView);
+        } else {
+            completeView.classList.add('active');
+        }
 
-        const msgContainer = document.querySelector('.completion-message');
-        if (!msgContainer) return;
+        // 3. Find the Message Box (or build it if it's missing!)
+        let msgContainer = completeView.querySelector('.completion-message');
+        if (!msgContainer) {
+            msgContainer = document.createElement('div');
+            msgContainer.className = 'completion-message';
+            msgContainer.style.textAlign = 'center';
+            msgContainer.style.padding = '40px 20px';
+            completeView.appendChild(msgContainer);
+        }
 
-        // 1. Calculate Scores
+        // 4. Calculate Math
         const total = this.state.studyQueue.length;
         const right = this.state.score || 0;
         const wrong = total - right;
         const mode = this.state.currentMode;
 
-        // 2. Build the Title & Score Reveal
+        // 5. Build the UI
         let contentHTML = `<h1 style="font-size: 2.5rem; margin-bottom: 10px;">
-            ${mode === 'quiz' ? '🎯 Quiz Complete!' : '🏆 Session Finished!'}
+            ${mode === 'quiz' ? '🎯 Quiz Complete!' : '🏆TOCL PASSED!!'}
         </h1>`;
 
         if (mode === 'quiz') {
@@ -400,7 +416,7 @@ class ChineseApp {
             contentHTML += `<p style="font-size: 1.2rem; color: var(--text-muted); margin-bottom: 30px;">Excellent work. You have reviewed all items in this set.</p>`;
         }
 
-        // 3. Build the Action Buttons
+        // 6. Build the Buttons
         contentHTML += `
             <div style="display: flex; gap: 15px; justify-content: center; flex-wrap: wrap;">
                 <button class="action-btn" onclick="app.state.currentIndex = 0; app.state.score = 0; app.setMode('${mode}')">
@@ -417,17 +433,13 @@ class ChineseApp {
 
         msgContainer.innerHTML = contentHTML;
 
-        // 4. The Logic to Directly Start Reviewing
+        // 7. Attach the Review Logic
         document.getElementById('direct-review-btn').onclick = () => {
-            // Grab the unknown words (Assuming they are stored in this.data.review)
             let reviewList = this.data.review || []; 
-            
             if (reviewList.length === 0) {
                 alert("Awesome job! 🎉 You don't have any unknown words to review right now.");
                 return;
             }
-            
-            // Instantly load the review words into the active queue and start Flashcards!
             this.state.studyQueue = [...reviewList];
             this.state.currentIndex = 0;
             this.state.score = 0;
@@ -594,37 +606,66 @@ class ChineseApp {
         if(card) card.classList.toggle('is-flipped'); 
     }
 
+    updateProgressUI() {
+        // --- 1. HEADER NUMBERS (e.g. 1 / 20) ---
+        const total = this.state.studyQueue ? this.state.studyQueue.length : 0;
+        const current = this.state.currentIndex + 1;
+        
+        const mCurrent = document.getElementById('mode-current');
+        if (mCurrent) mCurrent.innerText = total === 0 ? 0 : Math.min(current, total);
+        
+        const mTotal = document.getElementById('mode-total');
+        if (mTotal) mTotal.innerText = total;
+
+        // --- 2. SESSION KNOWN / STUDY AGAIN COUNTS ---
+        const knownCountSpan = document.getElementById('stat-known-count');
+        const studyCountSpan = document.getElementById('stat-study-count');
+        
+        if (knownCountSpan && studyCountSpan && this.state.history) {
+            let known = 0;
+            let studyMore = 0;
+            
+            // Calculate based strictly on the history we just fixed
+            this.state.history.forEach(h => {
+                if (h.direction === 'right') known++;
+                if (h.direction === 'left') studyMore++;
+            });
+            
+            knownCountSpan.innerText = known;
+            studyCountSpan.innerText = studyMore;
+        }
+    }
+
     handleSwipe(direction) {
         const activeCard = document.getElementById('flashcard');
         if (!activeCard) return;
 
-        // 1. Grab the current word you are looking at
         const currentItem = this.state.studyQueue[this.state.currentIndex];
-        
-        // Ensure our review array exists
         if (!this.data.review) this.data.review = [];
+
+        // 1. Log the swipe in the history so the numbers count!
+        if (!this.state.history) this.state.history = [];
+        this.state.history.push({ direction: direction, item: currentItem, index: this.state.currentIndex });
 
         // 2. Add or Remove from the Review List
         if (direction === 'left') {
-            // SWIPED LEFT: Add to the review list (if it isn't already there)
             if (!this.data.review.some(item => item.id === currentItem.id)) {
                 this.data.review.push(currentItem);
             }
         } else if (direction === 'right') {
-            // SWIPED RIGHT: You mastered it! Remove it from the review list
             this.data.review = this.data.review.filter(item => item.id !== currentItem.id);
         }
 
-        // 3. ✨ THE MAGIC SAVE LINE: Save the updated list to your phone's hard drive
+        // 3. Save memory and animate
         localStorage.setItem('mandarinReviewList', JSON.stringify(this.data.review));
-
-        // 4. Animate the card flying off the screen
         activeCard.style.transition = 'transform 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275), opacity 0.4s ease';
         activeCard.style.opacity = '0';
         activeCard.style.transform = `translateX(${direction === 'left' ? '-150%' : '150%'}) rotate(${direction === 'left' ? '-20deg' : '20deg'})`;
 
-        // 5. Move to the next word after the animation finishes
-        setTimeout(() => this.nextItem(), 300);
+        setTimeout(() => {
+            this.nextItem();
+            this.updateProgressUI(); // Update the UI numbers after swiping!
+        }, 300);
     }
 
     undoLastSwipe() {
@@ -1011,49 +1052,45 @@ class ChineseApp {
 
     saveProgress() { localStorage.setItem('aladsProgress', JSON.stringify(this.state.progress)); this.updateProgressUI(); }
     updateProgressUI() {
-        // --- 1. YOUR EXISTING CODE (Keeps Streak & Sidebar working) ---
+        // --- 1. SIDEBAR STATS (Streak, Review, Mastered) ---
         const s = document.getElementById('streak-count');
-        if(s) s.innerText = this.state.progress.streak;
+        if(s) s.innerText = this.state.progress.streak || 0;
         
         const r = document.getElementById('review-count');
-        if(r) r.innerText = this.state.progress.reviewQueue.length;
+        if(r) r.innerText = this.state.progress.reviewQueue ? this.state.progress.reviewQueue.length : 0;
         
         const d = document.getElementById('daily-mastered');
-        if(d) d.innerText = this.state.progress.dailyMastered;
+        if(d) d.innerText = this.state.progress.dailyMastered || 0;
         
         const pb = document.getElementById('daily-progress-bar');
-        if(pb) pb.style.width = `${Math.min((this.state.progress.dailyMastered / 10) * 100, 100)}%`;
+        if(pb) pb.style.width = `${Math.min(((this.state.progress.dailyMastered || 0) / 10) * 100, 100)}%`;
 
-        // --- 2. NEW CODE FOR THE HEADER NUMBERS ---
+        // --- 2. HEADER NUMBERS (e.g. 1 / 20) ---
         const total = this.state.studyQueue ? this.state.studyQueue.length : 0;
         const current = this.state.currentIndex + 1;
         
-        // Update the top right progress (e.g., 1 / 10)
         const mCurrent = document.getElementById('mode-current');
         if (mCurrent) mCurrent.innerText = total === 0 ? 0 : Math.min(current, total);
         
         const mTotal = document.getElementById('mode-total');
         if (mTotal) mTotal.innerText = total;
 
-        // Update the Known / Study More numbers
+        // --- 3. SESSION KNOWN / STUDY AGAIN COUNTS ---
         const knownCountSpan = document.getElementById('stat-known-count');
         const studyCountSpan = document.getElementById('stat-study-count');
         
-        if (knownCountSpan && studyCountSpan && this.state.studyQueue) {
+        if (knownCountSpan && studyCountSpan && this.state.history) {
             let known = 0;
-            let unknown = 0;
+            let studyMore = 0;
             
-            // Count how many words are known vs unknown in the current session
-            this.state.studyQueue.forEach(word => {
-                if (this.state.progress.knownWords && this.state.progress.knownWords.includes(word)) {
-                    known++;
-                } else {
-                    unknown++;
-                }
+            // Calculate based strictly on your swipes in the current session
+            this.state.history.forEach(h => {
+                if (h.direction === 'right') known++;
+                if (h.direction === 'left') studyMore++;
             });
             
             knownCountSpan.innerText = known;
-            studyCountSpan.innerText = unknown;
+            studyCountSpan.innerText = studyMore;
         }
     }
 
@@ -1094,6 +1131,12 @@ class ChineseApp {
             activeCard.style.transition = 'none';
             activeCard.setPointerCapture(e.pointerId); 
         });
+
+        // --- ✨ THE MAGIC IPHONE FREEZE FIX ✨ ---
+        // This completely stops the iPhone screen from scrolling or bugging out while dragging
+        activeCard.addEventListener('touchmove', (e) => {
+            e.preventDefault(); 
+        }, { passive: false });
         
         activeCard.addEventListener('pointermove', (e) => {
             if (!this.swipeState.isDragging) return;
