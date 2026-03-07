@@ -10,6 +10,23 @@
     <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;500;600;700&display=swap" rel="stylesheet">
     
     <link rel="stylesheet" href="style.css?v=3">
+
+    <link rel="manifest" href="manifest.json">
+    
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="Mandarin">
+    <link rel="apple-touch-icon" href="https://cdn-icons-png.flaticon.com/512/3233/3233483.png">
+
+    <script>
+        if ('serviceWorker' in navigator) {
+            window.addEventListener('load', () => {
+                navigator.serviceWorker.register('sw.js')
+                    .then(reg => console.log('Offline Mode Ready!'))
+                    .catch(err => console.log('Service Worker failed: ', err));
+            });
+        }
+    </script>
     
     <script src="chars.js"></script>
     <script src="new_vocab.js"></script>
@@ -274,8 +291,12 @@
             });
         }
     </script>
+    <div id="view-complete" class="study-view">
+    <div class="completion-message">
+        </div>
+</div>
     
-    <script src="app.js?v=50"></script>
+    <script src="app.js?v=66"></script>
 </body>
 </html>
 
