@@ -28,8 +28,8 @@
 [data-theme="dark"], body.dark-mode {
     --bg-color: #121212;
     --card-bg: #1e1e1e;
-    --text-main: #f8f9fa;       /* Bright white for main text */
-    --text-muted: #adb5bd;      /* Soft gray for pinyin/hints */
+   --text-main: #f8f9fa;      /* Pure white text */
+    --text-muted: #ced4da;     /* Soft gray for pinyin/hints */
     --border-color: #333333;
     --shadow-sm: 0 4px 12px rgba(0,0,0,0.5);
 }
@@ -506,3 +506,124 @@ body { background-color: var(--bg-main); color: var(--text-main); }
 
 .speed-select { padding: 8px 12px; border-radius: 8px; border: 1px solid #ccc; background-color: var(--card-bg); color: var(--text-main); font-weight: 600; cursor: pointer; outline: none; font-size: 0.95rem; }
 .speed-select:focus { border-color: var(--primary-color); }
+body {
+    overscroll-behavior-x: none; /* Stops the iPhone "swipe edge to go back" feature */
+}
+
+#flashcard {
+    touch-action: none !important; /* Forces the browser to NEVER try to scroll when touching the card */
+    -webkit-user-select: none; /* Stops text highlighting from freezing the card */
+    user-select: none;
+}
+
+.streak, 
+#quiz-score-ui, 
+#qz-pinyin-hint, 
+.completion-message p {
+    color: var(--text-muted) !important; /* Forces the dynamic grey */
+    font-weight: 500; /* Makes the numbers and letters slightly thicker so they are easier to read */
+}
+
+/* Make sure the main quiz text always uses the bright white/pure black */
+#qz-word {
+    color: var(--text-main) !important;
+}
+
+/* ==========================================
+   --- SOFT UI UPGRADE (ROUNDED CORNERS) ---
+   ========================================== */
+
+/* Large containers get massive smooth curves */
+.card, 
+#flashcard, 
+.qz-word-container,
+.completion-message {
+    border-radius: 28px !important;
+}
+
+/* Medium interactive elements get pill-like curves */
+.option-btn, 
+.action-btn, 
+.chip, 
+.quiz-input {
+    border-radius: 18px !important;
+}
+
+/* Smaller interface buttons get neat circular curves */
+button, 
+.icon-btn, 
+.audio-btn, 
+select {
+    border-radius: 14px;
+}
+
+/* Make sure the sidebar feels cohesive */
+.sidebar {
+    border-radius: 0 24px 24px 0; /* Rounds the right side of the sidebar */
+}
+
+/* On mobile, standardizes the expanding tabs we built earlier */
+@media (max-width: 800px) {
+    .control-group summary {
+        border-radius: 16px;
+    }
+}
+
+/* ==========================================
+   --- GLASSY BUBBLE (GLASSMORPHISM) UI ---
+   ========================================== */
+
+/* Give the background a slight gradient so the glass effect shows up better */
+body {
+    background: linear-gradient(135deg, var(--bg-color) 0%, #e0e8e8 100%);
+    background-attachment: fixed;
+}
+[data-theme="dark"], body.dark-mode {
+    background: linear-gradient(135deg, var(--bg-color) 0%, #1a2222 100%);
+}
+
+/* The Glassy Cards */
+.card, 
+#flashcard, 
+.qz-word-container,
+.completion-message {
+    background: rgba(255, 255, 255, 0.65) !important; /* Semi-transparent */
+    backdrop-filter: blur(16px); /* The "Glass" blur effect */
+    -webkit-backdrop-filter: blur(16px); /* For iPhones */
+    border: 1px solid rgba(255, 255, 255, 0.4); /* Shiny glass edge */
+    border-radius: 32px !important; /* Huge bubble corners */
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.05), inset 0 1px 0 rgba(255, 255, 255, 0.6);
+}
+[data-theme="dark"] .card, 
+[data-theme="dark"] #flashcard, 
+[data-theme="dark"] .qz-word-container {
+    background: rgba(30, 30, 30, 0.5) !important;
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+}
+
+/* Glassy Buttons */
+.option-btn, 
+.action-btn, 
+.chip, 
+.quiz-input {
+    background: rgba(255, 255, 255, 0.5) !important;
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+    border: 1px solid rgba(255, 255, 255, 0.3) !important;
+    border-radius: 20px !important; /* Pill shape */
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.03);
+    transition: all 0.3s ease;
+}
+[data-theme="dark"] .option-btn, 
+[data-theme="dark"] .action-btn, 
+[data-theme="dark"] .chip {
+    background: rgba(255, 255, 255, 0.05) !important;
+    border: 1px solid rgba(255, 255, 255, 0.1) !important;
+}
+
+/* Make buttons pop when pressed */
+.option-btn:active, .action-btn:active, .chip:active {
+    transform: scale(0.95);
+    background: rgba(255, 255, 255, 0.8) !important;
+}
