@@ -8,14 +8,13 @@
     --gray: #808080;
 
     /* Theme Mapping */
-    --primary-color: var(--surfie-green);
-    --secondary-color: var(--atoll);
-    --accent-color: var(--fountain-blue);
-    --bg-color: #f4f6f8; 
+   --bg-color: #f4f7f6;
+    --bg-grad-2: #e0e8e8;      /* The bottom corner of the light gradient */
     --card-bg: #ffffff;
-    --text-main: var(--black);
-    --text-muted: var(--gray);
+    --text-main: #212529;
+    --text-muted: #495057;
     --border-color: #e0e0e0;
+    --primary-color: #0C7A79;
 
     /* Soft UI Variables */
     --border-radius: 24px;
@@ -26,18 +25,27 @@
 
 /* --- DARK MODE THEME COLORS --- */
 [data-theme="dark"], body.dark-mode {
-    --bg-color: #121212;
+  --bg-color: #121212;
+    --bg-grad-2: #1a2222;      /* The bottom corner of the dark gradient */
     --card-bg: #1e1e1e;
-   --text-main: #f8f9fa;      /* Pure white text */
-    --text-muted: #ced4da;     /* Soft gray for pinyin/hints */
+    --text-main: #f8f9fa;
+    --text-muted: #ced4da;
     --border-color: #333333;
     --shadow-sm: 0 4px 12px rgba(0,0,0,0.5);
 }
 
 /* Force all text globally to obey the theme */
 body {
-    background-color: var(--bg-color);
+    /* We use var(--bg-color) so it flips when the theme changes */
+    background-color: var(--bg-color) !important;
+    background: linear-gradient(135deg, var(--bg-color) 0%, var(--bg-grad-2) 100%) !important;
+    
     color: var(--text-main);
+    margin: 0;
+    font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+    min-height: 100vh;
+    transition: background-color 0.4s ease, color 0.4s ease; /* Makes the color swap smooth */
+    background-attachment: fixed;
 }
 
 body.dark-mode {
@@ -583,43 +591,95 @@ body {
 }
 
 /* The Glassy Cards */
+/* The Glassy Cards */
+/* ==========================================
+   --- SOLID BUBBLE UI (MODERN & CLEAN) ---
+   ========================================== */
+
+/* The Solid Cards (Keeping the round corners, but original solid colors!) */
 .card, 
 #flashcard, 
 .qz-word-container,
 .completion-message {
-    background: rgba(255, 255, 255, 0.65) !important; /* Semi-transparent */
-    backdrop-filter: blur(16px); /* The "Glass" blur effect */
-    -webkit-backdrop-filter: blur(16px); /* For iPhones */
-    border: 1px solid rgba(255, 255, 255, 0.4); /* Shiny glass edge */
-    border-radius: 32px !important; /* Huge bubble corners */
-    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.05), inset 0 1px 0 rgba(255, 255, 255, 0.6);
-}
-[data-theme="dark"] .card, 
-[data-theme="dark"] #flashcard, 
-[data-theme="dark"] .qz-word-container {
-    background: rgba(30, 30, 30, 0.5) !important;
-    border: 1px solid rgba(255, 255, 255, 0.08);
-    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+    background: var(--card-bg) !important; /* Back to the original solid color */
+    border: none !important; /* Remove the shiny glass border */
+    border-radius: 32px !important; /* Keep the nice bubble corners */
+    box-shadow: 0 8px 25px rgba(0, 0, 0, 0.08); /* Clean, soft shadow */
+    backdrop-filter: none !important; /* Turn off the glass blur */
+    -webkit-backdrop-filter: none !important;
 }
 
-/* Glassy Buttons */
+/* Dark Mode Cards */
+[data-theme="dark"] .card, 
+[data-theme="dark"] #flashcard, 
+[data-theme="dark"] .qz-word-container,
+[data-theme="dark"] .completion-message {
+    background: var(--card-bg) !important; /* Solid dark grey */
+    box-shadow: 0 8px 25px rgba(0, 0, 0, 0.4);
+}
+
+/* Solid Buttons & Inputs (Like your Book/Lesson Selectors) */
 .option-btn, 
 .action-btn, 
 .chip, 
-.quiz-input {
-    background: rgba(255, 255, 255, 0.5) !important;
-    backdrop-filter: blur(10px);
-    -webkit-backdrop-filter: blur(10px);
-    border: 1px solid rgba(255, 255, 255, 0.3) !important;
-    border-radius: 20px !important; /* Pill shape */
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.03);
+.quiz-input,
+/* --- 1. THE DROP-DOWN FIX --- */
+select {
+    -webkit-appearance: none; /* This forces iPhones/Macs to listen to our custom CSS! */
+    -moz-appearance: none;
+    appearance: none;
+    
+    background: var(--card-bg);
+    border: 2px solid var(--border-color);
+    border-radius: 20px; 
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.03);
+    color: var(--text-main); 
+    padding: 10px 15px;
+    outline: none;
     transition: all 0.3s ease;
+    cursor: pointer;
+    text-align: center;
 }
+
+/* Let the browser handle the option colors naturally so they never hide */
+select option {
+    background: var(--card-bg);
+    color: var(--text-main);
+}
+
+/* --- 2. THE GLOWING SELECTION ANIMATION --- */
+/* This creates a smooth radar-like pulse effect */
+@keyframes pulseGlow {
+    0% { box-shadow: 0 0 0 0 rgba(12, 122, 121, 0.4); }
+    70% { box-shadow: 0 0 0 10px rgba(12, 122, 121, 0); }
+    100% { box-shadow: 0 0 0 0 rgba(12, 122, 121, 0); }
+}
+
+select:focus, select:active {
+    border-color: var(--primary-color);
+    animation: pulseGlow 1.5s infinite; 
+    transform: scale(1.02); 
+}
+/* When you click/focus on the bubble, it highlights the border and pulses! */
+select:focus, select:active, .option-btn.active, .chip.active {
+    border-color: var(--primary-color) !important; /* Highlights the border in your primary color */
+    animation: pulseGlow 1.5s infinite; /* Triggers the glowing pulse animation */
+    transform: scale(1.02); /* Pops the bubble out slightly */
+}
+
+/* Dark Mode Buttons */
 [data-theme="dark"] .option-btn, 
 [data-theme="dark"] .action-btn, 
-[data-theme="dark"] .chip {
-    background: rgba(255, 255, 255, 0.05) !important;
-    border: 1px solid rgba(255, 255, 255, 0.1) !important;
+[data-theme="dark"] .chip,
+[data-theme="dark"] select {
+    background: var(--card-bg) !important;
+    border: 2px solid var(--border-color) !important;
+}
+
+/* Button Press Effect */
+.option-btn:active, .action-btn:active, .chip:active {
+    transform: scale(0.96);
+    opacity: 0.8;
 }
 
 /* Make buttons pop when pressed */
