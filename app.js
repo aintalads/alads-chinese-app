@@ -337,25 +337,43 @@ class ChineseApp {
     }
 
     renderManageReview() {
-        const listUi = document.getElementById('review-list-ui');
-        if(!listUi) return;
+        let listUi = document.getElementById('review-list-ui');
+        if(!listUi) {
+            // Try to create the element if missing (mobile fix)
+            const parent = document.getElementById('view-manage-review') || document.body;
+            listUi = document.createElement('ul');
+            listUi.id = 'review-list-ui';
+            parent.appendChild(listUi);
+        }
         listUi.innerHTML = '';
         if (this.state.progress.reviewQueue.length === 0) {
             listUi.innerHTML = '<li style="justify-content:center; color: var(--text-muted);">List is empty! 🎈</li>';
         } else {
             this.state.progress.reviewQueue.forEach(item => {
-                if (!item) return; 
+                if (!item) return;
                 const li = document.createElement('li');
                 li.innerHTML = `
                     <div class="review-item-text">
                         ${item.word || item.simplified}
                         <span class="review-item-pinyin">${item.pinyin || ''}</span>
                     </div>
-                    <button class="remove-btn" onclick="app.removeFromReviewQueue('${item.id}')">🗑️ Remove</button>
+                    <button class="remove-btn">🗑️ Remove</button>
                 `;
+                // Add both click and touch event listeners for remove button
+                const btn = li.querySelector('.remove-btn');
+                if (btn) {
+                    btn.addEventListener('click', () => this.removeFromReviewQueue(item.id));
+                    btn.addEventListener('touchstart', (e) => { e.preventDefault(); this.removeFromReviewQueue(item.id); });
+                }
                 listUi.appendChild(li);
             });
         }
+        // Ensure list is visible on mobile
+        listUi.style.display = 'block';
+        listUi.style.visibility = 'visible';
+        listUi.style.maxHeight = '100vh';
+        listUi.style.overflowY = 'auto';
+        listUi.style.webkitOverflowScrolling = 'touch';
     }
 
     removeFromReviewQueue(id) {
