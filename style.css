@@ -211,7 +211,7 @@ details[open].control-group .dropdown-content { display: block; animation: slide
     padding-top: 40px !important; /* Gives it nice breathing room at the top */
     padding-bottom: 40px !important;transform: rotateY(180deg); overflow-y: auto; touch-action: pan-y; }
 
-.card-front h1 { font-size: 4.0rem; font-weight: 500; margin: 0; color: var(--text-main); }
+.card-front h1 { font-size: 3.5rem; font-weight: 500; margin: 0; color: var(--text-main); }
 .card-back h2 { font-size: clamp(1.8rem, 6vw, 2.5rem);
     margin-top: 10px;font-size: 2.5rem; color: var(--text-main); font-weight: 500; margin-bottom: 15px; }
 .card-back p { font-size: 1.5rem; color: var(--text-muted); }
@@ -806,4 +806,3 @@ html, body {
     margin-bottom: 5px;
     font-weight: 400;
 }
-
