@@ -36,13 +36,6 @@ class ChineseApp {
             this.audioUnlocked = true;
         }, { once: true });
         this.data = { books: {} };
-
-        const savedReview = localStorage.getItem('mandarinReviewList');
-        if (savedReview) {
-            this.data.review = JSON.parse(savedReview);
-        } else {
-            this.data.review = [];
-        }
         
         this.state = {
             selectedBooks: new Set(),
