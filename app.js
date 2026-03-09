@@ -170,40 +170,60 @@ class ChineseApp {
 
     renderChips() {
         const bookContainer = document.getElementById('book-chips');
-        if(bookContainer) bookContainer.innerHTML = '';
+        if (bookContainer) bookContainer.innerHTML = '';
+        
+        // --- 1. RENDER BOOK CHIPS ---
         Object.keys(this.data.books).forEach(bId => {
             const chip = document.createElement('div');
             chip.className = `chip ${this.state.selectedBooks.has(bId) ? 'active' : ''}`;
             chip.innerText = `📖 Book ${bId}`;
+            
             chip.onclick = () => {
-                if(this.state.selectedBooks.has(bId)) this.state.selectedBooks.delete(bId);
-                else this.state.selectedBooks.add(bId);
+                // Update selection state
+                if (this.state.selectedBooks.has(bId)) {
+                    this.state.selectedBooks.delete(bId);
+                } else {
+                    this.state.selectedBooks.add(bId);
+                }
+                
+                // MOBILE FIX: Load content first, then refresh the UI colors
+                this.applyCourseSelection(); 
                 this.renderChips();
-                this.applyCourseSelection(); // <-- AUTO LOADS CONTENT
             };
-            if(bookContainer) bookContainer.appendChild(chip);
+            if (bookContainer) bookContainer.appendChild(chip);
         });
 
+        // Calculate which lessons are available based on selected books
         let availableLessons = new Set();
         this.state.selectedBooks.forEach(bId => {
-            Object.keys(this.data.books[bId].lessons).forEach(lId => availableLessons.add(parseInt(lId)));
+            if (this.data.books[bId] && this.data.books[bId].lessons) {
+                Object.keys(this.data.books[bId].lessons).forEach(lId => availableLessons.add(parseInt(lId)));
+            }
         });
 
         const lessonContainer = document.getElementById('lesson-chips');
-        if(lessonContainer) lessonContainer.innerHTML = '';
+        if (lessonContainer) lessonContainer.innerHTML = '';
         
-        Array.from(availableLessons).sort((a,b)=>a-b).forEach(lId => {
+        // --- 2. RENDER LESSON CHIPS ---
+        Array.from(availableLessons).sort((a, b) => a - b).forEach(lId => {
             const strId = lId.toString();
             const chip = document.createElement('div');
             chip.className = `chip ${this.state.selectedLessons.has(strId) ? 'active' : ''}`;
             chip.innerText = `${lId}`;
+            
             chip.onclick = () => {
-                if(this.state.selectedLessons.has(strId)) this.state.selectedLessons.delete(strId);
-                else this.state.selectedLessons.add(strId);
-                chip.classList.toggle('active');
-                this.applyCourseSelection(); // <-- AUTO LOADS CONTENT
+                // Update selection state
+                if (this.state.selectedLessons.has(strId)) {
+                    this.state.selectedLessons.delete(strId);
+                } else {
+                    this.state.selectedLessons.add(strId);
+                }
+                
+                // MOBILE FIX: Load content first, then refresh the UI colors
+                this.applyCourseSelection();
+                this.renderChips();
             };
-            if(lessonContainer) lessonContainer.appendChild(chip);
+            if (lessonContainer) lessonContainer.appendChild(chip);
         });
     }
 
@@ -229,6 +249,10 @@ class ChineseApp {
         if(window.innerWidth <= 800) this.toggleSidebar(); 
         if (this.state.currentMode === 'manage-review') this.renderManageReview();
         else this.loadCurrentMode();
+        document.querySelectorAll('.control-group summary').forEach(s => {
+    s.classList.add('flash-update');
+    setTimeout(() => s.classList.remove('flash-update'), 400);
+});
     }
 
     toggleSidebar() {
