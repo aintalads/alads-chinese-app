@@ -530,7 +530,7 @@ class ChineseApp {
 
         // 7. Attach the Review Logic
         document.getElementById('direct-review-btn').onclick = () => {
-            let reviewList = this.data.review || []; 
+            let reviewList = this.state.progress.reviewQueue || [];
             if (reviewList.length === 0) {
                 alert("Awesome job! 🎉 You don't have any unknown words to review right now.");
                 return;
