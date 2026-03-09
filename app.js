@@ -72,16 +72,21 @@ class ChineseApp {
         this.setupEventListeners();
         this.applyTheme(); 
         
+        // 🚨 THE FIX: Dynamically find the actual first book and lesson
         const firstBook = Object.keys(this.data.books)[0];
         if (firstBook) {
             this.state.selectedBooks.add(firstBook);
-            this.state.selectedLessons.add("1"); 
+            
+            // Look at the data and grab the actual first lesson (whether it is 0, 1, or Intro)
+            const firstLesson = Object.keys(this.data.books[firstBook].lessons)[0];
+            if (firstLesson) {
+                this.state.selectedLessons.add(firstLesson.toString()); 
+            }
         }
         
         this.renderChips();
         this.applyCourseSelection(); 
     }
-
     processData() {
         const ensurePath = (bId, lId) => {
             if (!this.data.books[bId]) this.data.books[bId] = { lessons: {} };
