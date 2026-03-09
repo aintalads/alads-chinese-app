@@ -742,6 +742,9 @@ class ChineseApp {
         const getItemKey = item => item.id || item.word || item.simplified || JSON.stringify(item);
         const currentKey = getItemKey(currentItem);
 
+        // Debug log
+        console.log('[handleSwipe]', { direction, currentItem, currentKey, reviewQueueBefore: [...this.state.progress.reviewQueue] });
+
         // 1. Log the swipe in the history so the numbers count!
         if (!this.state.history) this.state.history = [];
         this.state.history.push({ direction: direction, item: currentItem, index: this.state.currentIndex });
@@ -750,14 +753,17 @@ class ChineseApp {
         if (direction === 'left') {
             if (!this.state.progress.reviewQueue.some(item => getItemKey(item) === currentKey)) {
                 this.state.progress.reviewQueue.push(currentItem);
+                console.log('[handleSwipe] Added to reviewQueue:', currentItem);
             }
             this.saveProgress();
             this.saveSession();
         } else if (direction === 'right') {
             this.state.progress.reviewQueue = this.state.progress.reviewQueue.filter(item => getItemKey(item) !== currentKey);
+            console.log('[handleSwipe] Removed from reviewQueue:', currentItem);
             this.saveProgress();
             this.saveSession();
         }
+        console.log('[handleSwipe] reviewQueueAfter:', [...this.state.progress.reviewQueue]);
         activeCard.style.transition = 'transform 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275), opacity 0.4s ease';
         activeCard.style.opacity = '0';
         activeCard.style.transform = `translateX(${direction === 'left' ? '-150%' : '150%'}) rotate(${direction === 'left' ? '-20deg' : '20deg'})`;
@@ -1186,7 +1192,11 @@ class ChineseApp {
         return prog;
     }
 
-    saveProgress() { localStorage.setItem('aladsProgress', JSON.stringify(this.state.progress)); this.updateProgressUI(); }
+    saveProgress() {
+        console.log('[saveProgress] Saving progress:', this.state.progress);
+        localStorage.setItem('aladsProgress', JSON.stringify(this.state.progress));
+        this.updateProgressUI();
+    }
     updateProgressUI() {
         // --- 1. SIDEBAR STATS (Streak, Review, Mastered) ---
         const s = document.getElementById('streak-count');
