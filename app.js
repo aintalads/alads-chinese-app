@@ -179,6 +179,7 @@ class ChineseApp {
                 if(this.state.selectedBooks.has(bId)) this.state.selectedBooks.delete(bId);
                 else this.state.selectedBooks.add(bId);
                 this.renderChips();
+                this.applyCourseSelection(); // <-- AUTO LOADS CONTENT
             };
             if(bookContainer) bookContainer.appendChild(chip);
         });
@@ -200,6 +201,7 @@ class ChineseApp {
                 if(this.state.selectedLessons.has(strId)) this.state.selectedLessons.delete(strId);
                 else this.state.selectedLessons.add(strId);
                 chip.classList.toggle('active');
+                this.applyCourseSelection(); // <-- AUTO LOADS CONTENT
             };
             if(lessonContainer) lessonContainer.appendChild(chip);
         });
