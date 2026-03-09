@@ -702,15 +702,14 @@ class ChineseApp {
 
         // 2. Add or Remove from the Review List
         if (direction === 'left') {
-            if (!this.data.review.some(item => item.id === currentItem.id)) {
-                this.data.review.push(currentItem);
+            if (!this.state.progress.reviewQueue.some(item => item.id === currentItem.id)) {
+                this.state.progress.reviewQueue.push(currentItem);
+                this.saveProgress();
             }
         } else if (direction === 'right') {
-            this.data.review = this.data.review.filter(item => item.id !== currentItem.id);
+            this.state.progress.reviewQueue = this.state.progress.reviewQueue.filter(item => item.id !== currentItem.id);
+            this.saveProgress();
         }
-
-        // 3. Save memory and animate
-        localStorage.setItem('mandarinReviewList', JSON.stringify(this.data.review));
         activeCard.style.transition = 'transform 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275), opacity 0.4s ease';
         activeCard.style.opacity = '0';
         activeCard.style.transform = `translateX(${direction === 'left' ? '-150%' : '150%'}) rotate(${direction === 'left' ? '-20deg' : '20deg'})`;
@@ -915,8 +914,10 @@ class ChineseApp {
         var questionText = ""; 
         var correctMeaning = "";
         
+        // --- 1. SET QUESTION & CORRECT ANSWER ---
         if (qType === 'zh') {
             questionText = item.word || item.simplified; 
+            // If Answer Mode is Pinyin, we look for item.pinyin
             correctMeaning = (aType === 'mc-py') ? item.pinyin : (item.definition || item.meaning || item.english || "");
         } else if (qType === 'py') {
             questionText = item.pinyin; 
@@ -928,9 +929,9 @@ class ChineseApp {
 
         document.getElementById('qz-word').innerText = questionText;
         
+        // --- 2. HINT & AUDIO LOGIC ---
         var pinyinBtn = document.getElementById('qz-pinyin-btn');
         var hintEl = document.getElementById('qz-pinyin-hint');
-        
         if (hintEl) {
             hintEl.classList.add('hidden');
             hintEl.innerText = item.pinyin || ""; 
@@ -942,7 +943,7 @@ class ChineseApp {
         }
 
         document.getElementById('qz-sound-btn').onclick = (e) => {
-            e.stopPropagation(); // Prevents flipping the card when clicking sound
+            e.stopPropagation(); 
             this.playAudio(item.word || item.simplified, 'zh-CN');
         };
 
@@ -951,11 +952,7 @@ class ChineseApp {
         var optionsContainer = document.getElementById('qz-options');
         optionsContainer.innerHTML = ''; 
 
-        var cleanText = (str) => {
-            if (!str) return "";
-            return str.normalize("NFD").replace(/[\u0300-\u036f]/g, "").replace(/[^a-zA-Z0-9\u4e00-\u9fa5]/g, "").toLowerCase();
-        };
-
+        // --- 3. TYPING MODE ---
         if (aType === 'type') {
             optionsContainer.style.display = 'block';
             var inputField = document.createElement('input');
@@ -978,9 +975,10 @@ class ChineseApp {
 
             var checkTypedAnswer = (e) => {
                 if (e) e.stopPropagation();
+                var cleanText = (str) => !str ? "" : str.normalize("NFD").replace(/[\u0300-\u036f]/g, "").replace(/[^a-zA-Z0-9\u4e00-\u9fa5]/g, "").toLowerCase();
                 var cleanedUserInput = cleanText(inputField.value);
                 var correctMeaningsList = correctMeaning.split(/[,/;]/).map(m => cleanText(m));
-                var isCorrect = correctMeaningsList.some(m => m === cleanedUserInput || (m.includes(cleanedUserInput) && cleanedUserInput.length > 2));
+                var isCorrect = correctMeaningsList.some(m => m === cleanedUserInput || (m.length > 2 && m.includes(cleanedUserInput)));
 
                 if (isCorrect) {
                     this.playSound('correct'); 
@@ -995,20 +993,20 @@ class ChineseApp {
                     inputField.style.borderColor = '#dc3545';
                     if (hintEl && qType === 'zh') hintEl.classList.remove('hidden');
                 }
-                submitBtn.disabled = true; 
-                inputField.disabled = true;
+                submitBtn.disabled = true; inputField.disabled = true;
                 setTimeout(() => this.nextItem(), 1200); 
             };
 
             submitBtn.onpointerdown = checkTypedAnswer;
             inputField.addEventListener('keypress', (e) => { if (e.key === 'Enter') checkTypedAnswer(e); });
 
+        // --- 4. MULTIPLE CHOICE MODE (MC-PY, MC, etc) ---
         } else {
             optionsContainer.style.display = 'grid'; 
             var options = [item];
             while (options.length < 4 && options.length < this.state.studyQueue.length) {
                 var randItem = this.state.studyQueue[Math.floor(Math.random() * this.state.studyQueue.length)];
-                if (!options.some(opt => opt.id === randItem.id)) options.push(randItem);
+                if (!options.some(opt => (opt.id || opt.word) === (randItem.id || randItem.word))) options.push(randItem);
             }
             options.sort(() => Math.random() - 0.5); 
 
@@ -1016,27 +1014,24 @@ class ChineseApp {
                 var btn = document.createElement('button');
                 btn.className = 'option-btn';
                 
-                if (aType === 'mc-py') {
-                    btn.innerText = opt.pinyin; 
-                } else if (qType === 'en') {
-                    btn.innerText = opt.word || opt.simplified;
-                } else {
-                    btn.innerText = opt.definition || opt.meaning || opt.english;
-                }
+                // Show text based on mode
+                if (aType === 'mc-py') btn.innerText = opt.pinyin; 
+                else if (qType === 'en') btn.innerText = opt.word || opt.simplified;
+                else btn.innerText = opt.definition || opt.meaning || opt.english;
 
-                btn.dataset.id = opt.id || opt.word || opt.simplified; 
+                // Robust ID for comparison
+                const currentOptId = String(opt.id || opt.word || opt.simplified);
+                btn.dataset.id = currentOptId;
 
-                // 📱 MOBILE OPTIMIZATION: Use pointerdown + stopPropagation
                 btn.onpointerdown = (e) => {
                     e.preventDefault();
-                    e.stopPropagation(); // 🛑 Stops the click from reaching the card behind the button
+                    e.stopPropagation();
 
-                    // Lock all buttons immediately
                     Array.from(optionsContainer.children).forEach(child => child.disabled = true);
                     
-                    const targetId = item.id || item.word || item.simplified;
+                    const targetId = String(item.id || item.word || item.simplified);
 
-                    if (opt.id === item.id) {
+                    if (currentOptId === targetId) {
                         this.playSound('correct'); 
                         btn.style.backgroundColor = '#d4edda'; 
                         btn.style.borderColor = '#28a745'; 
@@ -1048,14 +1043,13 @@ class ChineseApp {
                         btn.style.borderColor = '#dc3545'; 
                         btn.style.color = '#721c24';
                         
-                        // Highlight the correct answer
+                        // Highlight correct button
                         Array.from(optionsContainer.children).forEach(child => {
-                            if (child.dataset.id === String(targetId)) {
+                            if (child.dataset.id === targetId) {
                                 child.style.backgroundColor = '#d4edda'; 
                                 child.style.borderColor = '#28a745';
                             }
                         });
-                        
                         if (hintEl && qType === 'zh') hintEl.classList.remove('hidden');
                     }
                     
