@@ -545,15 +545,7 @@ class ChineseApp {
 
         // 7. Attach the Review Logic
         document.getElementById('direct-review-btn').onclick = () => {
-           this.startReviewMode();;
-            if (reviewList.length === 0) {
-                alert("Awesome job! 🎉 You don't have any unknown words to review right now.");
-                return;
-            }
-            this.state.studyQueue = [...reviewList];
-            this.state.currentIndex = 0;
-            this.state.score = 0;
-            this.setMode('flashcards'); 
+           this.startReviewMode();
         };
 
         if (typeof this.triggerConfetti === 'function') this.triggerConfetti();
