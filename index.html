@@ -152,7 +152,7 @@
                         <div class="dropdown-menu">
                             <button id="auto-play-btn" class="dropdown-item" onclick="app.toggleAutoPlaySlideshow()">▶️ Auto-Slideshow</button>
                             <div class="dropdown-item-group">
-                                <label style="font-size: 0.8rem; color: var(--text-muted); padding-left: 12px;">Speed:</label>
+                                <label for="fc-speed-select" style="font-size: 0.8rem; color: var(--text-muted); padding-left: 12px;">Speed:</label>
                                 <select id="fc-speed-select" class="speed-select" style="width: 100%; border:none; margin-top: 5px;">
                                     <option value="slow">🐢 Slow</option>
                                     <option value="normal" selected>🚶 Normal</option>
@@ -217,7 +217,7 @@
                         <div class="dropdown-menu">
                             <button id="sn-auto-play-btn" class="dropdown-item" onclick="app.toggleSentenceSlideshow()">▶️ Auto-Slideshow</button>
                             <div class="dropdown-item-group">
-                                <label style="font-size: 0.8rem; color: var(--text-muted); padding-left: 12px;">Speed:</label>
+                                <label for="sn-speed-select" style="font-size: 0.8rem; color: var(--text-muted); padding-left: 12px;">Speed:</label>
                                 <select id="sn-speed-select" class="speed-select" style="width: 100%; border:none; margin-top: 5px;">
                                     <option value="slow">🐢 Slow</option>
                                     <option value="normal" selected>🚶 Normal</option>
@@ -247,7 +247,7 @@
             <div id="view-quiz" class="study-view">
                 <div id="quiz-settings-ui" class="quiz-settings">
                     <div class="setting-group">
-                        <label>Question:</label>
+                        <label for="qz-q-type">Question:</label>
                         <select id="qz-q-type">
                             <option value="zh">Chinese</option>
                             <option value="py">Pinyin</option>
@@ -255,7 +255,7 @@
                         </select>
                     </div>
                     <div class="setting-group">
-                        <label>Answer Format:</label>
+                        <label for="qz-a-type">Answer Format:</label>
                         <select id="qz-a-type">
     <option value="mc">Multiple Choice (Meaning)</option>
     <option value="mc-py">Multiple Choice (Pinyin)</option>
@@ -307,8 +307,7 @@
         </div>
 </div>
     
-    <script src="app.js?v=999999999"></script>
+    <script src="app.js?v=66"></script>
 </body>
 </html>
-
 
