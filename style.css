@@ -1,5 +1,5 @@
 :root {
-    /* Custom Color Palette */
+    /* Your Custom Color Palette */
     --blue-dianne: #204E59;
     --surfie-green: #0C7A79;
     --atoll: #0A6F75;
@@ -7,31 +7,32 @@
     --black: #000000;
     --gray: #808080;
 
-    /* Theme Mapping */
-   --bg-color: #f4f7f6;
-    --bg-grad-2: #e0e8e8;      /* The bottom corner of the light gradient */
-    --card-bg: #ffffff;
-    --text-main: #212529;
-    --text-muted: #495057;
-    --border-color: #e0e0e0;
-    --primary-color: #0C7A79;
-
+    /* --- LIGHT MODE (Complimentary Teal/Mint) --- */
+    --bg-color: #F0F7F7 !important;       /* A very soft, clean mint-white */
+    --bg-grad-2: #E2EFEF !important;      /* A slightly deeper soft teal for the gradient */
+    --card-bg: #ffffff !important;        /* Keep cards pure white so they pop */
+    --text-main: #1A2B2E !important;      /* Dark teal-grey text (softer than pure black) */
+    --text-muted: #55757A !important;     /* Muted teal text */
+    --border-color: #D1E3E3 !important;   /* Soft teal borders */
+    --primary-color: var(--surfie-green);
+    
     /* Soft UI Variables */
     --border-radius: 24px;
     --border-radius-sm: 16px;
-    --shadow-sm: 0 4px 12px rgba(0, 0, 0, 0.03);
-    --shadow-md: 0 16px 40px rgba(0, 0, 0, 0.08);
+    --shadow-sm: 0 4px 12px rgba(12, 122, 121, 0.08); /* Shadow tinted with your primary color! */
+    --shadow-md: 0 16px 40px rgba(12, 122, 121, 0.12);
 }
 
 /* --- DARK MODE THEME COLORS --- */
 [data-theme="dark"], body.dark-mode {
-  --bg-color: #121212;
-    --bg-grad-2: #1a2222;      /* The bottom corner of the dark gradient */
-    --card-bg: #1e1e1e;
-    --text-main: #f8f9fa;
-    --text-muted: #ced4da;
-    --border-color: #333333;
-    --shadow-sm: 0 4px 12px rgba(0,0,0,0.5);
+    --bg-color: #0A181C !important;       /* An extremely dark, rich Blue Dianne */
+    --bg-grad-2: #122B31 !important;      /* A deep ocean gradient */
+    --card-bg: #1A3A42 !important;        /* Dark teal for the cards */
+    --text-main: #F0F7F7 !important;      /* Bright mint-white for easy reading */
+    --text-muted: #9BB8B8 !important;     /* Bright silver/teal for secondary text */
+    --border-color: #26525D !important;   /* Dark teal borders */
+    --shadow-sm: 0 4px 12px rgba(0, 0, 0, 0.3);
+    --shadow-md: 0 16px 40px rgba(0, 0, 0, 0.5);
 }
 
 /* Force all text globally to obey the theme */
@@ -48,14 +49,7 @@ body {
     background-attachment: fixed;
 }
 
-body.dark-mode {
-    --bg-color: var(--black);
-    --card-bg: var(--blue-dianne);
-    --text-main: #ffffff;
-    --text-muted: #d0d0d0;
-    --border-color: var(--atoll);
-    --primary-color: var(--fountain-blue); 
-}
+
 
 /* --- UPDATED FONT FAMILY FOR CHINESE --- */
 * { 
@@ -70,7 +64,7 @@ body.dark-mode {
 
 /* GLOBALLY DISABLE HORIZONTAL SCROLLING (STRICT) */
 html, body { 
-    background-color: var(--bg-color); 
+    background-color: var(--bg-color)!important; 
     color: var(--text-main); 
     line-height: 1.5; 
     transition: background 0.3s, color 0.3s; 
@@ -213,10 +207,13 @@ details[open].control-group .dropdown-content { display: block; animation: slide
 
 .card-front { touch-action: none; }
 .card-front, .card-back { width: 100%; height: 100%; position: absolute; backface-visibility: hidden; display: flex; flex-direction: column; justify-content: center; align-items: center; background: var(--card-bg); border-radius: 28px; padding: 30px; text-align: center; border: 1px solid var(--border-color); }
-.card-back { transform: rotateY(180deg); overflow-y: auto; touch-action: pan-y; }
+.card-back { justify-content: flex-start !important; /* Forces the text to start at the top */
+    padding-top: 40px !important; /* Gives it nice breathing room at the top */
+    padding-bottom: 40px !important;transform: rotateY(180deg); overflow-y: auto; touch-action: pan-y; }
 
 .card-front h1 { font-size: 5rem; font-weight: 500; margin: 0; color: var(--text-main); }
-.card-back h2 { font-size: 2.5rem; color: var(--text-main); font-weight: 500; margin-bottom: 15px; }
+.card-back h2 { font-size: clamp(1.8rem, 6vw, 2.5rem);
+    margin-top: 10px;font-size: 2.5rem; color: var(--text-main); font-weight: 500; margin-bottom: 15px; }
 .card-back p { font-size: 1.5rem; color: var(--text-muted); }
 
 .flashcard-controls { display: flex; justify-content: center; gap: 15px; margin-bottom: 15px; }
@@ -258,10 +255,11 @@ details[open].control-group .dropdown-content { display: block; animation: slide
         width: 100%; 
         max-width: 100vw; /* Hard limit */
         box-sizing: border-box; 
-        #qz-options, .quiz-options {
-        display: flex !important;
-        flex-direction: column;
-        gap: 12px;
+        #qz-options, .quiz-options { 
+        display: grid !important; 
+        grid-template-columns: 1fr 1fr; /* This splits it into 2 columns */
+        gap: 12px; 
+    }
     }
     }
     
@@ -308,7 +306,7 @@ details[open].control-group .dropdown-content { display: block; animation: slide
     
     .card { width: 100%; max-width: 340px; }
     .study-header { flex-direction: column; gap: 10px; align-items: flex-start; }
-}
+
 
 /* --- Manage Study List View --- */
 .manage-list-btn { background: transparent; color: var(--text-muted); border: 1px solid var(--border-color); width: 100%; padding: 10px; border-radius: 9999px; font-size: 0.9rem; font-weight: 600; cursor: pointer; margin-top: 10px; transition: 0.2s; }
@@ -462,10 +460,33 @@ button { border-radius: 9999px; padding: 10px 20px; font-weight: 600; cursor: po
 }
 
 body.theme-dark { --bg-main: #121212; --nav-bg: #1e1e1e; --text-main: #e0e0e0; --text-muted: #a0a0a0; --card-bg: #2d2d2d; --primary-color: #4da3ff; --accent-color: rgba(255,255,255,0.08); }
-body.theme-matcha { --bg-main: #f5f5dc; --nav-bg: #e8ecd7; --text-main: #2b3a1d; --text-muted: #4f5a43; --card-bg: #ffffff; --primary-color: #556b2f; --accent-color: #dcedc8; }
-body.theme-sakura { --bg-main: #fff0f5; --nav-bg: #ffe4e1; --text-main: #4a2c3a; --text-muted: #8a5a70; --card-bg: #ffffff; --primary-color: #ff69b4; --accent-color: #ffd1dc; }
-body.theme-midnight { --bg-main: #0f172a; --nav-bg: #1e293b; --text-main: #e2e8f0; --text-muted: #94a3b8; --card-bg: #334155; --primary-color: #8b5cf6; --accent-color: rgba(255,255,255,0.1); }
-
+body.theme-matcha { 
+    --bg-color: #ebf6bd !important; 
+    --bg-grad-2: #E4E9D1 !important; 
+    --card-bg: #ffffff !important; 
+    --text-main: #2b3a1d !important; 
+    --text-muted: #4f5a43 !important; 
+    --border-color: #dcedc8 !important;
+    --primary-color: #556b2f !important; 
+}
+body.theme-sakura { 
+    --bg-color: #eddade !important; 
+    --bg-grad-2: #FFE3E8 !important; 
+    --card-bg: #ffffff !important; 
+    --text-main: #4a2c3a !important; 
+    --text-muted: #8a5a70 !important; 
+    --border-color: #ffd1dc !important;
+    --primary-color: #ff69b4 !important; 
+}
+body.theme-midnight { 
+    --bg-color: #0f172a !important; 
+    --bg-grad-2: #1e293b !important; 
+    --card-bg: #334155 !important; 
+    --text-main: #e2e8f0 !important; 
+    --text-muted: #94a3b8 !important; 
+    --border-color: #475569 !important;
+    --primary-color: #8b5cf6 !important; 
+}
 body { background-color: var(--bg-main); color: var(--text-main); }
 .navbar { background-color: var(--nav-bg); }
 .card-inner .card-front, .card-inner .card-back { background-color: var(--card-bg); color: var(--text-main); }
@@ -686,4 +707,77 @@ select:focus, select:active, .option-btn.active, .chip.active {
 .option-btn:active, .action-btn:active, .chip:active {
     transform: scale(0.95);
     background: rgba(255, 255, 255, 0.8) !important;
+}
+
+/* ==========================================
+   --- ☢️ SUPER NUCLEAR BACKGROUND OVERRIDE --- 
+   ========================================== */
+
+/* 1. Force Light Mode on the HTML and Body */
+/* 1. Force Dynamic Mode on the HTML and Body */
+html, body {
+    /* Instead of hardcoded #F0F7F7, this listens to whatever theme you clicked! */
+    background: linear-gradient(135deg, var(--bg-color) 0%, var(--bg-grad-2) 100%) !important;
+    background-color: var(--bg-color) !important;
+    color: var(--text-main) !important;
+    min-height: 100vh !important;
+    margin: 0 !important;
+    padding: 0 !important;
+}
+/* 3. Strip the grey paint off EVERY possible container */
+#app, .container, .wrapper, main, .main-content, .study-view, #view-home, #view-study, #view-quiz, #view-complete {
+    background: transparent !important;
+    background-color: transparent !important;
+    box-shadow: none !important;
+}
+
+/* ==========================================
+   --- FLASHCARD SCROLLING BREAKDOWN ---
+   ========================================== */
+.fc-breakdown {
+    margin-top: 25px;
+    padding-top: 20px;
+    border-top: 2px dashed var(--border-color);
+    width: 100%;
+    text-align: left;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    padding-bottom: 20px; /* Gives space at the bottom when scrolling */
+}
+
+.char-breakdown-block {
+    display: flex;
+    align-items: center;
+    gap: 20px;
+    background: var(--accent-color);
+    padding: 16px 20px;
+    border-radius: 20px;
+    border: 1px solid var(--border-color);
+}
+
+.char-hz {
+    font-size: 3.5rem;
+    font-weight: 700;
+    color: var(--primary-color);
+    min-width: 65px;
+    text-align: center;
+}
+
+.char-details {
+    display: flex;
+    flex-direction: column;
+    font-size: 0.8rem;
+    color: var(--text-main);
+    line-height: 1.4;
+}
+
+.char-ex {
+    color: var(--text-muted);
+    font-size: 1.4rem;
+    margin-top: 4px;
+}
+.char-ex b {
+    color: var(--text-main);
+    font-size: 1.2rem;
 }
