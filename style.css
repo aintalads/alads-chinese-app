@@ -258,7 +258,8 @@ details[open].control-group .dropdown-content { display: block; animation: slide
         #qz-options, .quiz-options { 
         display: grid !important; 
         grid-template-columns: 1fr 1fr; /* This splits it into 2 columns */
-        gap: 12px; 
+        gap: 12px !important; 
+        margin-top: 8px;
     }
     }
     }
