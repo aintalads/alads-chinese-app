@@ -704,11 +704,13 @@ class ChineseApp {
         if (direction === 'left') {
             if (!this.state.progress.reviewQueue.some(item => item.id === currentItem.id)) {
                 this.state.progress.reviewQueue.push(currentItem);
-                this.saveProgress();
             }
+            this.saveProgress();
+            this.saveSession();
         } else if (direction === 'right') {
             this.state.progress.reviewQueue = this.state.progress.reviewQueue.filter(item => item.id !== currentItem.id);
             this.saveProgress();
+            this.saveSession();
         }
         activeCard.style.transition = 'transform 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275), opacity 0.4s ease';
         activeCard.style.opacity = '0';
