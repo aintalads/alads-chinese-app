@@ -687,7 +687,9 @@ class ChineseApp {
         if (!activeCard) return;
 
         const currentItem = this.state.studyQueue[this.state.currentIndex];
-        if (!this.data.review) this.data.review = [];
+        // Unique key for item: id, or word, or simplified
+        const getItemKey = item => item.id || item.word || item.simplified || JSON.stringify(item);
+        const currentKey = getItemKey(currentItem);
 
         // 1. Log the swipe in the history so the numbers count!
         if (!this.state.history) this.state.history = [];
@@ -695,13 +697,13 @@ class ChineseApp {
 
         // 2. Add or Remove from the Review List
         if (direction === 'left') {
-            if (!this.state.progress.reviewQueue.some(item => item.id === currentItem.id)) {
+            if (!this.state.progress.reviewQueue.some(item => getItemKey(item) === currentKey)) {
                 this.state.progress.reviewQueue.push(currentItem);
             }
             this.saveProgress();
             this.saveSession();
         } else if (direction === 'right') {
-            this.state.progress.reviewQueue = this.state.progress.reviewQueue.filter(item => item.id !== currentItem.id);
+            this.state.progress.reviewQueue = this.state.progress.reviewQueue.filter(item => getItemKey(item) !== currentKey);
             this.saveProgress();
             this.saveSession();
         }
