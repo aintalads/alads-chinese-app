@@ -271,29 +271,29 @@ class ChineseApp {
         this.loadCurrentMode();
     }
 
-    startReviewMode() {
-        // 1. Force a fresh pull from the browser's memory
+     startReviewMode() {
+        // 1. Refresh memory from the global save file
         this.state.progress = this.loadProgress();
 
-        // 2. Check if the list is empty
+        // 2. Check if the bucket is empty
         if (!this.state.progress.reviewQueue || this.state.progress.reviewQueue.length === 0) {
             alert("Your review list is empty! Swipe left on some cards first.");
             return;
         }
 
-        // 3. Set the mode safely (Bypass setMode so we don't kill the review state)
+        // 3. Set the mode to flashcards safely
         this.state.currentMode = 'flashcards';
         this.state.isReviewMode = true; 
 
-        // 4. Update the Sidebar UI to highlight Flashcards
+        // 4. Update Sidebar UI
         document.querySelectorAll('.mode-btn').forEach(btn => btn.classList.remove('active'));
         const activeBtn = document.getElementById('btn-flashcards');
         if (activeBtn) activeBtn.classList.add('active');
 
-        // 5. Load the mode! (This handles shuffling, titles, and rendering automatically)
+        // 5. Load the mode
         this.loadCurrentMode();
         
-        // 6. Hide the Book/Lesson selectors so you know you are in Review Mode
+        // Hide the Book/Lesson selectors so you focus on review
         const lessonSelector = document.getElementById('course-selector-container');
         if (lessonSelector) lessonSelector.style.display = 'none';
     }
@@ -744,15 +744,19 @@ class ChineseApp {
 
     handleSwipe(direction) {
         const activeCard = document.getElementById('flashcard');
-        if (!activeCard) return;
-
         const currentItem = this.state.studyQueue[this.state.currentIndex];
-        // Unique key for item: id, or word, or simplified
+        
+        // If there's no card on screen, do nothing
+        if (!currentItem) return;
+
+        // Unique key for item to prevent duplicates
         const getItemKey = item => item.id || item.word || item.simplified || JSON.stringify(item);
         const currentKey = getItemKey(currentItem);
 
-        // Debug log
-        console.log('[handleSwipe]', { direction, currentItem, currentKey, reviewQueueBefore: [...this.state.progress.reviewQueue] });
+        // 🛡️ SAFETY NET: Force the review bucket to exist so the app never crashes
+        if (!this.state.progress.reviewQueue) {
+            this.state.progress.reviewQueue = [];
+        }
 
         // 1. Log the swipe in the history so the numbers count!
         if (!this.state.history) this.state.history = [];
@@ -760,27 +764,34 @@ class ChineseApp {
 
         // 2. Add or Remove from the Review List
         if (direction === 'left') {
+            // Check if it's already in the bucket. If not, add it!
             if (!this.state.progress.reviewQueue.some(item => getItemKey(item) === currentKey)) {
                 this.state.progress.reviewQueue.push(currentItem);
-                console.log('[handleSwipe] Added to reviewQueue:', currentItem);
             }
-            this.saveProgress();
-            this.saveSession();
         } else if (direction === 'right') {
+            // Remove it from the bucket if they swipe right
             this.state.progress.reviewQueue = this.state.progress.reviewQueue.filter(item => getItemKey(item) !== currentKey);
-            console.log('[handleSwipe] Removed from reviewQueue:', currentItem);
-            this.saveProgress();
-            this.saveSession();
         }
-        console.log('[handleSwipe] reviewQueueAfter:', [...this.state.progress.reviewQueue]);
-        activeCard.style.transition = 'transform 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275), opacity 0.4s ease';
-        activeCard.style.opacity = '0';
-        activeCard.style.transform = `translateX(${direction === 'left' ? '-150%' : '150%'}) rotate(${direction === 'left' ? '-20deg' : '20deg'})`;
+        
+        // 3. Save to browser memory immediately
+        this.saveProgress();
+        this.saveSession();
 
-        setTimeout(() => {
+        // 4. Animate the card off-screen and go to the next one
+        if (activeCard) {
+            activeCard.style.transition = 'transform 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275), opacity 0.4s ease';
+            activeCard.style.opacity = '0';
+            activeCard.style.transform = `translateX(${direction === 'left' ? '-150%' : '150%'}) rotate(${direction === 'left' ? '-20deg' : '20deg'})`;
+
+            setTimeout(() => {
+                this.nextItem();
+                this.updateProgressUI(); 
+            }, 300);
+        } else {
+            // Fallback if the card HTML is missing
             this.nextItem();
-            this.updateProgressUI(); // Update the UI numbers after swiping!
-        }, 300);
+            this.updateProgressUI();
+        }
     }
 
     undoLastSwipe() {
