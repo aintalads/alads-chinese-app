@@ -893,12 +893,13 @@ class ChineseApp {
         localStorage.setItem('mandarinActiveSession', JSON.stringify(sessionData));
     }
 
-    renderQuiz() {
+   renderQuiz() {
         var item = this.state.studyQueue[this.state.currentIndex];
         if (!item) return;
 
         var qTypeSelect = document.getElementById('qz-q-type');
         var aTypeSelect = document.getElementById('qz-a-type');
+        
         if (qTypeSelect && !qTypeSelect.hasAttribute('data-listening')) {
             qTypeSelect.addEventListener('change', () => this.renderQuiz());
             if(aTypeSelect) aTypeSelect.addEventListener('change', () => this.renderQuiz());
@@ -911,28 +912,28 @@ class ChineseApp {
         var qType = qTypeSelect ? qTypeSelect.value : 'zh';
         var aType = aTypeSelect ? aTypeSelect.value : 'mc';
 
-        var questionText = ""; var correctMeaning = "";
+        var questionText = ""; 
+        var correctMeaning = "";
         
         if (qType === 'zh') {
             questionText = item.word || item.simplified; 
-            // If they chose Pinyin as the answer format, set the correct meaning to Pinyin!
             correctMeaning = (aType === 'mc-py') ? item.pinyin : (item.definition || item.meaning || item.english || "");
         } else if (qType === 'py') {
-            questionText = item.pinyin; correctMeaning = item.definition || item.meaning || item.english || "";
+            questionText = item.pinyin; 
+            correctMeaning = item.definition || item.meaning || item.english || "";
         } else if (qType === 'en') {
-            questionText = item.definition || item.meaning || item.english; correctMeaning = item.pinyin || item.word || item.simplified || "";
+            questionText = item.definition || item.meaning || item.english; 
+            correctMeaning = item.pinyin || item.word || item.simplified || "";
         }
 
         document.getElementById('qz-word').innerText = questionText;
         
-        // --- NEW: PINYIN HINT BUTTON LOGIC ---
         var pinyinBtn = document.getElementById('qz-pinyin-btn');
         var hintEl = document.getElementById('qz-pinyin-hint');
         
         if (hintEl) {
-            hintEl.classList.add('hidden'); // Always hide when a new question loads
-            hintEl.innerText = item.pinyin || ""; // Set the text to the current word's Pinyin
-            
+            hintEl.classList.add('hidden');
+            hintEl.innerText = item.pinyin || ""; 
             if (qType === 'zh') {
                 if (pinyinBtn) pinyinBtn.style.display = 'inline-block';
             } else {
@@ -940,8 +941,11 @@ class ChineseApp {
             }
         }
 
-        // --- QUIZ AUDIO FIX --- 
-        document.getElementById('qz-sound-btn').onclick = () => this.playAudio(item.word || item.simplified, 'zh-CN');
+        document.getElementById('qz-sound-btn').onclick = (e) => {
+            e.stopPropagation(); // Prevents flipping the card when clicking sound
+            this.playAudio(item.word || item.simplified, 'zh-CN');
+        };
+
         if (this.state.autoAudio) this.playAudio(item.word || item.simplified, 'zh-CN');
 
         var optionsContainer = document.getElementById('qz-options');
@@ -955,20 +959,25 @@ class ChineseApp {
         if (aType === 'type') {
             optionsContainer.style.display = 'block';
             var inputField = document.createElement('input');
-            inputField.type = 'text'; inputField.className = 'quiz-input';
-            inputField.placeholder = `Type the ${qType === 'en' ? 'Pinyin / Chinese' : 'English'}...`;
+            inputField.type = 'text'; 
+            inputField.className = 'quiz-input';
+            inputField.placeholder = `Type here...`;
 
             var submitBtn = document.createElement('button');
-            submitBtn.innerText = 'Submit Answer'; submitBtn.className = 'option-btn'; 
-            submitBtn.style.width = '100%'; submitBtn.style.maxWidth = '500px'; submitBtn.style.display = 'block'; submitBtn.style.margin = '0 auto';
+            submitBtn.innerText = 'Submit Answer'; 
+            submitBtn.className = 'option-btn'; 
+            submitBtn.style.width = '100%'; 
 
             var feedback = document.createElement('div');
             feedback.className = 'quiz-feedback';
 
-            optionsContainer.appendChild(inputField); optionsContainer.appendChild(submitBtn); optionsContainer.appendChild(feedback);
+            optionsContainer.appendChild(inputField); 
+            optionsContainer.appendChild(submitBtn); 
+            optionsContainer.appendChild(feedback);
             setTimeout(() => inputField.focus(), 100);
 
-            var checkAnswer = () => {
+            var checkTypedAnswer = (e) => {
+                if (e) e.stopPropagation();
                 var cleanedUserInput = cleanText(inputField.value);
                 var correctMeaningsList = correctMeaning.split(/[,/;]/).map(m => cleanText(m));
                 var isCorrect = correctMeaningsList.some(m => m === cleanedUserInput || (m.includes(cleanedUserInput) && cleanedUserInput.length > 2));
@@ -976,25 +985,23 @@ class ChineseApp {
                 if (isCorrect) {
                     this.playSound('correct'); 
                     this.state.score++;
-                    feedback.innerHTML = `✅ <b>Correct!</b><br><span style="font-size:0.9rem;">Answer: ${correctMeaning}</span>`;
-                    feedback.style.backgroundColor = '#d4edda'; feedback.style.color = '#155724';
+                    feedback.innerHTML = `✅ <b>Correct!</b><br>${correctMeaning}`;
+                    feedback.style.backgroundColor = '#d4edda';
                     inputField.style.borderColor = '#28a745';
                 } else {
                     this.playSound('wrong'); 
-                    feedback.innerHTML = `❌ <b>Incorrect.</b><br>Right answer: <b>${correctMeaning}</b>`;
-                    feedback.style.backgroundColor = '#f8d7da'; feedback.style.color = '#721c24';
+                    feedback.innerHTML = `❌ <b>Incorrect.</b><br>Answer: <b>${correctMeaning}</b>`;
+                    feedback.style.backgroundColor = '#f8d7da';
                     inputField.style.borderColor = '#dc3545';
-                    
-                    // --- NEW: AUTO-REVEAL PINYIN IF WRONG ---
                     if (hintEl && qType === 'zh') hintEl.classList.remove('hidden');
                 }
-                document.getElementById('quiz-score-ui').innerText = `🏆 Score: ${this.state.score} / ${this.state.studyQueue.length}`;
-                submitBtn.disabled = true; inputField.disabled = true;
+                submitBtn.disabled = true; 
+                inputField.disabled = true;
                 setTimeout(() => this.nextItem(), 1200); 
             };
 
-            submitBtn.onclick = checkAnswer;
-            inputField.addEventListener('keypress', (e) => { if (e.key === 'Enter') checkAnswer(); });
+            submitBtn.onpointerdown = checkTypedAnswer;
+            inputField.addEventListener('keypress', (e) => { if (e.key === 'Enter') checkTypedAnswer(e); });
 
         } else {
             optionsContainer.style.display = 'grid'; 
@@ -1009,23 +1016,26 @@ class ChineseApp {
                 var btn = document.createElement('button');
                 btn.className = 'option-btn';
                 
-                // 1. Set the button text exactly ONCE based on the mode
                 if (aType === 'mc-py') {
-                    btn.innerText = opt.pinyin; // Shows Pinyin choices!
+                    btn.innerText = opt.pinyin; 
                 } else if (qType === 'en') {
-                    btn.innerText = opt.word || opt.simplified; // ONLY shows Chinese characters, no Pinyin!
+                    btn.innerText = opt.word || opt.simplified;
                 } else {
                     btn.innerText = opt.definition || opt.meaning || opt.english;
                 }
 
-                // 2. Give the button a hidden ID so we never lose track of it
                 btn.dataset.id = opt.id || opt.word || opt.simplified; 
 
-                btn.onclick = () => {
-                    // Lock all buttons
+                // 📱 MOBILE OPTIMIZATION: Use pointerdown + stopPropagation
+                btn.onpointerdown = (e) => {
+                    e.preventDefault();
+                    e.stopPropagation(); // 🛑 Stops the click from reaching the card behind the button
+
+                    // Lock all buttons immediately
                     Array.from(optionsContainer.children).forEach(child => child.disabled = true);
                     
-                    // Check if correct using the ID
+                    const targetId = item.id || item.word || item.simplified;
+
                     if (opt.id === item.id) {
                         this.playSound('correct'); 
                         btn.style.backgroundColor = '#d4edda'; 
@@ -1033,26 +1043,23 @@ class ChineseApp {
                         btn.style.color = '#155724';
                         this.state.score++;
                     } else {
-                        // Guess was Wrong
                         this.playSound('wrong'); 
                         btn.style.backgroundColor = '#f8d7da'; 
                         btn.style.borderColor = '#dc3545'; 
                         btn.style.color = '#721c24';
                         
-                        // 3. Highlight the correct answer using the HIDDEN ID, not the text!
-                        const targetId = item.id || item.word || item.simplified;
+                        // Highlight the correct answer
                         Array.from(optionsContainer.children).forEach(child => {
-                            if (child.dataset.id === targetId) {
+                            if (child.dataset.id === String(targetId)) {
                                 child.style.backgroundColor = '#d4edda'; 
                                 child.style.borderColor = '#28a745';
                             }
                         });
                         
-                        // Auto-reveal Pinyin hint
                         if (hintEl && qType === 'zh') hintEl.classList.remove('hidden');
                     }
                     
-                    document.getElementById('quiz-score-ui').innerText = `🏆 Score: ${this.state.score} / ${this.state.studyQueue.length}`;
+                    if (scoreUi) scoreUi.innerText = `🏆 Score: ${this.state.score} / ${this.state.studyQueue.length}`;
                     setTimeout(() => this.nextItem(), 1500); 
                 };
                 optionsContainer.appendChild(btn);
