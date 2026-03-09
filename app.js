@@ -334,6 +334,38 @@ class ChineseApp {
         this.state.score = 0;
         this.updateProgressUI();
         this.renderCurrentItem();
+
+        // Add swipe/touch navigation for flashcards/review mode
+        if (this.state.currentMode === 'flashcards' && this.state.isReviewMode) {
+            const flashcardView = document.getElementById('view-flashcards');
+            if (flashcardView) {
+                // Remove previous listeners if any
+                flashcardView.ontouchstart = null;
+                flashcardView.ontouchend = null;
+                let startX = 0;
+                let endX = 0;
+                flashcardView.ontouchstart = function(e) {
+                    if (e.touches && e.touches.length === 1) {
+                        startX = e.touches[0].clientX;
+                    }
+                };
+                flashcardView.ontouchend = (e) => {
+                    if (e.changedTouches && e.changedTouches.length === 1) {
+                        endX = e.changedTouches[0].clientX;
+                        const diff = endX - startX;
+                        if (Math.abs(diff) > 50) {
+                            if (diff < 0) {
+                                // Swipe left: next item
+                                this.nextItem();
+                            } else {
+                                // Swipe right: prev item
+                                this.prevItem();
+                            }
+                        }
+                    }
+                };
+            }
+        }
     }
 
     renderManageReview() {
