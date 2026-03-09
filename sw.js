@@ -1,4 +1,5 @@
-const CACHE_NAME = 'mandarin-app-v5'; // Bumped to v5
+const CACHE_NAME = 'mandarin-app-v4'; // <-- Changed to v4 to trigger an update
+
 const urlsToCache = [
     './',
     './index.html',
@@ -6,31 +7,31 @@ const urlsToCache = [
     './app.js'
 ];
 
-// 1. Install and save the new files
+// 1. Install and save the files to the phone
 self.addEventListener('install', event => {
-    self.skipWaiting(); // 🌟 NEW: Forces the phone to use this version immediately
+    // Force the new service worker to take over immediately
+    self.skipWaiting();
     event.waitUntil(
         caches.open(CACHE_NAME)
             .then(cache => cache.addAll(urlsToCache))
     );
 });
 
-// 2. 🌟 NEW: Clean up the old broken caches (v1, v2, v3, v4)
+// 2. Activate and destroy the old caches (The Cache Killer!)
 self.addEventListener('activate', event => {
     event.waitUntil(
         caches.keys().then(cacheNames => {
             return Promise.all(
                 cacheNames.map(cacheName => {
+                    // If the cache name doesn't match v4, nuke it!
                     if (cacheName !== CACHE_NAME) {
-                        console.log('Deleting old cache:', cacheName);
-                        return caches.delete(cacheName); // Destroys the old ghosts!
+                        console.log('Destroying old cache:', cacheName);
+                        return caches.delete(cacheName);
                     }
                 })
             );
-        })
+        }).then(() => self.clients.claim()) // Take control of the page immediately
     );
-    // Ensure the new service worker takes control immediately
-    return self.clients.claim(); 
 });
 
 // 3. When offline, load the saved files
