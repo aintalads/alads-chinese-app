@@ -272,7 +272,7 @@ class ChineseApp {
     }
 
     startReviewMode() {
-        // 1. Refresh the progress directly from your main memory bank (aladsProgress)
+        // 1. Force a fresh pull from the browser's memory
         this.state.progress = this.loadProgress();
 
         // 2. Check if the list is empty
@@ -281,27 +281,22 @@ class ChineseApp {
             return;
         }
 
-        // 3. Set up the study session
-        this.state.isReviewMode = true;
-        
-        // Copy the review list into the active study queue
-        this.state.studyQueue = [...this.state.progress.reviewQueue];
-        this.state.currentIndex = 0;
-        this.state.score = 0;
+        // 3. Set the mode safely (Bypass setMode so we don't kill the review state)
+        this.state.currentMode = 'flashcards';
+        this.state.isReviewMode = true; 
 
-        // 4. Update the UI
-        document.querySelectorAll('.study-view').forEach(el => el.style.display = 'none');
-        const studyView = document.getElementById('view-study');
-        if (studyView) studyView.style.display = 'block';
+        // 4. Update the Sidebar UI to highlight Flashcards
+        document.querySelectorAll('.mode-btn').forEach(btn => btn.classList.remove('active'));
+        const activeBtn = document.getElementById('btn-flashcards');
+        if (activeBtn) activeBtn.classList.add('active');
+
+        // 5. Load the mode! (This handles shuffling, titles, and rendering automatically)
+        this.loadCurrentMode();
         
-        // Hide the Book/Lesson selectors so the user focuses on the review
+        // 6. Hide the Book/Lesson selectors so you know you are in Review Mode
         const lessonSelector = document.getElementById('course-selector-container');
         if (lessonSelector) lessonSelector.style.display = 'none';
-
-        // 5. Render the first card
-        this.renderFlashcard();
     }
-
     loadCurrentMode() {
         this.state.history = [];
         document.querySelectorAll('.study-view').forEach(v => v.classList.remove('active'));
@@ -457,9 +452,6 @@ class ChineseApp {
 
     showCompletion() {
 
-        this.state = {
-            // ... your existing state variables ...
-        };
 
         // --- 🔄 RESUME INTERRUPTED SESSION ---
         const activeSession = localStorage.getItem('mandarinActiveSession');
