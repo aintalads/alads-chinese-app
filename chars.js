@@ -1,6 +1,49 @@
 class ChineseApp {
     constructor() {
+
+        // Inside constructor()
+        this.audioUnlocked = false;
+
+        // Special iOS Voice Loader
+        const loadVoices = () => {
+            const voices = window.speechSynthesis.getVoices();
+            if (voices.length > 0) {
+                console.log("iPhone Voices Loaded:", voices.length);
+            }
+        };
+        window.speechSynthesis.onvoiceschanged = loadVoices;
+        loadVoices();
+
+        // One-time tap to unlock high-quality audio on iPhone
+        document.addEventListener('touchstart', () => {
+            if (this.audioUnlocked) return;
+            const silence = new SpeechSynthesisUtterance('');
+            window.speechSynthesis.speak(silence);
+            this.audioUnlocked = true;
+        }, { once: true });
+
+        window.speechSynthesis.getVoices(); 
+        if (speechSynthesis.onvoiceschanged !== undefined) {
+            speechSynthesis.onvoiceschanged = () => window.speechSynthesis.getVoices();
+        }
+
+        // Unlock audio on the very first tap anywhere on the screen
+        document.body.addEventListener('pointerdown', () => {
+            if (this.audioUnlocked) return;
+            const unlockMsg = new SpeechSynthesisUtterance('');
+            unlockMsg.volume = 0; // Silent play
+            window.speechSynthesis.speak(unlockMsg);
+            this.audioUnlocked = true;
+        }, { once: true });
         this.data = { books: {} };
+
+        const savedReview = localStorage.getItem('mandarinReviewList');
+        if (savedReview) {
+            this.data.review = JSON.parse(savedReview);
+        } else {
+            this.data.review = [];
+        }
+        
         this.state = {
             selectedBooks: new Set(),
             selectedLessons: new Set(),
@@ -22,22 +65,11 @@ class ChineseApp {
         this.sentenceSlideshowTimeout = null;
         this.hanziWriter = null;
         
-        // Mobile Audio Unlocker: Pre-loads voices and unlocks audio on first tap
+        // Pre-load voices to fix mobile delays
         window.speechSynthesis.getVoices(); 
         if (speechSynthesis.onvoiceschanged !== undefined) {
             speechSynthesis.onvoiceschanged = () => window.speechSynthesis.getVoices();
         }
-
-        const unlockAudio = () => {
-            const AudioContext = window.AudioContext || window.webkitAudioContext;
-            if (AudioContext) { const ctx = new AudioContext(); ctx.resume(); }
-            const msg = new SpeechSynthesisUtterance('');
-            window.speechSynthesis.speak(msg);
-            document.removeEventListener('touchstart', unlockAudio);
-            document.removeEventListener('click', unlockAudio);
-        };
-        document.addEventListener('touchstart', unlockAudio, { once: true });
-        document.addEventListener('click', unlockAudio, { once: true });
         
         this.init();
     }
@@ -81,7 +113,6 @@ class ChineseApp {
         }
     }
 
-    /* --- MOBILE SFX FIX: Removed deep bass waves, replaced with smooth sine waves --- */
     playSound(type) {
         const AudioContext = window.AudioContext || window.webkitAudioContext;
         if (!AudioContext) return;
@@ -94,28 +125,28 @@ class ChineseApp {
         const now = ctx.currentTime;
         if (type === 'correct') { 
             osc.type = 'sine';
-            osc.frequency.setValueAtTime(600, now); 
-            osc.frequency.setValueAtTime(800, now + 0.1); 
-            gain.gain.setValueAtTime(0.2, now);
+            osc.frequency.setValueAtTime(523.25, now); 
+            osc.frequency.setValueAtTime(659.25, now + 0.1); 
+            gain.gain.setValueAtTime(0.5, now);
             gain.gain.exponentialRampToValueAtTime(0.01, now + 0.3);
             osc.start(now); osc.stop(now + 0.3);
         } else if (type === 'wrong') { 
-            osc.type = 'sine'; // Changed from sawtooth to prevent broken speaker sound
-            osc.frequency.setValueAtTime(300, now); // Higher pitch for mobile speakers
-            osc.frequency.setValueAtTime(250, now + 0.15);
-            gain.gain.setValueAtTime(0.2, now);
+            osc.type = 'sawtooth';
+            osc.frequency.setValueAtTime(150, now);
+            osc.frequency.setValueAtTime(120, now + 0.15);
+            gain.gain.setValueAtTime(0.3, now);
             gain.gain.exponentialRampToValueAtTime(0.01, now + 0.3);
             osc.start(now); osc.stop(now + 0.3);
         } else if (type === 'swipe-right') { 
             osc.type = 'sine';
             osc.frequency.setValueAtTime(800, now);
-            gain.gain.setValueAtTime(0.05, now);
+            gain.gain.setValueAtTime(0.1, now);
             gain.gain.exponentialRampToValueAtTime(0.01, now + 0.15);
             osc.start(now); osc.stop(now + 0.15);
         } else if (type === 'swipe-left') { 
-            osc.type = 'sine'; // Changed from triangle to prevent thud distortion
-            osc.frequency.setValueAtTime(400, now);
-            gain.gain.setValueAtTime(0.05, now);
+            osc.type = 'triangle';
+            osc.frequency.setValueAtTime(200, now);
+            gain.gain.setValueAtTime(0.1, now);
             gain.gain.exponentialRampToValueAtTime(0.01, now + 0.15);
             osc.start(now); osc.stop(now + 0.15);
         }
@@ -139,38 +170,60 @@ class ChineseApp {
 
     renderChips() {
         const bookContainer = document.getElementById('book-chips');
-        if(bookContainer) bookContainer.innerHTML = '';
+        if (bookContainer) bookContainer.innerHTML = '';
+        
+        // --- 1. RENDER BOOK CHIPS ---
         Object.keys(this.data.books).forEach(bId => {
             const chip = document.createElement('div');
             chip.className = `chip ${this.state.selectedBooks.has(bId) ? 'active' : ''}`;
             chip.innerText = `📖 Book ${bId}`;
+            
             chip.onclick = () => {
-                if(this.state.selectedBooks.has(bId)) this.state.selectedBooks.delete(bId);
-                else this.state.selectedBooks.add(bId);
+                // Update selection state
+                if (this.state.selectedBooks.has(bId)) {
+                    this.state.selectedBooks.delete(bId);
+                } else {
+                    this.state.selectedBooks.add(bId);
+                }
+                
+                // MOBILE FIX: Load content first, then refresh the UI colors
+                this.applyCourseSelection(); 
                 this.renderChips();
             };
-            if(bookContainer) bookContainer.appendChild(chip);
+            if (bookContainer) bookContainer.appendChild(chip);
         });
 
+        // Calculate which lessons are available based on selected books
         let availableLessons = new Set();
         this.state.selectedBooks.forEach(bId => {
-            Object.keys(this.data.books[bId].lessons).forEach(lId => availableLessons.add(parseInt(lId)));
+            if (this.data.books[bId] && this.data.books[bId].lessons) {
+                Object.keys(this.data.books[bId].lessons).forEach(lId => availableLessons.add(parseInt(lId)));
+            }
         });
 
         const lessonContainer = document.getElementById('lesson-chips');
-        if(lessonContainer) lessonContainer.innerHTML = '';
+        if (lessonContainer) lessonContainer.innerHTML = '';
         
-        Array.from(availableLessons).sort((a,b)=>a-b).forEach(lId => {
+        // --- 2. RENDER LESSON CHIPS ---
+        Array.from(availableLessons).sort((a, b) => a - b).forEach(lId => {
             const strId = lId.toString();
             const chip = document.createElement('div');
             chip.className = `chip ${this.state.selectedLessons.has(strId) ? 'active' : ''}`;
             chip.innerText = `${lId}`;
+            
             chip.onclick = () => {
-                if(this.state.selectedLessons.has(strId)) this.state.selectedLessons.delete(strId);
-                else this.state.selectedLessons.add(strId);
-                chip.classList.toggle('active');
+                // Update selection state
+                if (this.state.selectedLessons.has(strId)) {
+                    this.state.selectedLessons.delete(strId);
+                } else {
+                    this.state.selectedLessons.add(strId);
+                }
+                
+                // MOBILE FIX: Load content first, then refresh the UI colors
+                this.applyCourseSelection();
+                this.renderChips();
             };
-            if(lessonContainer) lessonContainer.appendChild(chip);
+            if (lessonContainer) lessonContainer.appendChild(chip);
         });
     }
 
@@ -196,6 +249,10 @@ class ChineseApp {
         if(window.innerWidth <= 800) this.toggleSidebar(); 
         if (this.state.currentMode === 'manage-review') this.renderManageReview();
         else this.loadCurrentMode();
+        document.querySelectorAll('.control-group summary').forEach(s => {
+    s.classList.add('flash-update');
+    setTimeout(() => s.classList.remove('flash-update'), 400);
+});
     }
 
     toggleSidebar() {
@@ -264,7 +321,7 @@ class ChineseApp {
                 });
             });
 
-            document.getElementById('current-title').innerText = `📚 Study Session`;
+            document.getElementById('current-title').innerText = `📚 TOCL-EASY`;
             
             if (this.state.currentMode === 'sentences') {
                 this.state.studyQueue = [...aggregatedSentences].sort(() => Math.random() - 0.5);
@@ -337,7 +394,129 @@ class ChineseApp {
         if (this.state.currentMode === 'quiz') this.renderQuiz();
     }
 
-    nextItem() { this.state.currentIndex++; this.renderCurrentItem(); }
+    showCompletion() {
+
+        this.state = {
+            // ... your existing state variables ...
+        };
+
+        // --- 🔄 RESUME INTERRUPTED SESSION ---
+        const activeSession = localStorage.getItem('mandarinActiveSession');
+        if (activeSession) {
+            // Wait 0.5 seconds for the app to finish loading visually
+            setTimeout(() => {
+                if(confirm("Welcome back! 🚀 You have an unfinished study session. Would you like to resume exactly where you left off?")) {
+                    const parsed = JSON.parse(activeSession);
+                    this.state.studyQueue = parsed.queue;
+                    this.state.currentIndex = parsed.index;
+                    this.state.currentMode = parsed.mode;
+                    this.state.score = parsed.score;
+                    this.state.history = parsed.history;
+                    
+                    // Jump right back into the action!
+                    this.setMode(this.state.currentMode);
+                } else {
+                    // They chose not to resume, so delete the saved session
+                    localStorage.removeItem('mandarinActiveSession');
+                }
+            }, 500);
+        }
+        // 1. Hide all current screens
+        document.querySelectorAll('.study-view').forEach(v => v.classList.remove('active'));
+        
+        // 2. Find the Complete View (or build it if it's missing!)
+        let completeView = document.getElementById('view-complete');
+        if (!completeView) {
+            completeView = document.createElement('div');
+            completeView.id = 'view-complete';
+            completeView.className = 'study-view active';
+            document.querySelector('.main-content') ? document.querySelector('.main-content').appendChild(completeView) : document.body.appendChild(completeView);
+        } else {
+            completeView.classList.add('active');
+        }
+
+        // 3. Find the Message Box (or build it if it's missing!)
+        let msgContainer = completeView.querySelector('.completion-message');
+        if (!msgContainer) {
+            msgContainer = document.createElement('div');
+            msgContainer.className = 'completion-message';
+            msgContainer.style.textAlign = 'center';
+            msgContainer.style.padding = '40px 20px';
+            completeView.appendChild(msgContainer);
+        }
+
+        // 4. Calculate Math
+        const total = this.state.studyQueue.length;
+        const right = this.state.score || 0;
+        const wrong = total - right;
+        const mode = this.state.currentMode;
+
+        // 5. Build the UI
+        let contentHTML = `<h1 style="font-size: 2.5rem; margin-bottom: 10px;">
+            ${mode === 'quiz' ? '🎯 Quiz Complete!' : '🏆TOCL PASSED!!'}
+        </h1>`;
+
+        if (mode === 'quiz') {
+            contentHTML += `
+                <p style="font-size: 1.2rem; color: var(--text-muted); margin-bottom: 20px;">Here is your final score:</p>
+                <div style="background: var(--bg-color); padding: 20px; border-radius: 16px; display: inline-block; margin-bottom: 30px;">
+                    <strong style="color: #28a745; font-size: 1.8rem; margin-right: 20px;">✅ ${right} Right</strong>
+                    <strong style="color: #dc3545; font-size: 1.8rem;">❌ ${wrong} Wrong</strong>
+                </div>
+            `;
+        } else {
+            contentHTML += `<p style="font-size: 1.2rem; color: var(--text-muted); margin-bottom: 30px;">Excellent work. You have reviewed all items in this set.</p>`;
+        }
+
+        // 6. Build the Buttons
+        contentHTML += `
+            <div style="display: flex; gap: 15px; justify-content: center; flex-wrap: wrap;">
+                <button class="action-btn" onclick="app.state.currentIndex = 0; app.state.score = 0; app.setMode('${mode}')">
+                    🔁 Restart This Session
+                </button>
+                
+                <button class="action-btn" id="direct-review-btn" style="background-color: var(--primary-color); color: white;">
+                    🎯 Start Reviewing Unknown Words
+                </button>
+                
+                ${mode !== 'flashcards' ? `<button class="action-btn" onclick="app.setMode('flashcards')">🗂️ Study Flashcards</button>` : ''}
+            </div>
+        `;
+
+        msgContainer.innerHTML = contentHTML;
+
+        // 7. Attach the Review Logic
+        document.getElementById('direct-review-btn').onclick = () => {
+            let reviewList = this.data.review || []; 
+            if (reviewList.length === 0) {
+                alert("Awesome job! 🎉 You don't have any unknown words to review right now.");
+                return;
+            }
+            this.state.studyQueue = [...reviewList];
+            this.state.currentIndex = 0;
+            this.state.score = 0;
+            this.setMode('flashcards'); 
+        };
+
+        if (typeof this.triggerConfetti === 'function') this.triggerConfetti();
+    }
+
+    nextItem() {
+        this.saveSession();
+        this.state.currentIndex++;
+        
+        // If we reached the end of the study queue, show the epic completion screen!
+        if (this.state.currentIndex >= this.state.studyQueue.length) {
+            this.showCompletion(); 
+            return;
+        }
+        
+        // Otherwise, keep rendering the next item...
+        if (this.state.currentMode === 'flashcards') this.renderFlashcard();
+        else if (this.state.currentMode === 'writing') this.renderWriting();
+        else if (this.state.currentMode === 'sentences') this.renderSentence();
+        else if (this.state.currentMode === 'quiz') this.renderQuiz();
+    }
     prevItem() { if(this.state.currentIndex > 0) { this.state.currentIndex--; this.renderCurrentItem(); } }
     shuffleItems() { this.state.studyQueue.sort(() => Math.random() - 0.5); this.state.currentIndex = 0; this.renderCurrentItem(); }
 
@@ -365,35 +544,59 @@ class ChineseApp {
         });
     }
 
-    /* --- MOBILE TTS FIX: Aggressive language searching --- */
-    playAudio(text, lang = 'zh-CN', callback = null) {
-        if (!text) return;
-        window.speechSynthesis.cancel(); 
-        
-        const msg = new SpeechSynthesisUtterance(text);
-        msg.lang = lang; 
-        msg.rate = 0.85; 
+    // --- TOGGLE PINYIN HINT IN QUIZ ---
+    togglePinyinHint() {
+        const hintEl = document.getElementById('qz-pinyin-hint');
+        if (hintEl.classList.contains('hidden')) {
+            hintEl.classList.remove('hidden');
+        } else {
+            hintEl.classList.add('hidden');
+        }
+    }
 
-        let voices = window.speechSynthesis.getVoices();
-        if (voices.length > 0) {
-            let targetVoice = null;
-            if (lang.includes('zh')) {
-                // Look for ANY voice that sounds like Chinese if strict code fails
-                targetVoice = voices.find(v => 
-                    v.lang.toLowerCase().includes('zh') || 
-                    v.name.toLowerCase().includes('chinese') || 
-                    v.name.toLowerCase().includes('mandarin') ||
-                    v.name.toLowerCase().includes('taiwan')
-                );
-            } else {
-                targetVoice = voices.find(v => v.lang.toLowerCase().includes(lang.toLowerCase()));
-            }
-            if (targetVoice) msg.voice = targetVoice;
+    /* --- MOBILE AUDIO FIX --- */
+    playAudio(text, speedPref = 'normal') {
+    if (!text || !window.speechSynthesis) return;
+
+    // 1. Force stop any current speech
+    window.speechSynthesis.cancel();
+
+    // 2. Tiny delay helps Android and iOS hardware reset properly
+    setTimeout(() => {
+        const utterance = new SpeechSynthesisUtterance(text);
+
+        // 3. Set Rate based on your dropdown
+        let rate = 0.9; 
+        if (speedPref === 'slow') rate = 0.5; 
+        if (speedPref === 'fast') rate = 1.2;
+        utterance.rate = rate;
+
+        // 4. THE UNIVERSAL VOICE HUNTER
+        const voices = window.speechSynthesis.getVoices();
+        
+        // This looks for the best voice in this order:
+        // 1. Apple Premium (iPhone) 
+        // 2. Google Native (Android/Chrome)
+        // 3. Microsoft Natural (Windows Laptop)
+        let bestVoice = voices.find(v => 
+            (v.lang.includes('zh-TW') || v.lang.includes('zh-HK')) && 
+            (v.name.includes('Premium') || v.name.includes('Google') || v.name.includes('Siri'))
+        );
+
+        // Fallback: Any Traditional Chinese voice if premium isn't found
+        if (!bestVoice) {
+            bestVoice = voices.find(v => v.lang === 'zh-TW' || v.lang === 'zh-HK' || v.lang.includes('zh-Hant'));
         }
 
-        msg.onend = () => { if (callback) callback(); };
-        window.speechSynthesis.speak(msg);
-    }
+        if (bestVoice) {
+            utterance.voice = bestVoice;
+        } else {
+            utterance.lang = 'zh-TW'; // Basic fallback
+        }
+
+        window.speechSynthesis.speak(utterance);
+    }, 50);
+}
 
     renderFlashcard() {
         var item = this.state.studyQueue[this.state.currentIndex];
@@ -456,39 +659,66 @@ class ChineseApp {
         if(card) card.classList.toggle('is-flipped'); 
     }
 
-    handleSwipe(direction) {
-        if (this.state.isAnimating) return; 
-        this.state.isAnimating = true;
+    updateProgressUI() {
+        // --- 1. HEADER NUMBERS (e.g. 1 / 20) ---
+        const total = this.state.studyQueue ? this.state.studyQueue.length : 0;
+        const current = this.state.currentIndex + 1;
         
-        this.playSound(direction === 'right' ? 'swipe-right' : 'swipe-left');
+        const mCurrent = document.getElementById('mode-current');
+        if (mCurrent) mCurrent.innerText = total === 0 ? 0 : Math.min(current, total);
+        
+        const mTotal = document.getElementById('mode-total');
+        if (mTotal) mTotal.innerText = total;
 
-        const item = this.state.studyQueue[this.state.currentIndex];
-        if (item) this.state.history.push({ index: this.state.currentIndex, item: item, direction: direction });
-        else { this.state.isAnimating = false; this.nextItem(); return; }
+        // --- 2. SESSION KNOWN / STUDY AGAIN COUNTS ---
+        const knownCountSpan = document.getElementById('stat-known-count');
+        const studyCountSpan = document.getElementById('stat-study-count');
+        
+        if (knownCountSpan && studyCountSpan && this.state.history) {
+            let known = 0;
+            let studyMore = 0;
+            
+            // Calculate based strictly on the history we just fixed
+            this.state.history.forEach(h => {
+                if (h.direction === 'right') known++;
+                if (h.direction === 'left') studyMore++;
+            });
+            
+            knownCountSpan.innerText = known;
+            studyCountSpan.innerText = studyMore;
+        }
+    }
 
-        const card = document.getElementById('flashcard');
-        const moveX = direction === 'right' ? 350 : -350;
-        if(card) {
-            card.style.transition = 'transform 0.3s ease, opacity 0.3s ease'; 
-            card.style.transform = `translateX(${moveX}px) rotate(${moveX/10}deg)`;
-            card.style.opacity = '0';
+    handleSwipe(direction) {
+        const activeCard = document.getElementById('flashcard');
+        if (!activeCard) return;
+
+        const currentItem = this.state.studyQueue[this.state.currentIndex];
+        if (!this.data.review) this.data.review = [];
+
+        // 1. Log the swipe in the history so the numbers count!
+        if (!this.state.history) this.state.history = [];
+        this.state.history.push({ direction: direction, item: currentItem, index: this.state.currentIndex });
+
+        // 2. Add or Remove from the Review List
+        if (direction === 'left') {
+            if (!this.data.review.some(item => item.id === currentItem.id)) {
+                this.data.review.push(currentItem);
+            }
+        } else if (direction === 'right') {
+            this.data.review = this.data.review.filter(item => item.id !== currentItem.id);
         }
 
+        // 3. Save memory and animate
+        localStorage.setItem('mandarinReviewList', JSON.stringify(this.data.review));
+        activeCard.style.transition = 'transform 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275), opacity 0.4s ease';
+        activeCard.style.opacity = '0';
+        activeCard.style.transform = `translateX(${direction === 'left' ? '-150%' : '150%'}) rotate(${direction === 'left' ? '-20deg' : '20deg'})`;
+
         setTimeout(() => {
-            if (direction === 'right') { 
-                if (!this.state.progress.mastered.some(i => i.id === item.id)) {
-                    this.state.progress.mastered.push(item);
-                    this.state.progress.dailyMastered += 1;
-                }
-                this.state.progress.reviewQueue = this.state.progress.reviewQueue.filter(i => i.id !== item.id);
-            } else { 
-                if (!this.state.progress.reviewQueue.some(i => i.id === item.id)) this.state.progress.reviewQueue.push(item);
-            }
-            this.saveProgress();
-            if(card) card.style.transition = 'none';
             this.nextItem();
-            this.state.isAnimating = false; 
-        }, 250);
+            this.updateProgressUI(); // Update the UI numbers after swiping!
+        }, 300);
     }
 
     undoLastSwipe() {
@@ -561,7 +791,7 @@ class ChineseApp {
         const isDark = document.body.className.includes('dark') || document.body.className.includes('midnight');
 
         this.hanziWriter = HanziWriter.create('character-target-div', char, {
-            width: 250, height: 250, padding: 15,
+            width: 250, height: 250, padding: 15, drawingWidth: 55,
             strokeColor: isDark ? '#E8E6E1' : '#000000',
             radicalColor: isDark ? '#5EBBBA' : '#007bff', 
             showOutline: !this.state.outlineHidden,
@@ -635,12 +865,41 @@ class ChineseApp {
         });
     }
 
-    renderQuiz() {
+    togglePinyinHint() {
+        const hintEl = document.getElementById('qz-pinyin-hint');
+        if (hintEl) {
+            if (hintEl.classList.contains('hidden')) {
+                hintEl.classList.remove('hidden');
+            } else {
+                hintEl.classList.add('hidden');
+            }
+        }
+    }
+
+    // --- 💾 AUTO-SAVE FEATURE ---
+    saveSession() {
+        // Don't save if there is nothing to study
+        if (!this.state.studyQueue || this.state.studyQueue.length === 0) return; 
+        
+        const sessionData = {
+            queue: this.state.studyQueue,
+            index: this.state.currentIndex,
+            mode: this.state.currentMode,
+            score: this.state.score,
+            history: this.state.history || []
+        };
+        
+        // Save to the phone's hard drive!
+        localStorage.setItem('mandarinActiveSession', JSON.stringify(sessionData));
+    }
+
+   renderQuiz() {
         var item = this.state.studyQueue[this.state.currentIndex];
         if (!item) return;
 
         var qTypeSelect = document.getElementById('qz-q-type');
         var aTypeSelect = document.getElementById('qz-a-type');
+        
         if (qTypeSelect && !qTypeSelect.hasAttribute('data-listening')) {
             qTypeSelect.addEventListener('change', () => this.renderQuiz());
             if(aTypeSelect) aTypeSelect.addEventListener('change', () => this.renderQuiz());
@@ -653,106 +912,217 @@ class ChineseApp {
         var qType = qTypeSelect ? qTypeSelect.value : 'zh';
         var aType = aTypeSelect ? aTypeSelect.value : 'mc';
 
-        var questionText = ""; var correctMeaning = "";
+        var questionText = ""; 
+        var correctMeaning = "";
         
+        // --- 1. SET QUESTION & CORRECT ANSWER ---
         if (qType === 'zh') {
-            questionText = item.word || item.simplified; correctMeaning = item.definition || item.meaning || item.english || "";
+            questionText = item.word || item.simplified; 
+            // If Answer Mode is Pinyin, we look for item.pinyin
+            correctMeaning = (aType === 'mc-py') ? item.pinyin : (item.definition || item.meaning || item.english || "");
         } else if (qType === 'py') {
-            questionText = item.pinyin; correctMeaning = item.definition || item.meaning || item.english || "";
+            questionText = item.pinyin; 
+            correctMeaning = item.definition || item.meaning || item.english || "";
         } else if (qType === 'en') {
-            questionText = item.definition || item.meaning || item.english; correctMeaning = item.pinyin || item.word || item.simplified || "";
+            questionText = item.definition || item.meaning || item.english; 
+            correctMeaning = item.pinyin || item.word || item.simplified || "";
         }
 
         document.getElementById('qz-word').innerText = questionText;
         
-        // --- QUIZ AUDIO TRIGGER FIX ---
-        document.getElementById('qz-sound-btn').onclick = () => this.playAudio(item.word || item.simplified, 'zh-CN');
+        // --- 2. HINT & AUDIO LOGIC ---
+        var pinyinBtn = document.getElementById('qz-pinyin-btn');
+        var hintEl = document.getElementById('qz-pinyin-hint');
+        if (hintEl) {
+            hintEl.classList.add('hidden');
+            hintEl.innerText = item.pinyin || ""; 
+            if (qType === 'zh') {
+                if (pinyinBtn) pinyinBtn.style.display = 'inline-block';
+            } else {
+                if (pinyinBtn) pinyinBtn.style.display = 'none';
+            }
+        }
+
+        document.getElementById('qz-sound-btn').onclick = (e) => {
+            e.stopPropagation(); 
+            this.playAudio(item.word || item.simplified, 'zh-CN');
+        };
+
         if (this.state.autoAudio) this.playAudio(item.word || item.simplified, 'zh-CN');
 
         var optionsContainer = document.getElementById('qz-options');
         optionsContainer.innerHTML = ''; 
 
-        var cleanText = (str) => {
-            if (!str) return "";
-            return str.normalize("NFD").replace(/[\u0300-\u036f]/g, "").replace(/[^a-zA-Z0-9\u4e00-\u9fa5]/g, "").toLowerCase();
-        };
-
+        // --- 3. TYPING MODE ---
         if (aType === 'type') {
             optionsContainer.style.display = 'block';
             var inputField = document.createElement('input');
-            inputField.type = 'text'; inputField.className = 'quiz-input';
-            inputField.placeholder = `Type the ${qType === 'en' ? 'Pinyin / Chinese' : 'English'}...`;
+            inputField.type = 'text'; 
+            inputField.className = 'quiz-input';
+            inputField.placeholder = `Type here...`;
 
             var submitBtn = document.createElement('button');
-            submitBtn.innerText = 'Submit Answer'; submitBtn.className = 'option-btn'; 
-            submitBtn.style.width = '100%'; submitBtn.style.maxWidth = '500px'; submitBtn.style.display = 'block'; submitBtn.style.margin = '0 auto';
+            submitBtn.innerText = 'Submit Answer'; 
+            submitBtn.className = 'option-btn'; 
+            submitBtn.style.width = '100%'; 
 
             var feedback = document.createElement('div');
             feedback.className = 'quiz-feedback';
 
-            optionsContainer.appendChild(inputField); optionsContainer.appendChild(submitBtn); optionsContainer.appendChild(feedback);
+            optionsContainer.appendChild(inputField); 
+            optionsContainer.appendChild(submitBtn); 
+            optionsContainer.appendChild(feedback);
             setTimeout(() => inputField.focus(), 100);
 
-            var checkAnswer = () => {
+            var checkTypedAnswer = (e) => {
+                if (e) e.stopPropagation();
+                var cleanText = (str) => !str ? "" : str.normalize("NFD").replace(/[\u0300-\u036f]/g, "").replace(/[^a-zA-Z0-9\u4e00-\u9fa5]/g, "").toLowerCase();
                 var cleanedUserInput = cleanText(inputField.value);
                 var correctMeaningsList = correctMeaning.split(/[,/;]/).map(m => cleanText(m));
-                var isCorrect = correctMeaningsList.some(m => m === cleanedUserInput || (m.includes(cleanedUserInput) && cleanedUserInput.length > 2));
+                var isCorrect = correctMeaningsList.some(m => m === cleanedUserInput || (m.length > 2 && m.includes(cleanedUserInput)));
 
                 if (isCorrect) {
                     this.playSound('correct'); 
                     this.state.score++;
-                    feedback.innerHTML = `✅ <b>Correct!</b><br><span style="font-size:0.9rem;">Answer: ${correctMeaning}</span>`;
-                    feedback.style.backgroundColor = '#d4edda'; feedback.style.color = '#155724';
+                    feedback.innerHTML = `✅ <b>Correct!</b><br>${correctMeaning}`;
+                    feedback.style.backgroundColor = '#d4edda';
                     inputField.style.borderColor = '#28a745';
                 } else {
                     this.playSound('wrong'); 
-                    feedback.innerHTML = `❌ <b>Incorrect.</b><br>Right answer: <b>${correctMeaning}</b>`;
-                    feedback.style.backgroundColor = '#f8d7da'; feedback.style.color = '#721c24';
+                    feedback.innerHTML = `❌ <b>Incorrect.</b><br>Answer: <b>${correctMeaning}</b>`;
+                    feedback.style.backgroundColor = '#f8d7da';
                     inputField.style.borderColor = '#dc3545';
+                    if (hintEl && qType === 'zh') hintEl.classList.remove('hidden');
                 }
-                document.getElementById('quiz-score-ui').innerText = `🏆 Score: ${this.state.score} / ${this.state.studyQueue.length}`;
                 submitBtn.disabled = true; inputField.disabled = true;
                 setTimeout(() => this.nextItem(), 1200); 
             };
 
-            submitBtn.onclick = checkAnswer;
-            inputField.addEventListener('keypress', (e) => { if (e.key === 'Enter') checkAnswer(); });
+            submitBtn.onpointerdown = checkTypedAnswer;
+            inputField.addEventListener('keypress', (e) => { if (e.key === 'Enter') checkTypedAnswer(e); });
 
+        // --- 4. MULTIPLE CHOICE MODE (MC-PY, MC, etc) ---
         } else {
             optionsContainer.style.display = 'grid'; 
             var options = [item];
             while (options.length < 4 && options.length < this.state.studyQueue.length) {
                 var randItem = this.state.studyQueue[Math.floor(Math.random() * this.state.studyQueue.length)];
-                if (!options.some(opt => opt.id === randItem.id)) options.push(randItem);
+                if (!options.some(opt => (opt.id || opt.word) === (randItem.id || randItem.word))) options.push(randItem);
             }
             options.sort(() => Math.random() - 0.5); 
 
             options.forEach(opt => {
                 var btn = document.createElement('button');
                 btn.className = 'option-btn';
-                if (qType === 'en') btn.innerText = `${opt.word || opt.simplified} (${opt.pinyin})`;
+                
+                // Show text based on mode
+                if (aType === 'mc-py') btn.innerText = opt.pinyin; 
+                else if (qType === 'en') btn.innerText = opt.word || opt.simplified;
                 else btn.innerText = opt.definition || opt.meaning || opt.english;
 
-                btn.onclick = () => {
+                // Robust ID for comparison
+                const currentOptId = String(opt.id || opt.word || opt.simplified);
+                btn.dataset.id = currentOptId;
+
+                btn.onpointerdown = (e) => {
+                    e.preventDefault();
+                    e.stopPropagation();
+
                     Array.from(optionsContainer.children).forEach(child => child.disabled = true);
-                    if (opt.id === item.id) {
+                    
+                    const targetId = String(item.id || item.word || item.simplified);
+
+                    if (currentOptId === targetId) {
                         this.playSound('correct'); 
-                        btn.style.backgroundColor = '#d4edda'; btn.style.borderColor = '#28a745'; btn.style.color = '#155724';
+                        btn.style.backgroundColor = '#d4edda'; 
+                        btn.style.borderColor = '#28a745'; 
+                        btn.style.color = '#155724';
                         this.state.score++;
                     } else {
                         this.playSound('wrong'); 
-                        btn.style.backgroundColor = '#f8d7da'; btn.style.borderColor = '#dc3545'; btn.style.color = '#721c24';
+                        btn.style.backgroundColor = '#f8d7da'; 
+                        btn.style.borderColor = '#dc3545'; 
+                        btn.style.color = '#721c24';
+                        
+                        // Highlight correct button
                         Array.from(optionsContainer.children).forEach(child => {
-                            if (child.innerText.includes(item.definition || item.word || item.english)) {
-                                child.style.backgroundColor = '#d4edda'; child.style.borderColor = '#28a745';
+                            if (child.dataset.id === targetId) {
+                                child.style.backgroundColor = '#d4edda'; 
+                                child.style.borderColor = '#28a745';
                             }
                         });
+                        if (hintEl && qType === 'zh') hintEl.classList.remove('hidden');
                     }
-                    document.getElementById('quiz-score-ui').innerText = `🏆 Score: ${this.state.score} / ${this.state.studyQueue.length}`;
-                    setTimeout(() => this.nextItem(), 1000);
+                    
+                    if (scoreUi) scoreUi.innerText = `🏆 Score: ${this.state.score} / ${this.state.studyQueue.length}`;
+                    setTimeout(() => this.nextItem(), 1500); 
                 };
                 optionsContainer.appendChild(btn);
             });
+        }
+    }
+
+        // --- 3. DYNAMIC COMPLETION SCREEN & SUGGESTIONS ---
+    showCompletion() {
+        // Hide all views and show the complete view
+        document.querySelectorAll('.study-view').forEach(v => v.classList.remove('active'));
+        document.getElementById('view-complete').classList.add('active');
+        
+        const title = document.getElementById('completion-title');
+        const desc = document.getElementById('completion-desc');
+        const mode = this.state.currentMode;
+        
+        // Clean up old buttons
+        let btnContainer = document.getElementById('completion-suggestions');
+        if (!btnContainer) {
+            btnContainer = document.createElement('div');
+            btnContainer.id = 'completion-suggestions';
+            btnContainer.style.cssText = 'margin-top: 30px; display: flex; gap: 15px; justify-content: center; flex-wrap: wrap;';
+            document.querySelector('.completion-message').appendChild(btnContainer);
+        }
+        btnContainer.innerHTML = ''; 
+
+        // Score Reveal Logic for Quiz Mode
+        if (mode === 'quiz') {
+            const total = this.state.studyQueue.length;
+            const right = this.state.score || 0;
+            const wrong = total - right;
+            title.innerText = "🎯 Quiz Complete!";
+            desc.innerHTML = `Great effort! Here is your final score:<br><br>
+                              <strong style="color: #28a745; font-size: 1.5rem;">✅ Right: ${right}</strong> &nbsp;|&nbsp; 
+                              <strong style="color: #dc3545; font-size: 1.5rem;">❌ Wrong: ${wrong}</strong>`;
+        } else {
+            title.innerText = "🏆 Session Complete";
+            desc.innerText = "Excellent work. You have reviewed all items in this set.";
+        }
+
+        // --- ADD SUGGESTION BUTTONS ---
+        
+        // Button 1: Restart Current Session
+        const restartBtn = document.createElement('button');
+        restartBtn.className = 'action-btn';
+        restartBtn.innerHTML = '🔁 Restart Session';
+        restartBtn.onclick = () => {
+            this.state.currentIndex = 0;
+            this.state.score = 0;
+            this.setMode(mode); // Reloads the current mode
+        };
+        btnContainer.appendChild(restartBtn);
+
+        // Button 2: Go to Manage Review (Unknown Words)
+        const reviewBtn = document.createElement('button');
+        reviewBtn.className = 'action-btn';
+        reviewBtn.innerHTML = '⚙️ Manage "Study Again" List';
+        reviewBtn.onclick = () => { this.setMode('manage-review'); };
+        btnContainer.appendChild(reviewBtn);
+
+        // Button 3: Switch to Flashcards (if not already there)
+        if (mode !== 'flashcards') {
+            const fcBtn = document.createElement('button');
+            fcBtn.className = 'action-btn';
+            fcBtn.innerHTML = '🗂️ Study Flashcards';
+            fcBtn.onclick = () => { this.setMode('flashcards'); };
+            btnContainer.appendChild(fcBtn);
         }
     }
 
@@ -771,14 +1141,46 @@ class ChineseApp {
 
     saveProgress() { localStorage.setItem('aladsProgress', JSON.stringify(this.state.progress)); this.updateProgressUI(); }
     updateProgressUI() {
+        // --- 1. SIDEBAR STATS (Streak, Review, Mastered) ---
         const s = document.getElementById('streak-count');
-        if(s) s.innerText = this.state.progress.streak;
+        if(s) s.innerText = this.state.progress.streak || 0;
+        
         const r = document.getElementById('review-count');
-        if(r) r.innerText = this.state.progress.reviewQueue.length;
+        if(r) r.innerText = this.state.progress.reviewQueue ? this.state.progress.reviewQueue.length : 0;
+        
         const d = document.getElementById('daily-mastered');
-        if(d) d.innerText = this.state.progress.dailyMastered;
+        if(d) d.innerText = this.state.progress.dailyMastered || 0;
+        
         const pb = document.getElementById('daily-progress-bar');
-        if(pb) pb.style.width = `${Math.min((this.state.progress.dailyMastered / 10) * 100, 100)}%`;
+        if(pb) pb.style.width = `${Math.min(((this.state.progress.dailyMastered || 0) / 10) * 100, 100)}%`;
+
+        // --- 2. HEADER NUMBERS (e.g. 1 / 20) ---
+        const total = this.state.studyQueue ? this.state.studyQueue.length : 0;
+        const current = this.state.currentIndex + 1;
+        
+        const mCurrent = document.getElementById('mode-current');
+        if (mCurrent) mCurrent.innerText = total === 0 ? 0 : Math.min(current, total);
+        
+        const mTotal = document.getElementById('mode-total');
+        if (mTotal) mTotal.innerText = total;
+
+        // --- 3. SESSION KNOWN / STUDY AGAIN COUNTS ---
+        const knownCountSpan = document.getElementById('stat-known-count');
+        const studyCountSpan = document.getElementById('stat-study-count');
+        
+        if (knownCountSpan && studyCountSpan && this.state.history) {
+            let known = 0;
+            let studyMore = 0;
+            
+            // Calculate based strictly on your swipes in the current session
+            this.state.history.forEach(h => {
+                if (h.direction === 'right') known++;
+                if (h.direction === 'left') studyMore++;
+            });
+            
+            knownCountSpan.innerText = known;
+            studyCountSpan.innerText = studyMore;
+        }
     }
 
     setupEventListeners() {
@@ -804,43 +1206,159 @@ class ChineseApp {
         card.parentNode.replaceChild(newCard, card);
         const activeCard = document.getElementById('flashcard');
 
-        activeCard.style.touchAction = 'pan-y'; // Mobile Swiping Fix
+        // --- MOBILE TOUCH FIX ---
+        activeCard.style.touchAction = 'none';
 
         activeCard.addEventListener('pointerdown', (e) => {
             if(e.target.tagName.toLowerCase() === 'button') return; 
+            // Ignore right-clicks to prevent bugs on desktop
+            if (e.pointerType === 'mouse' && e.button !== 0) return; 
+
             this.swipeState.isDragging = true;
-            startX = e.clientX; startTime = Date.now();
+            startX = e.clientX; 
+            startTime = Date.now();
             activeCard.style.transition = 'none';
             activeCard.setPointerCapture(e.pointerId); 
         });
+
+        // --- ✨ THE MAGIC IPHONE FREEZE FIX ✨ ---
+        // This completely stops the iPhone screen from scrolling or bugging out while dragging
+        activeCard.addEventListener('touchmove', (e) => {
+            e.preventDefault(); 
+        }, { passive: false });
+
+        activeCard.addEventListener('pointercancel', (e) => {
+            if (!this.swipeState.isDragging) return;
+            this.swipeState.isDragging = false;
+            
+            // Release the pointer
+            try { activeCard.releasePointerCapture(e.pointerId); } catch(err) {}
+            
+            // Instantly snap the card back to the center
+            activeCard.style.transition = 'transform 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275), box-shadow 0.3s ease'; 
+            activeCard.style.transform = ''; 
+            activeCard.style.boxShadow = 'none';
+        });
+
+        // Lock the entire screen from scrolling while dragging
+        document.addEventListener('touchmove', (e) => {
+            if (this.swipeState.isDragging) {
+                e.preventDefault();
+            }
+        }, { passive: false });
         
         activeCard.addEventListener('pointermove', (e) => {
             if (!this.swipeState.isDragging) return;
             const deltaX = e.clientX - startX;
             activeCard.style.transform = `translateX(${deltaX}px) rotate(${deltaX * 0.05}deg)`;
             
+            // Keep your awesome box shadow effects!
             if (deltaX > 20) activeCard.style.boxShadow = `0 0 40px rgba(0, 255, 0, ${Math.min(deltaX/100, 0.8)})`;
             else if (deltaX < -20) activeCard.style.boxShadow = `0 0 40px rgba(255, 0, 0, ${Math.min(Math.abs(deltaX)/100, 0.8)})`;
             else activeCard.style.boxShadow = 'none';
         });
         
-        activeCard.addEventListener('pointerup', (e) => {
+        // --- THE FIX: Create a reusable endSwipe function ---
+       const endSwipe = (e) => {
             if (!this.swipeState.isDragging) return;
             this.swipeState.isDragging = false;
-            activeCard.releasePointerCapture(e.pointerId);
+            
+            // Safely release the pointer
+            try { activeCard.releasePointerCapture(e.pointerId); } catch(err) {}
+            
             const deltaX = e.clientX - startX;
+            
+            // Calculate a smart threshold (80 pixels OR 25% of the screen, whichever is smaller)
+            const swipeThreshold = Math.min(80, window.innerWidth * 0.25);
+            
+            // Instantly clear the glowing shadow
             activeCard.style.boxShadow = 'none'; 
             
-            if (Math.abs(deltaX) < 15 && (Date.now() - startTime) < 400) this.flipCard();
-            else if (deltaX > 100) this.handleSwipe('right');
-            else if (deltaX < -100) this.handleSwipe('left');
+            if (Math.abs(deltaX) < 15 && (Date.now() - startTime) < 400) {
+                // It was a quick tap, so flip the card
+                activeCard.style.transition = 'transform 0.3s ease'; 
+                activeCard.style.transform = ''; // Bulletproof reset
+                this.flipCard();
+            } 
+            else if (deltaX > swipeThreshold) { 
+                // Swiped right (Got it)
+                if (navigator.vibrate) navigator.vibrate(50); 
+                this.handleSwipe('right');
+            } 
+            else if (deltaX < -swipeThreshold) { 
+                // Swiped left (Study again)
+                if (navigator.vibrate) navigator.vibrate([50, 50, 50]); 
+                this.handleSwipe('left');
+            } 
             else { 
-                activeCard.style.transition = 'transform 0.3s ease, box-shadow 0.3s ease'; 
-                activeCard.style.transform = 'translateX(0) rotate(0)'; 
+                // Didn't swipe far enough: Snap back to center!
+                // Added a "spring" cubic-bezier curve so it bounces back naturally
+                activeCard.style.transition = 'transform 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275), box-shadow 0.3s ease'; 
+                activeCard.style.transform = ''; // Completely deletes the dragging offset
             }
-        });
+        };
+
+        // --- Attach to BOTH pointerup AND pointercancel so it never gets stuck ---
+        activeCard.addEventListener('pointerup', endSwipe);
+        activeCard.addEventListener('pointercancel', endSwipe);
+    }
+// ==========================================
+    // --- SPEECH SYNTHESIS ENGINE ---
+    // ==========================================
+
+    playAudio(text, speedPref = 'normal') {
+        if (!text || !window.speechSynthesis) return;
+
+        // 1. Instantly cancel any audio that is currently playing so they don't overlap
+        window.speechSynthesis.cancel();
+
+        const utterance = new SpeechSynthesisUtterance(text);
+
+        // 2. Set the Speed based on the dropdown menu
+        let rate = 1.0;
+        if (speedPref === 'slow') rate = 0.5; // Slower for clear pronunciation
+        if (speedPref === 'fast') rate = 1.3;
+        utterance.rate = rate;
+
+        // 3. Find the best Mandarin voice
+        const voices = window.speechSynthesis.getVoices();
+        
+        // Prioritize a natural-sounding Taiwanese/Traditional Mandarin voice 
+        let zhVoice = voices.find(v => v.lang === 'zh-TW' || v.lang === 'zh_TW');
+        
+        // Fallback to any available Chinese voice if that exact one isn't found
+        if (!zhVoice) {
+            zhVoice = voices.find(v => v.lang.includes('zh'));
+        }
+
+        if (zhVoice) {
+            utterance.voice = zhVoice;
+        } else {
+            utterance.lang = 'zh-TW'; // Ultimate fallback to let the browser figure it out
+        }
+
+        // 4. Speak!
+        window.speechSynthesis.speak(utterance);
     }
 
+    // --- Wrapper for the Flashcard Speaker Button ---
+    playCurrentFlashcardAudio(event) {
+        if (event) event.stopPropagation();
+        
+        // Ensure we grab the text from the FRONT of the card
+        const text = document.getElementById('fc-front-text').innerText;
+        const speed = document.getElementById('fc-speed-select') ? document.getElementById('fc-speed-select').value : 'normal';
+        
+        this.playAudio(text, speed);
+    }
+
+    // --- Wrapper for the Sentence Speaker Button ---
+    playSentenceAudio() {
+        const text = document.getElementById('sn-chinese').innerText;
+        const speed = document.getElementById('sn-speed-select').value;
+        
+        this.playAudio(text, speed);
+    }
     triggerConfetti() {
         const canvas = document.getElementById('confetti-canvas');
         if (!canvas) return; 
