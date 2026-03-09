@@ -272,17 +272,34 @@ class ChineseApp {
     }
 
     startReviewMode() {
-        if (this.state.progress.reviewQueue.length === 0) {
-            alert("Your 'Study Again' list is empty. Great job! 🎉");
+        // 1. Refresh the progress directly from your main memory bank (aladsProgress)
+        this.state.progress = this.loadProgress();
+
+        // 2. Check if the list is empty
+        if (!this.state.progress.reviewQueue || this.state.progress.reviewQueue.length === 0) {
+            alert("Your review list is empty! Swipe left on some cards first.");
             return;
         }
+
+        // 3. Set up the study session
         this.state.isReviewMode = true;
-        this.state.currentMode = 'flashcards';
-        document.querySelectorAll('.mode-btn').forEach(btn => btn.classList.remove('active'));
-        const fb = document.getElementById(`btn-flashcards`);
-        if(fb) fb.classList.add('active');
-        if(window.innerWidth <= 800) this.toggleSidebar();
-        this.loadCurrentMode();
+        
+        // Copy the review list into the active study queue
+        this.state.studyQueue = [...this.state.progress.reviewQueue];
+        this.state.currentIndex = 0;
+        this.state.score = 0;
+
+        // 4. Update the UI
+        document.querySelectorAll('.study-view').forEach(el => el.style.display = 'none');
+        const studyView = document.getElementById('view-study');
+        if (studyView) studyView.style.display = 'block';
+        
+        // Hide the Book/Lesson selectors so the user focuses on the review
+        const lessonSelector = document.getElementById('course-selector-container');
+        if (lessonSelector) lessonSelector.style.display = 'none';
+
+        // 5. Render the first card
+        this.renderFlashcard();
     }
 
     loadCurrentMode() {
