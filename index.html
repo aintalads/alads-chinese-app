@@ -9,7 +9,7 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;500;600;700&display=swap" rel="stylesheet">
     
-    <link rel="stylesheet" href="style.css?v=3">
+    <link rel="stylesheet" href="style.css?v=89">
 
     <link rel="manifest" href="manifest.json">
     
@@ -18,12 +18,14 @@
     <meta name="apple-mobile-web-app-title" content="Mandarin">
     <link rel="apple-touch-icon" href="https://cdn-icons-png.flaticon.com/512/3233/3233483.png">
 
-    <script>
+   <script>
         if ('serviceWorker' in navigator) {
-            window.addEventListener('load', () => {
-                navigator.serviceWorker.register('sw.js')
-                    .then(reg => console.log('Offline Mode Ready!'))
-                    .catch(err => console.log('Service Worker failed: ', err));
+            navigator.serviceWorker.getRegistrations().then(function(registrations) {
+                for(let registration of registrations) {
+                    registration.unregister().then(function(boolean) {
+                        console.log("Old Offline Memory Destroyed!");
+                    });
+                }
             });
         }
     </script>
@@ -74,7 +76,7 @@
                     </div>
                     <div id="lesson-chips" class="chip-container"></div>
                     
-                    <button class="apply-btn" onclick="app.applyCourseSelection()">🚀 Load Content</button>
+                    <button class="apply-btn" onclick="app.applyCourseSelection(); closeOtherDetails(null)">✅ Done</button>
                 </div>
             </details>
 
@@ -169,14 +171,17 @@
                                 <button class="card-audio-btn" onclick="app.playCurrentFlashcardAudio(event)">🔊</button>
                                 <h1 id="fc-front-text">漢字</h1>
                             </div>
-                            <div class="card-back">
-                                <button class="card-audio-btn" onclick="app.playCurrentFlashcardAudio(event)">🔊</button>
-                                <h2 id="fc-pinyin">hàn zì</h2>
-                                <p id="fc-meaning">Chinese characters</p>
-                                
-                                <div id="fc-radical-box" class="extra-info-box hidden" title="Tap to Magnify" onclick="event.stopPropagation(); this.classList.toggle('magnified')"></div>
-                                <div id="fc-example-box" class="extra-info-box hidden" title="Tap to Magnify" onclick="event.stopPropagation(); this.classList.toggle('magnified')"></div>
-                            </div>
+                           <div class="card-back">
+    <button class="card-audio-btn" onclick="app.playCurrentFlashcardAudio(event)">🔊</button>
+
+    <h2 id="fc-meaning"></h2>
+    <p id="fc-pinyin"></p>
+    
+    <div id="fc-radical-box" class="extra-info-box hidden" title="Tap to Magnify" onclick="event.stopPropagation(); this.classList.toggle('magnified')"></div>
+    <div id="fc-example-box" class="extra-info-box hidden" title="Tap to Magnify" onclick="event.stopPropagation(); this.classList.toggle('magnified')"></div>
+
+    <div id="fc-breakdown" class="fc-breakdown"></div>
+</div>
                         </div>
                     </div>
                 </div>
@@ -275,7 +280,12 @@
 
             <div id="view-complete" class="study-view">
                 <div class="completion-message">
+                   <button class="apply-btn" style="max-width: 250px; margin: 25px auto 0 auto; display: block;" onclick="app.startReviewMode(); closeOtherDetails(null)">
+                        🔄 Go to Review
+                    </button>
+                   
                     <h1 id="completion-title">🏆 Session Complete</h1>
+                    
                     <p id="completion-desc">Excellent work. Select a new lesson or mode from the sidebar to continue.</p>
                 </div>
             </div>
