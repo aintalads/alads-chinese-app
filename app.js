@@ -369,6 +369,32 @@ class ChineseApp {
     }
 
     showCompletion() {
+
+        this.state = {
+            // ... your existing state variables ...
+        };
+
+        // --- 🔄 RESUME INTERRUPTED SESSION ---
+        const activeSession = localStorage.getItem('mandarinActiveSession');
+        if (activeSession) {
+            // Wait 0.5 seconds for the app to finish loading visually
+            setTimeout(() => {
+                if(confirm("Welcome back! 🚀 You have an unfinished study session. Would you like to resume exactly where you left off?")) {
+                    const parsed = JSON.parse(activeSession);
+                    this.state.studyQueue = parsed.queue;
+                    this.state.currentIndex = parsed.index;
+                    this.state.currentMode = parsed.mode;
+                    this.state.score = parsed.score;
+                    this.state.history = parsed.history;
+                    
+                    // Jump right back into the action!
+                    this.setMode(this.state.currentMode);
+                } else {
+                    // They chose not to resume, so delete the saved session
+                    localStorage.removeItem('mandarinActiveSession');
+                }
+            }, 500);
+        }
         // 1. Hide all current screens
         document.querySelectorAll('.study-view').forEach(v => v.classList.remove('active'));
         
@@ -450,6 +476,7 @@ class ChineseApp {
     }
 
     nextItem() {
+        this.saveSession();
         this.state.currentIndex++;
         
         // If we reached the end of the study queue, show the epic completion screen!
@@ -823,7 +850,25 @@ class ChineseApp {
         }
     }
 
-    renderQuiz() {var item = this.state.studyQueue[this.state.currentIndex];
+    // --- 💾 AUTO-SAVE FEATURE ---
+    saveSession() {
+        // Don't save if there is nothing to study
+        if (!this.state.studyQueue || this.state.studyQueue.length === 0) return; 
+        
+        const sessionData = {
+            queue: this.state.studyQueue,
+            index: this.state.currentIndex,
+            mode: this.state.currentMode,
+            score: this.state.score,
+            history: this.state.history || []
+        };
+        
+        // Save to the phone's hard drive!
+        localStorage.setItem('mandarinActiveSession', JSON.stringify(sessionData));
+    }
+
+    renderQuiz() {
+        var item = this.state.studyQueue[this.state.currentIndex];
         if (!item) return;
 
         var qTypeSelect = document.getElementById('qz-q-type');
@@ -937,41 +982,57 @@ class ChineseApp {
             options.forEach(opt => {
                 var btn = document.createElement('button');
                 btn.className = 'option-btn';
-                if (qType === 'en') btn.innerText = `${opt.word || opt.simplified} (${opt.pinyin})`;
-                else btn.innerText = opt.definition || opt.meaning || opt.english;
-
+                
+                // 1. Set the button text exactly ONCE based on the mode
                 if (aType === 'mc-py') {
                     btn.innerText = opt.pinyin; // Shows Pinyin choices!
                 } else if (qType === 'en') {
-                    btn.innerText = `${opt.word || opt.simplified} (${opt.pinyin})`;
+                    btn.innerText = opt.word || opt.simplified; // ONLY shows Chinese characters, no Pinyin!
                 } else {
                     btn.innerText = opt.definition || opt.meaning || opt.english;
                 }
 
+                // 2. Give the button a hidden ID so we never lose track of it
+                btn.dataset.id = opt.id || opt.word || opt.simplified; 
+
                 btn.onclick = () => {
+                    // Lock all buttons
                     Array.from(optionsContainer.children).forEach(child => child.disabled = true);
+                    
+                    // Check if correct using the ID
                     if (opt.id === item.id) {
                         this.playSound('correct'); 
-                        btn.style.backgroundColor = '#d4edda'; btn.style.borderColor = '#28a745'; btn.style.color = '#155724';
+                        btn.style.backgroundColor = '#d4edda'; 
+                        btn.style.borderColor = '#28a745'; 
+                        btn.style.color = '#155724';
                         this.state.score++;
                     } else {
+                        // Guess was Wrong
                         this.playSound('wrong'); 
-                        btn.style.backgroundColor = '#f8d7da'; btn.style.borderColor = '#dc3545'; btn.style.color = '#721c24';
+                        btn.style.backgroundColor = '#f8d7da'; 
+                        btn.style.borderColor = '#dc3545'; 
+                        btn.style.color = '#721c24';
+                        
+                        // 3. Highlight the correct answer using the HIDDEN ID, not the text!
+                        const targetId = item.id || item.word || item.simplified;
                         Array.from(optionsContainer.children).forEach(child => {
-                            if (child.innerText.includes(item.definition || item.word || item.english)) {
-                                child.style.backgroundColor = '#d4edda'; child.style.borderColor = '#28a745';
+                            if (child.dataset.id === targetId) {
+                                child.style.backgroundColor = '#d4edda'; 
+                                child.style.borderColor = '#28a745';
                             }
                         });
                         
-                        // --- NEW: AUTO-REVEAL PINYIN IF WRONG ---
+                        // Auto-reveal Pinyin hint
                         if (hintEl && qType === 'zh') hintEl.classList.remove('hidden');
                     }
+                    
                     document.getElementById('quiz-score-ui').innerText = `🏆 Score: ${this.state.score} / ${this.state.studyQueue.length}`;
-                    setTimeout(() => this.nextItem(), 1500); // Increased slightly so you have time to read the Pinyin!
+                    setTimeout(() => this.nextItem(), 1500); 
                 };
                 optionsContainer.appendChild(btn);
             });
-        }}
+        }
+    }
 
         // --- 3. DYNAMIC COMPLETION SCREEN & SUGGESTIONS ---
     showCompletion() {
