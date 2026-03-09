@@ -171,14 +171,15 @@
                                 <button class="card-audio-btn" onclick="app.playCurrentFlashcardAudio(event)">🔊</button>
                                 <h1 id="fc-front-text">漢字</h1>
                             </div>
-                           <div class="card-back">
+     <div class="card-back">
     <button class="card-audio-btn" onclick="app.playCurrentFlashcardAudio(event)">🔊</button>
 
+    <h1 id="fc-pinyin"></h1>
+
     <h2 id="fc-meaning"></h2>
-    <p id="fc-pinyin"></p>
     
-    <div id="fc-radical-box" class="extra-info-box hidden" title="Tap to Magnify" onclick="event.stopPropagation(); this.classList.toggle('magnified')"></div>
-    <div id="fc-example-box" class="extra-info-box hidden" title="Tap to Magnify" onclick="event.stopPropagation(); this.classList.toggle('magnified')"></div>
+    <div id="fc-radical-box" class="extra-info-box hidden" onclick="event.stopPropagation(); this.classList.toggle('magnified')"></div>
+    <div id="fc-example-box" class="extra-info-box hidden" onclick="event.stopPropagation(); this.classList.toggle('magnified')"></div>
 
     <div id="fc-breakdown" class="fc-breakdown"></div>
 </div>
