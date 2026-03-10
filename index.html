@@ -1,0 +1,308 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Alads | Chinese Learning</title>
+    
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;500;600;700&display=swap" rel="stylesheet">
+    
+    <link rel="stylesheet" href="style.css?v=100">
+
+    <link rel="manifest" href="manifest.json">
+    
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="Mandarin">
+    <link rel="apple-touch-icon" href="https://cdn-icons-png.flaticon.com/512/3233/3233483.png">
+
+   <script>
+        if ('serviceWorker' in navigator) {
+            navigator.serviceWorker.getRegistrations().then(function(registrations) {
+                for(let registration of registrations) {
+                    registration.unregister().then(function(boolean) {
+                        console.log("Old Offline Memory Destroyed!");
+                    });
+                }
+            });
+        }
+    </script>
+    
+    <script src="chars.js"></script>
+    <script src="new_vocab.js"></script>
+    <script src="sentences.js"></script>
+    <script src="hanzi-writer.min.js"></script>
+</head>
+<body>
+    <nav class="navbar">
+        <div class="nav-left">
+            <div class="logo">Alads</div>
+        </div>
+        <div class="nav-controls">
+            <div class="streak" title="Daily Streak">🔥 <span id="streak-count">0</span></div>
+            
+            <select id="theme-selector" class="theme-dropdown" onchange="app.changeTheme(this.value)">
+                <option value="default">🌤️ Light</option>
+                <option value="dark">🌙 Dark</option>
+                <option value="matcha">🍵 Matcha</option>
+                <option value="sakura">🌸 Sakura</option>
+                <option value="midnight">🌌 Night</option>
+            </select>
+            <a href="mailto:aladendmohr@gmail.com?subject=App%20Suggestions:%20Mandarin%20Flashcards" 
+       style="text-decoration: none; font-size: 1.2rem; cursor: pointer; padding: 5px;" 
+       title="Send Suggestions">
+       💡
+    </a>
+        </div>
+    </nav>
+
+    <div id="app-workspace">
+        
+        <aside class="sidebar" id="sidebar">
+            <details class="control-group">
+                <summary class="group-header" onclick="closeOtherDetails(this.parentElement)">
+                    <h3>📚 Books</h3>
+                    <span class="toggle-icon">▼</span>
+                </summary>
+                <div class="dropdown-content">
+                    <div class="chip-label">📖 Books:</div>
+                    <div id="book-chips" class="chip-container"></div>
+                    
+                    <div class="chip-label">
+                        📝 Lessons: 
+                        <button class="text-btn" onclick="app.selectAllLessons()">☑️ Select All</button>
+                    </div>
+                    <div id="lesson-chips" class="chip-container"></div>
+                    
+                    <button class="apply-btn" onclick="app.applyCourseSelection(); closeOtherDetails(null)">✅ Done</button>
+                </div>
+            </details>
+
+            <details class="control-group">
+                <summary class="group-header" onclick="closeOtherDetails(this.parentElement)">
+                    <h3>🕹️ Mode</h3>
+                    <span class="toggle-icon">▼</span>
+                </summary>
+                <div class="dropdown-content">
+                    <div class="mode-buttons">
+                        <button id="btn-flashcards" class="mode-btn active" onclick="app.setMode('flashcards'); closeOtherDetails(null)">🗂️ Flashcards</button>
+                        <button id="btn-writing" class="mode-btn" onclick="app.setMode('writing'); closeOtherDetails(null)">✍️ Writing Practice</button>
+                        <button id="btn-sentences" class="mode-btn" onclick="app.setMode('sentences'); closeOtherDetails(null)">💬 Sentences</button>
+                        <button id="btn-quiz" class="mode-btn" onclick="app.setMode('quiz'); closeOtherDetails(null)">❓ Vocabulary Quiz</button>
+                    </div>
+                </div>
+            </details>
+
+            <details class="control-group">
+                <summary class="group-header" onclick="closeOtherDetails(this.parentElement)">
+                    <h3>🔄 Review (<span id="review-count">0</span>)</h3>
+                    <span class="toggle-icon">▼</span>
+                </summary>
+                <div class="dropdown-content progress-box">
+                    <p style="margin-bottom: 5px;">🎯 Goal: <span id="daily-mastered">0</span> / 10</p>
+                    <div class="progress-bar-container" style="margin-bottom: 15px;">
+                        <div id="daily-progress-bar" class="progress-bar-fill"></div>
+                    </div>
+                    <button class="review-btn" onclick="app.startReviewMode(); closeOtherDetails(null)" style="margin-bottom: 10px;">🔄 Start Review</button>
+                    <button class="manage-list-btn" onclick="app.setMode('manage-review'); closeOtherDetails(null)">⚙️ Manage List</button>
+                </div>
+            </details>
+        </aside>
+
+        <main class="study-area">
+            
+            <div class="study-header">
+                <h2 id="current-title">🗂️ Flashcards</h2>
+                
+                <div style="display: flex; gap: 15px; align-items: center;">
+                    <div id="fc-session-stats" style="display: flex; gap: 12px; font-weight: bold; font-size: 1.1rem; color: var(--text-muted);">
+                        <span title="Study More (Unknown)">❌ <span id="stat-study-count">0</span></span>
+                        <span title="Known Words">✅ <span id="stat-known-count">0</span></span>
+                    </div>
+                    <div class="progress-indicator"><span id="mode-current">1</span> / <span id="mode-total">10</span></div>
+                </div>
+            </div>
+
+            <div id="view-manage-review" class="study-view">
+                <div class="manage-review-container">
+                    <div class="manage-header">
+                        <h3>📝 "Study Again" List</h3>
+                        <button class="clear-btn" onclick="app.clearReviewQueue()">🗑️ Clear</button>
+                    </div>
+                    
+                    <div class="add-review-box">
+                        <select id="add-review-select" class="review-select"></select>
+                        <button class="add-btn" onclick="app.addSelectedToReview()">➕ Add</button>
+                    </div>
+
+                    <div class="review-list-wrapper">
+                        <ul id="review-list-ui" class="review-list"></ul>
+                    </div>
+                </div>
+            </div>
+
+            <div id="view-flashcards" class="study-view active">
+                <div class="top-controls">
+                    <button id="undo-btn" class="action-btn" onclick="app.undoLastSwipe()">↩️ Undo Last</button>
+                    
+                    <div class="dropdown">
+                        <button class="action-btn dropdown-toggle" onclick="this.nextElementSibling.classList.toggle('show')">⚙️ Settings</button>
+                        <div class="dropdown-menu">
+                            <button id="auto-play-btn" class="dropdown-item" onclick="app.toggleAutoPlaySlideshow()">▶️ Auto-Slideshow</button>
+                            <div class="dropdown-item-group">
+                                <label for="fc-speed-select" style="font-size: 0.8rem; color: var(--text-muted); padding-left: 12px;">Speed:</label>
+                                <select id="fc-speed-select" class="speed-select" style="width: 100%; border:none; margin-top: 5px;">
+                                    <option value="slow">🐢 Slow</option>
+                                    <option value="normal" selected>🚶 Normal</option>
+                                    <option value="fast">🐇 Fast</option>
+                                </select>
+                            </div>
+                            <button id="fc-auto-audio-btn" class="dropdown-item" onclick="app.toggleAutoAudio()">🔇 Auto-Audio Off</button>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="flashcard-container">
+                    <div id="flashcard" class="card">
+                        <div class="card-inner">
+                            <div class="card-front">
+                                <button class="card-audio-btn" onclick="app.playCurrentFlashcardAudio(event)">🔊</button>
+                                <h1 id="fc-front-text">漢字</h1>
+                            </div>
+     <div class="card-back">
+    <button class="card-audio-btn" onclick="app.playCurrentFlashcardAudio(event)">🔊</button>
+
+    <h1 id="fc-pinyin"></h1>
+
+    <h2 id="fc-meaning"></h2>
+    
+    <div id="fc-radical-box" class="extra-info-box hidden" onclick="event.stopPropagation(); this.classList.toggle('magnified')"></div>
+    <div id="fc-example-box" class="extra-info-box hidden" onclick="event.stopPropagation(); this.classList.toggle('magnified')"></div>
+
+    <div id="fc-breakdown" class="fc-breakdown"></div>
+</div>
+                        </div>
+                    </div>
+                </div>
+                <div class="flashcard-controls">
+                    <button class="swipe-btn left" onclick="app.handleSwipe('left')">Study Again</button>
+                    <button class="swipe-btn flip" onclick="app.flipCard()">Flip</button>
+                    <button class="swipe-btn right" onclick="app.handleSwipe('right')">Got It</button>
+                </div>
+                <p class="hint-text">Swipe card, tap to flip, or use ← / → / Space keys.</p>
+            </div>
+
+            <div id="view-writing" class="study-view">
+                <div class="writing-container">
+                    <div class="character-info">
+                        <h2 id="wr-pinyin"></h2>
+                        <p id="wr-meaning" style="color: var(--text-muted); margin-bottom: 10px;"></p>
+                    </div>
+                    <div id="character-target-div" class="hanzi-box"></div>
+                    <div class="writing-controls">
+                        <button onclick="app.hanziWriter.animateCharacter()">🎬 Animate</button>
+                        <button id="toggle-outline-btn" onclick="app.toggleOutline()">🙈 Hide Outline</button>
+                        <button class="practice-btn" onclick="app.hanziWriter.quiz()">🖋️ Practice</button>
+                        <button onclick="app.nextItem()">⏭️ Next</button>
+                    </div>
+                </div>
+            </div>
+
+            <div id="view-sentences" class="study-view">
+                <div class="top-controls" style="justify-content: center; gap: 10px; margin-bottom: 1rem;">
+                     <div class="dropdown">
+                        <button class="action-btn dropdown-toggle" onclick="this.nextElementSibling.classList.toggle('show')">⚙️ Settings</button>
+                        <div class="dropdown-menu">
+                            <button id="sn-auto-play-btn" class="dropdown-item" onclick="app.toggleSentenceSlideshow()">▶️ Auto-Slideshow</button>
+                            <div class="dropdown-item-group">
+                                <label for="sn-speed-select" style="font-size: 0.8rem; color: var(--text-muted); padding-left: 12px;">Speed:</label>
+                                <select id="sn-speed-select" class="speed-select" style="width: 100%; border:none; margin-top: 5px;">
+                                    <option value="slow">🐢 Slow</option>
+                                    <option value="normal" selected>🚶 Normal</option>
+                                    <option value="fast">🐇 Fast</option>
+                                </select>
+                            </div>
+                            <button id="sn-auto-audio-btn" class="dropdown-item" onclick="app.toggleAutoAudio()">🔇 Auto-Audio Off</button>
+                        </div>
+                    </div>
+                </div>
+                <div class="sentence-container">
+                    <h2 id="sn-chinese" class="chinese-text"></h2>
+                    <button class="audio-btn" onclick="app.playSentenceAudio()">🔊</button>
+                    <h3 id="sn-pinyin" class="pinyin-text"></h3>
+                    <div class="translation-box">
+                        <button id="reveal-translation-btn" onclick="app.revealSentence()">👁️ Show Translation</button>
+                        <p id="sn-english" class="english-text hidden"></p>
+                    </div>
+                </div>
+                <div class="sentence-controls">
+                    <button onclick="app.prevItem()">⏮️ Prev</button>
+                    <button onclick="app.shuffleItems()">🔀 Shuffle</button>
+                    <button onclick="app.nextItem()">⏭️ Next</button>
+                </div>
+            </div>
+
+            <div id="view-quiz" class="study-view">
+                <div id="quiz-settings-ui" class="quiz-settings">
+                    <div class="setting-group">
+                        <label for="qz-q-type">Question:</label>
+                        <select id="qz-q-type">
+                            <option value="zh">Chinese</option>
+                            <option value="py">Pinyin</option>
+                            <option value="en">English</option>
+                        </select>
+                    </div>
+                    <div class="setting-group">
+                        <label for="qz-a-type">Answer Format:</label>
+                        <select id="qz-a-type">
+    <option value="mc">Multiple Choice (Meaning)</option>
+    <option value="mc-py">Multiple Choice (Pinyin)</option>
+    <option value="type">Type Answer</option>
+</select>
+                    </div>
+                    <div id="quiz-score-ui" class="quiz-score">🏆 Score: 0 / 0</div>
+                </div>
+
+                <div class="qz-word-container">
+                    <h2 id="qz-word"></h2>
+                    <div id="qz-pinyin-hint" class="hidden"></div>
+                    
+                    <div class="qz-actions">
+                        <button id="qz-sound-btn" class="icon-btn">🔊</button>
+                        <button id="qz-pinyin-btn" class="icon-btn" onclick="app.togglePinyinHint()">拼</button>
+                    </div>
+                </div>
+
+                <div id="qz-options" class="quiz-options"></div>
+                <div id="quiz-feedback" class="quiz-feedback hidden"></div>
+            </div>
+
+            <div id="view-complete" class="study-view">
+                <div class="completion-message">
+                   <button class="apply-btn" style="max-width: 250px; margin: 25px auto 0 auto; display: block;" onclick="app.startReviewMode(); closeOtherDetails(null)">
+                        🔄 Go to Review
+                    </button>
+                   
+                    <h1 id="completion-title">🏆 Session Complete</h1>
+                    
+                    <p id="completion-desc">Excellent work. Select a new lesson or mode from the sidebar to continue.</p>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <canvas id="confetti-canvas"></canvas>
+    
+    <script>
+        function closeOtherDetails(clickedDetails) {
+            document.querySelectorAll('.sidebar details').forEach(d => {
+                if (d !== clickedDetails) d.removeAttribute('open');
+            });
+        }
+    </script>
+    
+    <script src="app.js?v=100"></script>
+</body>
+</html>
