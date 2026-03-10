@@ -1,4 +1,4 @@
-const CACHE_NAME = 'mandarin-app-v4'; // <-- Changed to v4 to trigger an update
+const CACHE_NAME = 'mandarin-app-v89'; // <-- Changed to v4 to trigger an update
 
 const urlsToCache = [
     './',
@@ -42,3 +42,4 @@ self.addEventListener('fetch', event => {
         })
     );
 });
+
