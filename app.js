@@ -1134,10 +1134,25 @@ nextItem() {
                     e.preventDefault(); 
                     inputField.disabled = true; 
                     
-                    const userAnswer = inputField.value.trim().toLowerCase();
-                    const correctAnswers = correctMeaning.toLowerCase().split(/[,;/]/).map(s => s.trim());
+                    let userAnswer = inputField.value.trim().toLowerCase();
+                    let correctFull = correctMeaning.toLowerCase();
                     
-                    if (correctAnswers.includes(userAnswer) || userAnswer === correctMeaning.toLowerCase().trim()) {
+                    // 🧠 THE FORGIVING GRADING SYSTEM
+                    // 1. Clean the correct answer: remove anything inside parentheses
+                    let cleanedCorrect = correctFull.replace(/\([^)]*\)/g, '').trim();
+                    // 2. Remove annoying punctuation like periods, exclamation marks, etc.
+                    cleanedCorrect = cleanedCorrect.replace(/[.!?;]/g, '');
+                    userAnswer = userAnswer.replace(/[.!?;]/g, '');
+                    
+                    // 3. Split by commas, slashes, or semicolons to get all acceptable answers
+                    const possibleAnswers = cleanedCorrect.split(/[,;/]/).map(s => s.trim());
+                    
+                    // 4. Check if the user's answer matches ANY of the acceptable answers
+                    let isCorrect = possibleAnswers.includes(userAnswer) || 
+                                    possibleAnswers.some(ans => ans !== "" && userAnswer.includes(ans)) ||
+                                    cleanedCorrect === userAnswer;
+
+                    if (isCorrect && userAnswer !== "") {
                         // CORRECT!
                         this.playSound('correct'); 
                         inputField.style.borderColor = '#28a745'; 
