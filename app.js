@@ -527,19 +527,22 @@ class ChineseApp {
         }
 
         // 6. Build the Buttons
+        // 6. Build the Buttons (Integrated with app.startReviewMode)
         contentHTML += `
             <div style="display: flex; gap: 15px; justify-content: center; flex-wrap: wrap;">
                 <button class="action-btn" onclick="app.state.currentIndex = 0; app.state.score = 0; app.setMode('${mode}')">
                     🔁 Restart This Session
                 </button>
-                
-                <button class="action-btn" id="direct-review-btn" style="background-color: var(--primary-color); color: white;">
+                <button class="action-btn" onclick="app.startReviewMode()" style="background-color: var(--primary-color); color: white;">
                     🎯 Start Reviewing Unknown Words
                 </button>
-                
                 ${mode !== 'flashcards' ? `<button class="action-btn" onclick="app.setMode('flashcards')">🗂️ Study Flashcards</button>` : ''}
             </div>
         `;
+
+        msgContainer.innerHTML = contentHTML;
+        
+        // Step 7 has been removed because app.startReviewMode() now handles the logic directly from the button click.
 
         msgContainer.innerHTML = contentHTML;
 
