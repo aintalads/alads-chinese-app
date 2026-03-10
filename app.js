@@ -440,10 +440,82 @@ class ChineseApp {
         }
     }
 
-    renderCurrentItem() {
-        if (this.state.studyQueue.length === 0) return this.showEmptyState();
-        if (this.state.currentIndex >= this.state.studyQueue.length) return this.showCompletionScreen();
+  renderCurrentItem() {
+        // 1. THE GHOST CARD: No popups, just a peaceful end screen inside the app!
+        if (!this.state.studyQueue || this.state.studyQueue.length === 0) {
+            
+            // Trigger confetti for the congratulation effect!
+            if (typeof this.triggerConfetti === 'function') this.triggerConfetti();
+            
+            const mc = document.getElementById('mode-current');
+            const mt = document.getElementById('mode-total');
+            if(mc) mc.innerText = "0";
+            if(mt) mt.innerText = "0";
 
+            if (this.state.currentMode === 'flashcards') {
+                
+                // 🚨 THE INVISIBLE CARD FIX: Bring the card BACK to the center! 🚨
+                const card = document.getElementById('flashcard');
+                if (card) {
+                    card.classList.remove('is-flipped');
+                    card.style.transition = 'none';
+                    card.style.transform = 'translateX(0px) rotate(0deg)'; // Bring it back!
+                    card.style.opacity = '1'; // Make it visible!
+                    card.style.boxShadow = 'none';
+                }
+
+                // Inject EVERYTHING onto the front of the flashcard!
+                const frontText = document.getElementById('fc-front-text');
+                if (frontText) {
+                    frontText.innerHTML = `
+                        <div style="font-size: 3.5rem; margin-bottom: 10px;">🎉</div>
+                        <div style="font-size: 1.8rem; font-weight: bold; margin-bottom: 5px;">Session Complete!</div>
+                        <p style="font-size: 1rem; color: var(--text-muted); font-weight: normal; margin-bottom: 25px;">You conquered this deck.</p>
+                        
+                        <div style="display: flex; flex-direction: column; gap: 12px; align-items: center; width: 100%;">
+                            <button class="action-btn" onclick="app.setMode('flashcards')" style="width: 100%; max-width: 220px; padding: 12px; font-size: 1rem;">🔁 Restart Lesson</button>
+                            <button class="action-btn" onclick="app.startReviewMode()" style="width: 100%; max-width: 220px; padding: 12px; font-size: 1rem; background: #e0f2fe; color: #0284c7; border: 1px solid #bae6fd;">🎯 Review Unknown</button>
+                            <button class="action-btn" onclick="app.setMode('manage-review')" style="width: 100%; max-width: 220px; padding: 12px; font-size: 1rem; background: transparent; color: var(--text-muted); border: 1px solid var(--border-color);">⚙️ Manage Review List</button>
+                        </div>
+                    `;
+                }
+                
+                // Clear out the old pinyin and meaning so they don't hover over the buttons
+                const py = document.getElementById('fc-pinyin');
+                const mn = document.getElementById('fc-meaning');
+                if(py) py.innerText = "";
+                if(mn) mn.innerHTML = "";
+
+                // Hide the back elements just in case
+                const radBox = document.getElementById('fc-radical-box');
+                const exBox = document.getElementById('fc-example-box');
+                if(radBox) radBox.classList.add('hidden');
+                if(exBox) exBox.classList.add('hidden');
+                
+            } else if (this.state.currentMode === 'sentences') {
+                
+                document.getElementById('sn-chinese').innerHTML = `
+                    <div style="font-size: 3rem; margin-bottom: 10px;">🎉</div>
+                    <div style="font-size: 1.8rem; font-weight: bold;">Session Complete!</div>
+                `;
+                document.getElementById('sn-pinyin').innerText = "";
+                
+                // Inject options for sentences
+                document.getElementById('sn-english').innerHTML = `
+                    <p style="margin-bottom: 20px; color: var(--text-muted);">Excellent work!</p>
+                    <div style="display: flex; flex-direction: column; gap: 12px; align-items: center;">
+                        <button class="action-btn" onclick="app.setMode('sentences')" style="width: 100%; max-width: 220px; padding: 12px; font-size: 1rem;">🔁 Restart Sentences</button>
+                        <button class="action-btn" onclick="app.startReviewMode()" style="width: 100%; max-width: 220px; padding: 12px; font-size: 1rem; background: #e0f2fe; color: #0284c7; border: 1px solid #bae6fd;">🎯 Review Unknown Words</button>
+                    </div>
+                `;
+                document.getElementById('sn-english').classList.remove('hidden');
+                const revealBtn = document.getElementById('reveal-translation-btn');
+                if (revealBtn) revealBtn.style.display = 'none';
+            }
+            return;
+        }
+
+        // 2. Normal rendering for cards
         const mc = document.getElementById('mode-current');
         if(mc) mc.innerText = this.state.currentIndex + 1;
         const mt = document.getElementById('mode-total');
@@ -454,7 +526,6 @@ class ChineseApp {
         if (this.state.currentMode === 'sentences') this.renderSentence();
         if (this.state.currentMode === 'quiz') this.renderQuiz();
     }
-
     showCompletion() {
 
 
@@ -554,21 +625,25 @@ class ChineseApp {
         if (typeof this.triggerConfetti === 'function') this.triggerConfetti();
     }
 
-    nextItem() {
+nextItem() {
         this.saveSession();
         this.state.currentIndex++;
         
-        // If we reached the end of the study queue, show the epic completion screen!
+        // When you reach the end of the deck...
         if (this.state.currentIndex >= this.state.studyQueue.length) {
-            this.showCompletion(); 
-            return;
+            
+            if (this.state.isReviewMode) {
+                // In Review Mode: ONLY reload words you marked as "Study Again"
+                this.state.studyQueue = [...this.state.progress.reviewQueue].sort(() => Math.random() - 0.5);
+                this.state.currentIndex = 0;
+            } else {
+                // In Normal Mode: You finished the lesson! Empty the deck to show the "All Done!" card.
+                this.state.studyQueue = [];
+                this.state.currentIndex = 0;
+            }
         }
         
-        // Otherwise, keep rendering the next item...
-        if (this.state.currentMode === 'flashcards') this.renderFlashcard();
-        else if (this.state.currentMode === 'writing') this.renderWriting();
-        else if (this.state.currentMode === 'sentences') this.renderSentence();
-        else if (this.state.currentMode === 'quiz') this.renderQuiz();
+        this.renderCurrentItem();
     }
     prevItem() { if(this.state.currentIndex > 0) { this.state.currentIndex--; this.renderCurrentItem(); } }
     shuffleItems() { this.state.studyQueue.sort(() => Math.random() - 0.5); this.state.currentIndex = 0; this.renderCurrentItem(); }
@@ -742,56 +817,52 @@ class ChineseApp {
         }
     }
 
+    // --- THE BULLETPROOF SWIPE ENGINE ---
     handleSwipe(direction) {
+        // 🛡️ THE LOCK: Ignore swipes if a card is already flying off the screen!
+        if (this.state.isAnimating) return;
+        this.state.isAnimating = true;
+
         const activeCard = document.getElementById('flashcard');
         const currentItem = this.state.studyQueue[this.state.currentIndex];
         
-        // If there's no card on screen, do nothing
-        if (!currentItem) return;
+        if (!currentItem) {
+            this.state.isAnimating = false;
+            return;
+        }
 
-        // Unique key for item to prevent duplicates
         const getItemKey = item => item.id || item.word || item.simplified || JSON.stringify(item);
         const currentKey = getItemKey(currentItem);
 
-        // 🛡️ SAFETY NET: Force the review bucket to exist so the app never crashes
         if (!this.state.progress.reviewQueue) {
             this.state.progress.reviewQueue = [];
         }
 
-        // 1. Log the swipe in the history so the numbers count!
         if (!this.state.history) this.state.history = [];
         this.state.history.push({ direction: direction, item: currentItem, index: this.state.currentIndex });
 
-        // 2. Add or Remove from the Review List
         if (direction === 'left') {
-            // Check if it's already in the bucket. If not, add it!
             if (!this.state.progress.reviewQueue.some(item => getItemKey(item) === currentKey)) {
                 this.state.progress.reviewQueue.push(currentItem);
             }
         } else if (direction === 'right') {
-            // Remove it from the bucket if they swipe right
             this.state.progress.reviewQueue = this.state.progress.reviewQueue.filter(item => getItemKey(item) !== currentKey);
         }
         
-        // 3. Save to browser memory immediately
         this.saveProgress();
         this.saveSession();
 
-        // 4. Animate the card off-screen and go to the next one
         if (activeCard) {
-            activeCard.style.transition = 'transform 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275), opacity 0.4s ease';
+            activeCard.style.transition = 'transform 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275), opacity 0.3s ease';
             activeCard.style.opacity = '0';
             activeCard.style.transform = `translateX(${direction === 'left' ? '-150%' : '150%'}) rotate(${direction === 'left' ? '-20deg' : '20deg'})`;
-
-            setTimeout(() => {
-                this.nextItem();
-                this.updateProgressUI(); 
-            }, 300);
-        } else {
-            // Fallback if the card HTML is missing
-            this.nextItem();
-            this.updateProgressUI();
         }
+
+        setTimeout(() => {
+            this.nextItem();
+            // 🔓 UNLOCK: Allow the user to swipe the next card now
+            this.state.isAnimating = false; 
+        }, 300);
     }
 
     undoLastSwipe() {
@@ -864,7 +935,8 @@ class ChineseApp {
         const isDark = document.body.className.includes('dark') || document.body.className.includes('midnight');
 
         this.hanziWriter = HanziWriter.create('character-target-div', char, {
-            width: 250, height: 250, padding: 15, drawingWidth: 55,
+            // 👇 INCREASED SIZE: 350x350 with a slightly thicker drawing width!
+            width: 350, height: 350, padding: 15, drawingWidth: 60,
             strokeColor: isDark ? '#E8E6E1' : '#000000',
             radicalColor: isDark ? '#5EBBBA' : '#007bff', 
             showOutline: !this.state.outlineHidden,
@@ -875,14 +947,35 @@ class ChineseApp {
         this.hanziWriter.quiz();
     }
 
-    toggleOutline() {
+   toggleOutline() {
         if (!this.hanziWriter) return;
         this.state.outlineHidden = !this.state.outlineHidden;
         const btn = document.getElementById('toggle-outline-btn');
-        if (this.state.outlineHidden) { this.hanziWriter.hideOutline(); btn.innerText = "👁️ Show Outline"; } 
-        else { this.hanziWriter.showOutline(); btn.innerText = "🙈 Hide Outline"; }
+        
+        if (this.state.outlineHidden) { 
+            this.hanziWriter.hideOutline(); 
+            if(btn) btn.innerText = "Show Outline"; 
+        } else { 
+            this.hanziWriter.showOutline(); 
+            if(btn) btn.innerText = "Hide Outline"; 
+        }
+    }
+    animateCharacter() {
+        if (!this.hanziWriter) return;
+        // Cancels the quiz and draws the character perfectly for you
+        this.hanziWriter.animateCharacter({
+            onComplete: () => {
+                // Restart the quiz 1 second after the animation finishes
+                setTimeout(() => this.hanziWriter.quiz(), 1000);
+            }
+        });
     }
 
+    resetWriting() {
+        if (!this.hanziWriter) return;
+        // Calling .quiz() again instantly wipes the canvas clean
+        this.hanziWriter.quiz(); 
+    }
     renderSentence() {
         const s = this.state.studyQueue[this.state.currentIndex];
         if (!s) return;
@@ -970,112 +1063,105 @@ class ChineseApp {
         var item = this.state.studyQueue[this.state.currentIndex];
         if (!item) return;
 
-        var qTypeSelect = document.getElementById('qz-q-type');
-        var aTypeSelect = document.getElementById('qz-a-type');
+        var qType = document.getElementById('qz-q-type') ? document.getElementById('qz-q-type').value : 'zh';
+        var aType = document.getElementById('qz-a-type') ? document.getElementById('qz-a-type').value : 'mc';
         
-        if (qTypeSelect && !qTypeSelect.hasAttribute('data-listening')) {
-            qTypeSelect.addEventListener('change', () => this.renderQuiz());
-            if(aTypeSelect) aTypeSelect.addEventListener('change', () => this.renderQuiz());
-            qTypeSelect.setAttribute('data-listening', 'true');
-        }
-
         var scoreUi = document.getElementById('quiz-score-ui');
         if (scoreUi) scoreUi.innerText = `🏆 Score: ${this.state.score || 0} / ${this.state.studyQueue.length}`;
 
-        var qType = qTypeSelect ? qTypeSelect.value : 'zh';
-        var aType = aTypeSelect ? aTypeSelect.value : 'mc';
-
-        var questionText = ""; 
-        var correctMeaning = "";
+        var questionText = qType === 'zh' ? (item.word || item.simplified) : (qType === 'py' ? item.pinyin : (item.definition || item.english));
+        var correctMeaning = qType === 'zh' ? ((aType === 'mc-py') ? item.pinyin : (item.definition || item.english)) : (item.word || item.simplified);
         
-        // --- 1. SET QUESTION & CORRECT ANSWER ---
-        if (qType === 'zh') {
-            questionText = item.word || item.simplified; 
-            // If Answer Mode is Pinyin, we look for item.pinyin
-            correctMeaning = (aType === 'mc-py') ? item.pinyin : (item.definition || item.meaning || item.english || "");
-        } else if (qType === 'py') {
-            questionText = item.pinyin; 
-            correctMeaning = item.definition || item.meaning || item.english || "";
-        } else if (qType === 'en') {
-            questionText = item.definition || item.meaning || item.english; 
-            correctMeaning = item.pinyin || item.word || item.simplified || "";
-        }
-
         document.getElementById('qz-word').innerText = questionText;
-        
-        // --- 2. HINT & AUDIO LOGIC ---
-        var pinyinBtn = document.getElementById('qz-pinyin-btn');
+
+        // --- 🚨 THE FIX: Restore the Pinyin Hint and Sound Button! 🚨 ---
         var hintEl = document.getElementById('qz-pinyin-hint');
+        var pinyinBtn = document.getElementById('qz-pinyin-btn');
         if (hintEl) {
-            hintEl.classList.add('hidden');
-            hintEl.innerText = item.pinyin || ""; 
-            if (qType === 'zh') {
-                if (pinyinBtn) pinyinBtn.style.display = 'inline-block';
-            } else {
-                if (pinyinBtn) pinyinBtn.style.display = 'none';
+            hintEl.classList.add('hidden'); // Hide it at the start of each question
+            hintEl.innerText = item.pinyin || ""; // Actually give it the pinyin text!
+            
+            // Only show the Pinyin button if the question is in Chinese characters
+            if (pinyinBtn) {
+                pinyinBtn.style.display = (qType === 'zh') ? 'inline-block' : 'none';
             }
         }
-
-        document.getElementById('qz-sound-btn').onclick = (e) => {
-            e.stopPropagation(); 
-            this.playAudio(item.word || item.simplified, 'zh-CN');
-        };
-
-        if (this.state.autoAudio) this.playAudio(item.word || item.simplified, 'zh-CN');
-
-        var optionsContainer = document.getElementById('qz-options');
-        optionsContainer.innerHTML = ''; 
-
-        // --- 3. TYPING MODE ---
-        if (aType === 'type') {
-            optionsContainer.style.display = 'block';
-            var inputField = document.createElement('input');
-            inputField.type = 'text'; 
-            inputField.className = 'quiz-input';
-            inputField.placeholder = `Type here...`;
-
-            var submitBtn = document.createElement('button');
-            submitBtn.innerText = 'Submit Answer'; 
-            submitBtn.className = 'option-btn'; 
-            submitBtn.style.width = '100%'; 
-
-            var feedback = document.createElement('div');
-            feedback.className = 'quiz-feedback';
-
-            optionsContainer.appendChild(inputField); 
-            optionsContainer.appendChild(submitBtn); 
-            optionsContainer.appendChild(feedback);
-            setTimeout(() => inputField.focus(), 100);
-
-            var checkTypedAnswer = (e) => {
-                if (e) e.stopPropagation();
-                var cleanText = (str) => !str ? "" : str.normalize("NFD").replace(/[\u0300-\u036f]/g, "").replace(/[^a-zA-Z0-9\u4e00-\u9fa5]/g, "").toLowerCase();
-                var cleanedUserInput = cleanText(inputField.value);
-                var correctMeaningsList = correctMeaning.split(/[,/;]/).map(m => cleanText(m));
-                var isCorrect = correctMeaningsList.some(m => m === cleanedUserInput || (m.length > 2 && m.includes(cleanedUserInput)));
-
-                if (isCorrect) {
-                    this.playSound('correct'); 
-                    this.state.score++;
-                    feedback.innerHTML = `✅ <b>Correct!</b><br>${correctMeaning}`;
-                    feedback.style.backgroundColor = '#d4edda';
-                    inputField.style.borderColor = '#28a745';
-                } else {
-                    this.playSound('wrong'); 
-                    feedback.innerHTML = `❌ <b>Incorrect.</b><br>Answer: <b>${correctMeaning}</b>`;
-                    feedback.style.backgroundColor = '#f8d7da';
-                    inputField.style.borderColor = '#dc3545';
-                    if (hintEl && qType === 'zh') hintEl.classList.remove('hidden');
-                }
-                submitBtn.disabled = true; inputField.disabled = true;
-                setTimeout(() => this.nextItem(), 1200); 
+        
+        var soundBtn = document.getElementById('qz-sound-btn');
+        if (soundBtn) {
+            soundBtn.onclick = (e) => {
+                e.stopPropagation();
+                this.playAudio(item.word || item.simplified, 'zh-CN');
             };
+        }
+        
+        // Auto-play audio if enabled
+        if (this.state.autoAudio) this.playAudio(item.word || item.simplified, 'zh-CN');
+        // --------------------------------------------------------------
+        
+        var optionsContainer = document.getElementById('qz-options');
+        if(optionsContainer) optionsContainer.innerHTML = ''; 
 
-            submitBtn.onpointerdown = checkTypedAnswer;
-            inputField.addEventListener('keypress', (e) => { if (e.key === 'Enter') checkTypedAnswer(e); });
+        // --- THE "TYPE ANSWER" MODE (NO BUTTON, ENTER KEY ONLY) ---
+        if (aType === 'type' && optionsContainer) {
+            optionsContainer.style.display = 'block'; 
+            
+            const inputField = document.createElement('input');
+            inputField.type = 'text';
+            inputField.placeholder = "Type your answer and press Enter...";
+            
+            // Clean styling for the input box
+            inputField.style.cssText = `
+                width: 100%; 
+                padding: 15px; 
+                font-size: 1.2rem; 
+                border-radius: 12px; 
+                border: 2px solid var(--border-color); 
+                text-align: center; 
+                outline: none; 
+                transition: all 0.3s;
+                background: var(--card-bg);
+                color: var(--text-main);
+                margin-top: 15px;
+            `;
+            
+            optionsContainer.appendChild(inputField);
+            setTimeout(() => inputField.focus(), 100); // Auto-focus
 
-        // --- 4. MULTIPLE CHOICE MODE (MC-PY, MC, etc) ---
-        } else {
+            // Listen ONLY for the Enter key
+            inputField.addEventListener('keydown', (e) => {
+                if (e.key === 'Enter') {
+                    e.preventDefault(); 
+                    inputField.disabled = true; 
+                    
+                    const userAnswer = inputField.value.trim().toLowerCase();
+                    const correctAnswers = correctMeaning.toLowerCase().split(/[,;/]/).map(s => s.trim());
+                    
+                    if (correctAnswers.includes(userAnswer) || userAnswer === correctMeaning.toLowerCase().trim()) {
+                        // CORRECT!
+                        this.playSound('correct'); 
+                        inputField.style.borderColor = '#28a745'; 
+                        inputField.style.backgroundColor = '#d4edda';
+                        inputField.style.color = '#155724';
+                        this.state.score++;
+                    } else {
+                        // WRONG!
+                        this.playSound('wrong'); 
+                        inputField.style.borderColor = '#dc3545';
+                        inputField.style.backgroundColor = '#f8d7da';
+                        inputField.style.color = '#721c24';
+                        inputField.value = `❌ Correct: ${correctMeaning}`;
+                        
+                        // Bonus: Auto-reveal Pinyin if you get it wrong!
+                        if (hintEl && qType === 'zh') hintEl.classList.remove('hidden');
+                    }
+                    
+                    setTimeout(() => this.nextItem(), 1500);
+                }
+            });
+
+        // --- NORMAL MULTIPLE CHOICE MODE ---
+        } else if (optionsContainer) {
             optionsContainer.style.display = 'grid'; 
             var options = [item];
             while (options.length < 4 && options.length < this.state.studyQueue.length) {
@@ -1087,47 +1173,24 @@ class ChineseApp {
             options.forEach(opt => {
                 var btn = document.createElement('button');
                 btn.className = 'option-btn';
-                
-                // Show text based on mode
                 if (aType === 'mc-py') btn.innerText = opt.pinyin; 
                 else if (qType === 'en') btn.innerText = opt.word || opt.simplified;
                 else btn.innerText = opt.definition || opt.meaning || opt.english;
 
-                // Robust ID for comparison
-                const currentOptId = String(opt.id || opt.word || opt.simplified);
-                btn.dataset.id = currentOptId;
-
                 btn.onpointerdown = (e) => {
-                    e.preventDefault();
-                    e.stopPropagation();
-
+                    e.preventDefault(); e.stopPropagation();
                     Array.from(optionsContainer.children).forEach(child => child.disabled = true);
-                    
-                    const targetId = String(item.id || item.word || item.simplified);
-
-                    if (currentOptId === targetId) {
+                    if ((opt.id || opt.word) === (item.id || item.word)) {
                         this.playSound('correct'); 
                         btn.style.backgroundColor = '#d4edda'; 
-                        btn.style.borderColor = '#28a745'; 
-                        btn.style.color = '#155724';
                         this.state.score++;
                     } else {
                         this.playSound('wrong'); 
-                        btn.style.backgroundColor = '#f8d7da'; 
-                        btn.style.borderColor = '#dc3545'; 
-                        btn.style.color = '#721c24';
+                        btn.style.backgroundColor = '#f8d7da';
                         
-                        // Highlight correct button
-                        Array.from(optionsContainer.children).forEach(child => {
-                            if (child.dataset.id === targetId) {
-                                child.style.backgroundColor = '#d4edda'; 
-                                child.style.borderColor = '#28a745';
-                            }
-                        });
+                        // Bonus: Auto-reveal Pinyin if you get it wrong!
                         if (hintEl && qType === 'zh') hintEl.classList.remove('hidden');
                     }
-                    
-                    if (scoreUi) scoreUi.innerText = `🏆 Score: ${this.state.score} / ${this.state.studyQueue.length}`;
                     setTimeout(() => this.nextItem(), 1500); 
                 };
                 optionsContainer.appendChild(btn);
@@ -1254,6 +1317,10 @@ class ChineseApp {
     setupEventListeners() {
         document.addEventListener('keydown', (e) => {
             if (this.state.currentMode !== 'flashcards') return;
+            
+            // 🔒 THE LOCK: Ignore keys if a card is currently flying off screen
+            if (this.state.isAnimating) return; 
+
             const card = document.getElementById('flashcard');
             if (e.code === 'Space') { e.preventDefault(); this.flipCard(); }
             if (e.code === 'ArrowRight') {
@@ -1281,6 +1348,9 @@ class ChineseApp {
             if(e.target.tagName.toLowerCase() === 'button') return; 
             // Ignore right-clicks to prevent bugs on desktop
             if (e.pointerType === 'mouse' && e.button !== 0) return; 
+            
+            // 🔒 THE LOCK: Prevent grabbing the card if it's already swiping away
+            if (this.state.isAnimating) return; 
 
             this.swipeState.isDragging = true;
             startX = e.clientX; 
@@ -1294,19 +1364,6 @@ class ChineseApp {
         activeCard.addEventListener('touchmove', (e) => {
             e.preventDefault(); 
         }, { passive: false });
-
-        activeCard.addEventListener('pointercancel', (e) => {
-            if (!this.swipeState.isDragging) return;
-            this.swipeState.isDragging = false;
-            
-            // Release the pointer
-            try { activeCard.releasePointerCapture(e.pointerId); } catch(err) {}
-            
-            // Instantly snap the card back to the center
-            activeCard.style.transition = 'transform 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275), box-shadow 0.3s ease'; 
-            activeCard.style.transform = ''; 
-            activeCard.style.boxShadow = 'none';
-        });
 
         // Lock the entire screen from scrolling while dragging
         document.addEventListener('touchmove', (e) => {
@@ -1327,7 +1384,7 @@ class ChineseApp {
         });
         
         // --- THE FIX: Create a reusable endSwipe function ---
-       const endSwipe = (e) => {
+        const endSwipe = (e) => {
             if (!this.swipeState.isDragging) return;
             this.swipeState.isDragging = false;
             
