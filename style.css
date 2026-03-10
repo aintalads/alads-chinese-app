@@ -897,29 +897,30 @@ html, body {
 
 /* --- 🚨 FLASHCARD BACK ORGANIZATION 🚨 --- */
 
-/* The extra info container on the back */
-#fc-extra-info {
+/* --- 🚨 BULLETPROOF FLASHCARD BACK 🚨 --- */
+
+#fc-extra-container {
     width: 100%;
-    margin-top: 20px;
+    margin-top: 15px;
     display: flex;
     flex-direction: column;
     gap: 15px;
 }
 
 /* 1. Standardized Example Sentences */
-.fc-example-box {
-    background: var(--bg-color); /* Soft background to separate it */
-    border-radius: 16px;
+.fc-example-box-inner {
+    background: var(--bg-color); 
+    border-radius: 12px;
     padding: 16px;
     text-align: left;
-    border-left: 4px solid var(--primary-color); /* Nice colored line on the left */
+    border-left: 4px solid var(--primary-color);
     width: 100%;
     box-sizing: border-box;
 }
 
 .fc-ex-zh {
-    font-family: 'LXGW WenKai TC', cursive !important; /* Uses your beautiful handwriting font! */
-    font-size: 1.4rem !important; /* STRICT size so it never gets too big/small */
+    font-family: 'LXGW WenKai TC', cursive !important; /* Keeps your nice handwriting! */
+    font-size: 1.4rem !important; 
     color: var(--text-main);
     margin-bottom: 6px;
     line-height: 1.4;
@@ -932,7 +933,7 @@ html, body {
 }
 
 .fc-ex-en {
-    font-size: 1rem !important;
+    font-size: 0.95rem !important;
     color: var(--text-muted);
     font-style: italic;
 }
@@ -940,13 +941,12 @@ html, body {
 /* 2. "Appears In" Tags Organization */
 .occurrences-container {
     text-align: left;
-    background: transparent;
     padding: 10px 0;
-    border-top: 1px dashed var(--border-color); /* Neat divider line */
+    border-top: 1px dashed var(--border-color);
 }
 
 .occurrences-title {
-    font-size: 0.85rem;
+    font-size: 0.8rem;
     color: var(--text-muted);
     margin-bottom: 10px;
     text-transform: uppercase;
@@ -957,16 +957,78 @@ html, body {
 .occurrences-list {
     display: flex;
     flex-wrap: wrap;
-    gap: 8px; /* Perfectly spaces the tags */
+    gap: 8px; 
 }
 
 .occurrence-tag {
     background: var(--bg-grad-2);
     color: var(--primary-color);
     padding: 6px 12px;
-    border-radius: 20px; /* Makes them look like rounded pills */
-    font-size: 0.85rem;
+    border-radius: 20px;
+    font-size: 0.8rem;
     font-weight: 600;
     border: 1px solid var(--border-color);
-    white-space: nowrap; /* Stops a single tag from breaking into two lines */
+    white-space: nowrap; 
+}
+
+/* Hide default arrows on the collapsible quiz settings */
+/* --- 🚨 FLOAT GLASS (GLASSMORPHISM) SETTINGS 🚨 --- */
+.quiz-settings-glass {
+    margin: 0 auto 20px auto;
+    width: fit-content; /* Makes it as small as possible */
+    min-width: 160px;
+    background: rgba(255, 255, 255, 0.4); /* Translucent white */
+    backdrop-filter: blur(10px); /* The "Frosted" effect */
+    -webkit-backdrop-filter: blur(10px);
+    border: 1px solid rgba(255, 255, 255, 0.5);
+    border-radius: 50px; /* Pill shape */
+    padding: 6px 15px;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.05);
+    transition: all 0.3s ease;
+    z-index: 100;
+}
+
+.quiz-settings-glass[open] {
+    border-radius: 20px; /* Squares out slightly when open */
+    width: 90%;
+    max-width: 300px;
+}
+
+.quiz-settings-glass summary {
+    list-style: none;
+    outline: none;
+    cursor: pointer;
+    text-align: center;
+    font-size: 0.85rem;
+    font-weight: 600;
+    color: var(--primary-color);
+}
+
+.quiz-settings-glass summary::-webkit-details-marker {
+    display: none;
+}
+
+.glass-content {
+    margin-top: 10px;
+    padding-top: 10px;
+    border-top: 1px solid rgba(0, 0, 0, 0.05);
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.setting-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-size: 0.8rem;
+}
+
+.setting-row select {
+    padding: 4px 8px;
+    border-radius: 8px;
+    border: 1px solid rgba(0, 0, 0, 0.1);
+    background: rgba(255, 255, 255, 0.8);
+    font-size: 0.8rem;
+    outline: none;
 }
