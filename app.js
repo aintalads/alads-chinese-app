@@ -1,4 +1,5 @@
 class ChineseApp {
+    console.log("App Version 20260310 is running!");
     constructor() {
 
         // Inside constructor()
