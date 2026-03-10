@@ -1137,66 +1137,57 @@ class ChineseApp {
 
         // --- 3. DYNAMIC COMPLETION SCREEN & SUGGESTIONS ---
     showCompletion() {
-        // Hide all views and show the complete view
+        // 1. Hide screens and handle resume (keeping your existing logic)
         document.querySelectorAll('.study-view').forEach(v => v.classList.remove('active'));
-        document.getElementById('view-complete').classList.add('active');
-        
-        const title = document.getElementById('completion-title');
-        const desc = document.getElementById('completion-desc');
+        const activeSession = localStorage.getItem('mandarinActiveSession');
+        if (activeSession) {
+            setTimeout(() => {
+                if(confirm("Resume session?")) {
+                    const parsed = JSON.parse(activeSession);
+                    this.state.studyQueue = parsed.queue;
+                    this.state.currentIndex = parsed.index;
+                    this.setMode(parsed.mode);
+                } else {
+                    localStorage.removeItem('mandarinActiveSession');
+                }
+            }, 500);
+        }
+
+        let completeView = document.getElementById('view-complete');
+        if (!completeView) return; // Ensure view exists
+        completeView.classList.add('active');
+
+        let msgContainer = completeView.querySelector('.completion-message');
         const mode = this.state.currentMode;
-        
-        // Clean up old buttons
-        let btnContainer = document.getElementById('completion-suggestions');
-        if (!btnContainer) {
-            btnContainer = document.createElement('div');
-            btnContainer.id = 'completion-suggestions';
-            btnContainer.style.cssText = 'margin-top: 30px; display: flex; gap: 15px; justify-content: center; flex-wrap: wrap;';
-            document.querySelector('.completion-message').appendChild(btnContainer);
-        }
-        btnContainer.innerHTML = ''; 
 
-        // Score Reveal Logic for Quiz Mode
-        if (mode === 'quiz') {
-            const total = this.state.studyQueue.length;
-            const right = this.state.score || 0;
-            const wrong = total - right;
-            title.innerText = "🎯 Quiz Complete!";
-            desc.innerHTML = `Great effort! Here is your final score:<br><br>
-                              <strong style="color: #28a745; font-size: 1.5rem;">✅ Right: ${right}</strong> &nbsp;|&nbsp; 
-                              <strong style="color: #dc3545; font-size: 1.5rem;">❌ Wrong: ${wrong}</strong>`;
-        } else {
-            title.innerText = "🏆 Session Complete";
-            desc.innerText = "Excellent work. You have reviewed all items in this set.";
-        }
+        // 2. Build the UI WITHOUT 'onclick' attributes
+        msgContainer.innerHTML = `
+            <h1 style="font-size: 2.5rem;">🏆 Session Complete!</h1>
+            <p style="margin-bottom: 30px;">Excellent work reviewing this set.</p>
+            <div style="display: flex; gap: 15px; justify-content: center; flex-wrap: wrap;">
+                <button class="action-btn" id="btn-restart-session">🔁 Restart Session</button>
+                <button class="action-btn" id="btn-direct-review" style="background-color: var(--primary-color); color: white;">🎯 Review Unknown</button>
+                <button class="action-btn" id="btn-go-flashcards">🗂️ Study Flashcards</button>
+            </div>
+        `;
 
-        // --- ADD SUGGESTION BUTTONS ---
-        
-        // Button 1: Restart Current Session
-        const restartBtn = document.createElement('button');
-        restartBtn.className = 'action-btn';
-        restartBtn.innerHTML = '🔁 Restart Session';
-        restartBtn.onclick = () => {
+        // 3. Attach listeners via JavaScript (Safe from CSP)
+        document.getElementById('btn-restart-session').addEventListener('click', () => {
             this.state.currentIndex = 0;
             this.state.score = 0;
-            this.setMode(mode); // Reloads the current mode
-        };
-        btnContainer.appendChild(restartBtn);
+            this.setMode(mode);
+        });
 
-        // Button 2: Go to Manage Review (Unknown Words)
-        const reviewBtn = document.createElement('button');
-        reviewBtn.className = 'action-btn';
-        reviewBtn.innerHTML = '⚙️ Manage "Study Again" List';
-        reviewBtn.onclick = () => { this.setMode('manage-review'); };
-        btnContainer.appendChild(reviewBtn);
+        document.getElementById('btn-direct-review').addEventListener('click', () => {
+            this.startReviewMode();
+        });
 
-        // Button 3: Switch to Flashcards (if not already there)
-        if (mode !== 'flashcards') {
-            const fcBtn = document.createElement('button');
-            fcBtn.className = 'action-btn';
-            fcBtn.innerHTML = '🗂️ Study Flashcards';
-            fcBtn.onclick = () => { this.setMode('flashcards'); };
-            btnContainer.appendChild(fcBtn);
+        const flashcardBtn = document.getElementById('btn-go-flashcards');
+        if (flashcardBtn) {
+            flashcardBtn.addEventListener('click', () => this.setMode('flashcards'));
         }
+
+        if (typeof this.triggerConfetti === 'function') this.triggerConfetti();
     }
 
     loadProgress() {
