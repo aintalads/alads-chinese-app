@@ -4,12 +4,13 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Alads | Chinese Learning</title>
-    
-    <link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=LXGW+WenKai+TC&display=swap" rel="stylesheet">
-    
-    <link rel="stylesheet" href="style.css?v=100">
+    <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800&display=swap" rel="stylesheet">
+
+    <link rel="stylesheet" href="style.css?v=200">
+
+   
 
     <link rel="manifest" href="manifest.json">
     
@@ -197,16 +198,19 @@
                                 <h1 id="fc-front-text">漢字</h1>
                             </div>
      <div class="card-back">
-    <button class="card-audio-btn" onclick="app.playCurrentFlashcardAudio(event)">🔊</button>
-
-    <h1 id="fc-pinyin"></h1>
-
-    <h2 id="fc-meaning"></h2>
+    <div class="card-main-info">
+        <button class="card-audio-btn" onclick="app.playCurrentFlashcardAudio(event)">🔊</button>
+        <h1 id="fc-pinyin"></h1>
+        <h2 id="fc-meaning"></h2>
+        
+        <div class="scroll-down-hint" id="scroll-hint-icon">↓ Swipe for Examples ↓</div>
+    </div>
     
-    <div id="fc-radical-box" class="extra-info-box hidden" onclick="event.stopPropagation(); this.classList.toggle('magnified')"></div>
-    <div id="fc-example-box" class="extra-info-box hidden" onclick="event.stopPropagation(); this.classList.toggle('magnified')"></div>
-
-    <div id="fc-breakdown" class="fc-breakdown"></div>
+   <div class="card-extra-info">
+        <div id="fc-radical-box" class="extra-info-box hidden"></div>
+        <div id="fc-example-box" class="extra-info-box hidden"></div>
+        <div id="fc-breakdown" class="fc-breakdown"></div>
+    </div>
 </div>
                         </div>
                     </div>
@@ -367,4 +371,5 @@
 
     
 </body>
+
 </html>
