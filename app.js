@@ -174,7 +174,7 @@ class ChineseApp {
         Object.keys(this.data.books).forEach(bId => {
             const chip = document.createElement('div');
             chip.className = `chip ${this.state.selectedBooks.has(bId) ? 'active' : ''}`;
-            chip.innerText = `📖 Book ${bId}`;
+            chip.innerText = `Book ${bId}`;
             
             chip.onclick = () => {
                 // Update selection state
@@ -309,14 +309,14 @@ class ChineseApp {
         if(curView) curView.classList.add('active');
 
         if (this.state.currentMode === 'manage-review') {
-            document.getElementById('current-title').innerText = "⚙️ Manage Study List";
+            document.getElementById('current-title').innerText = "Manage Study List";
             this.renderManageReview();
             return;
         }
 
         if (this.state.isReviewMode) {
             this.state.studyQueue = [...this.state.progress.reviewQueue].sort(() => Math.random() - 0.5);
-            document.getElementById('current-title').innerText = "🔄 Review Deck";
+            document.getElementById('current-title').innerText = "Review Deck";
         } else {
             let aggregatedVocab = [];
             let aggregatedSentences = [];
@@ -407,7 +407,7 @@ class ChineseApp {
                         ${item.word || item.simplified}
                         <span class="review-item-pinyin">${item.pinyin || ''}</span>
                     </div>
-                    <button class="remove-btn">🗑️ Remove</button>
+                    <button class="remove-btn">Remove</button>
                 `;
                 // Add both click and touch event listeners for remove button
                 const btn = li.querySelector('.remove-btn');
@@ -473,7 +473,7 @@ class ChineseApp {
                         <p style="font-size: 1rem; color: var(--text-muted); font-weight: normal; margin-bottom: 25px;">You conquered this deck.</p>
                         
                         <div style="display: flex; flex-direction: column; gap: 12px; align-items: center; width: 100%;">
-                            <button class="action-btn" onclick="app.setMode('flashcards')" style="width: 100%; max-width: 220px; padding: 12px; font-size: 1rem;">🔁 Restart Lesson</button>
+                            <button class="action-btn" onclick="app.setMode('flashcards')" style="width: 100%; max-width: 220px; padding: 12px; font-size: 1rem;">Restart Lesson</button>
                             <button class="action-btn" onclick="app.startReviewMode()" style="width: 100%; max-width: 220px; padding: 12px; font-size: 1rem; background: #e0f2fe; color: #0284c7; border: 1px solid #bae6fd;">🎯 Review Unknown</button>
                             <button class="action-btn" onclick="app.setMode('manage-review')" style="width: 100%; max-width: 220px; padding: 12px; font-size: 1rem; background: transparent; color: var(--text-muted); border: 1px solid var(--border-color);">⚙️ Manage Review List</button>
                         </div>
@@ -495,7 +495,7 @@ class ChineseApp {
             } else if (this.state.currentMode === 'sentences') {
                 
                 document.getElementById('sn-chinese').innerHTML = `
-                    <div style="font-size: 3rem; margin-bottom: 10px;">🎉</div>
+                    <div style="font-size: 3rem; margin-bottom: 10px;"></div>
                     <div style="font-size: 1.8rem; font-weight: bold;">Session Complete!</div>
                 `;
                 document.getElementById('sn-pinyin').innerText = "";
@@ -504,7 +504,7 @@ class ChineseApp {
                 document.getElementById('sn-english').innerHTML = `
                     <p style="margin-bottom: 20px; color: var(--text-muted);">Excellent work!</p>
                     <div style="display: flex; flex-direction: column; gap: 12px; align-items: center;">
-                        <button class="action-btn" onclick="app.setMode('sentences')" style="width: 100%; max-width: 220px; padding: 12px; font-size: 1rem;">🔁 Restart Sentences</button>
+                        <button class="action-btn" onclick="app.setMode('sentences')" style="width: 100%; max-width: 220px; padding: 12px; font-size: 1rem;">Restart Sentences</button>
                         <button class="action-btn" onclick="app.startReviewMode()" style="width: 100%; max-width: 220px; padding: 12px; font-size: 1rem; background: #e0f2fe; color: #0284c7; border: 1px solid #bae6fd;">🎯 Review Unknown Words</button>
                     </div>
                 `;
@@ -534,7 +534,7 @@ class ChineseApp {
         if (activeSession) {
             // Wait 0.5 seconds for the app to finish loading visually
             setTimeout(() => {
-                if(confirm("Welcome back! 🚀 You have an unfinished study session. Would you like to resume exactly where you left off?")) {
+                if(confirm("Welcome back! You have an unfinished study session. Would you like to resume exactly where you left off?")) {
                     const parsed = JSON.parse(activeSession);
                     this.state.studyQueue = parsed.queue;
                     this.state.currentIndex = parsed.index;
@@ -582,7 +582,7 @@ class ChineseApp {
 
         // 5. Build the UI
         let contentHTML = `<h1 style="font-size: 2.5rem; margin-bottom: 10px;">
-            ${mode === 'quiz' ? '🎯 Quiz Complete!' : '🏆TOCL PASSED!!'}
+            ${mode === 'quiz' ? 'Quiz Complete!' : 'TOCL PASSED!!'}
         </h1>`;
 
         if (mode === 'quiz') {
@@ -602,12 +602,12 @@ class ChineseApp {
         contentHTML += `
             <div style="display: flex; gap: 15px; justify-content: center; flex-wrap: wrap;">
                 <button class="action-btn" onclick="app.state.currentIndex = 0; app.state.score = 0; app.setMode('${mode}')">
-                    🔁 Restart This Session
+                    Restart This Session
                 </button>
                 <button class="action-btn" onclick="app.startReviewMode()" style="background-color: var(--primary-color); color: white;">
-                    🎯 Start Reviewing Unknown Words
+                    Start Reviewing Unknown Words
                 </button>
-                ${mode !== 'flashcards' ? `<button class="action-btn" onclick="app.setMode('flashcards')">🗂️ Study Flashcards</button>` : ''}
+                ${mode !== 'flashcards' ? `<button class="action-btn" onclick="app.setMode('flashcards')">Study Flashcards</button>` : ''}
             </div>
         `;
 
@@ -883,11 +883,11 @@ nextItem() {
         const btn = document.getElementById('auto-play-btn');
         if(!btn) return;
         if (this.state.isAutoPlaying) {
-            btn.innerText = "⏸️ Stop Slideshow";
+            btn.innerText = "Stop Slideshow";
             btn.classList.add('active');
             this.runSlideshowStep();
         } else {
-            btn.innerText = "▶️ Slideshow";
+            btn.innerText = " Slideshow";
             btn.classList.remove('active');
             clearTimeout(this.slideshowTimeout);
         }
@@ -1129,28 +1129,71 @@ nextItem() {
             setTimeout(() => inputField.focus(), 100); // Auto-focus
 
             // Listen ONLY for the Enter key
+           // Listen ONLY for the Enter key
             inputField.addEventListener('keydown', (e) => {
                 if (e.key === 'Enter') {
                     e.preventDefault(); 
-                    inputField.disabled = true; 
                     
+                    // 1. IF ALREADY WRONG: Pressing Enter again moves to the next question!
+                    if (inputField.readOnly) {
+                        this.nextItem();
+                        return;
+                    }
+
+                   // --- NEW SETTINGS-AWARE GRADING LOGIC START ---
+                // --- NEW SETTINGS-AWARE GRADING LOGIC START ---
                     let userAnswer = inputField.value.trim().toLowerCase();
-                    let correctFull = correctMeaning.toLowerCase();
-                    
-                    // 🧠 THE FORGIVING GRADING SYSTEM
-                    // 1. Clean the correct answer: remove anything inside parentheses
-                    let cleanedCorrect = correctFull.replace(/\([^)]*\)/g, '').trim();
-                    // 2. Remove annoying punctuation like periods, exclamation marks, etc.
-                    cleanedCorrect = cleanedCorrect.replace(/[.!?;]/g, '');
-                    userAnswer = userAnswer.replace(/[.!?;]/g, '');
-                    
-                    // 3. Split by commas, slashes, or semicolons to get all acceptable answers
-                    const possibleAnswers = cleanedCorrect.split(/[,;/]/).map(s => s.trim());
-                    
-                    // 4. Check if the user's answer matches ANY of the acceptable answers
-                    let isCorrect = possibleAnswers.includes(userAnswer) || 
-                                    possibleAnswers.some(ans => ans !== "" && userAnswer.includes(ans)) ||
-                                    cleanedCorrect === userAnswer;
+                    let isCorrect = false;
+
+                    // Grab the settings the user chose
+                    const typeZhTarget = document.getElementById('type-zh-target') ? document.getElementById('type-zh-target').value : 'english';
+                    const typeEnTarget = document.getElementById('type-en-target') ? document.getElementById('type-en-target').value : 'char';
+
+                    // 🧠 NEW: Helper function to completely ignore tones, accents, and numbers
+                    const normalizePinyin = (str) => {
+                        // 1. normalize("NFD") separates letters from their accents. 
+                        // 2. The first replace() deletes those floating accents.
+                        // 3. The second replace(/[^a-z]/gi) deletes EVERYTHING that isn't a basic a-z letter (ignoring spaces, punctuation, and tone numbers like 1-4)
+                        return str.normalize("NFD").replace(/[\u0300-\u036f]/g, "").replace(/[^a-z]/gi, "").toLowerCase();
+                    };
+
+                    // 1. IF THE QUESTION IS ENGLISH
+                    if (qType === 'en') {
+                        if (typeEnTarget === 'pinyin') {
+                            const correctPinyin = normalizePinyin(item.pinyin || '');
+                            let cleanedUser = normalizePinyin(userAnswer);
+                            isCorrect = (cleanedUser === correctPinyin);
+                        } else { // 'char'
+                            const correctChar = item.word || item.simplified || '';
+                            isCorrect = (userAnswer === correctChar);
+                        }
+                    } 
+                    // 2. IF THE QUESTION IS CHINESE
+                    else { 
+                        if (typeZhTarget === 'pinyin') {
+                            const correctPinyin = normalizePinyin(item.pinyin || '');
+                            let cleanedUser = normalizePinyin(userAnswer);
+                            isCorrect = (cleanedUser === correctPinyin);
+                        } else { // 'english'
+                            let correctFull = (item.definition || item.english || correctMeaning).toLowerCase();
+                            
+                            // 🧠 The Forgiving English Grading System
+                            let cleanedCorrect = correctFull.replace(/\([^)]*\)/g, '').trim();
+                            
+                            // Split what the user typed into words
+                            const userWords = userAnswer.split(/\s+/);
+                            // Split the correct answer into words
+                            const correctWords = cleanedCorrect.split(/[\s,;/.!?'"-]+/);
+                            
+                            // It is correct if:
+                            // 1. They typed a word (longer than 1 letter) that matches a word in the correct answer OR
+                            // 2. The correct answer contains exactly what they typed (e.g. they typed 'apple' for 'apples')
+                            isCorrect = userWords.some(w => w.length > 1 && correctWords.includes(w)) || 
+                                        (cleanedCorrect.includes(userAnswer) && userAnswer.length > 2);
+                        }
+                    }
+                    // --- NEW SETTINGS-AWARE GRADING LOGIC END ---
+                    // --- NEW SETTINGS-AWARE GRADING LOGIC END ---
 
                     if (isCorrect && userAnswer !== "") {
                         // CORRECT!
@@ -1159,61 +1202,114 @@ nextItem() {
                         inputField.style.backgroundColor = '#d4edda';
                         inputField.style.color = '#155724';
                         this.state.score++;
+                        inputField.disabled = true; // Fully lock it
+                        
+                        // Check user's preferred speed!
+let delaySpeed = document.getElementById('qz-delay-speed') ? document.getElementById('qz-delay-speed').value : 'normal';
+let correctDelay = delaySpeed === 'instant' ? 300 : (delaySpeed === 'fast' ? 750 : 1500);
+setTimeout(() => this.nextItem(), correctDelay);
+
                     } else {
                         // WRONG!
                         this.playSound('wrong'); 
                         inputField.style.borderColor = '#dc3545';
                         inputField.style.backgroundColor = '#f8d7da';
                         inputField.style.color = '#721c24';
-                        inputField.value = `❌ Correct: ${correctMeaning}`;
                         
-                        // Bonus: Auto-reveal Pinyin if you get it wrong!
+                        // 1. Get ALL the info (Character, Pinyin, Meaning)
+                        const correctChar = item.word || item.simplified || '';
+                        const pinyin = item.pinyin || '';
+                        const meaning = item.definition || item.english || correctMeaning;
+                        
+                        // 2. Put ALL of it into the text box so they can read it!
+                        inputField.value = `❌ Answer: ${correctChar} | ${pinyin} | ${meaning}  (Press Enter)`;
+                        
+                        // Lock the input from typing, but keep it active so 'Enter' still works
+                        inputField.readOnly = true; 
+                        
+                        // Auto-reveal Pinyin hint above if it's hidden
                         if (hintEl && qType === 'zh') hintEl.classList.remove('hidden');
                     }
-                    
-                    setTimeout(() => this.nextItem(), 1500);
                 }
             });
 
         // --- NORMAL MULTIPLE CHOICE MODE ---
-        } else if (optionsContainer) {
-            optionsContainer.style.display = 'grid'; 
-            var options = [item];
-            while (options.length < 4 && options.length < this.state.studyQueue.length) {
-                var randItem = this.state.studyQueue[Math.floor(Math.random() * this.state.studyQueue.length)];
-                if (!options.some(opt => (opt.id || opt.word) === (randItem.id || randItem.word))) options.push(randItem);
+       // --- NORMAL MULTIPLE CHOICE MODE ---
+            } else if (optionsContainer) {
+                optionsContainer.style.display = 'grid';
+                var options = [item];
+                while (options.length < 4 && options.length < this.state.studyQueue.length) {
+                    var randItem = this.state.studyQueue[Math.floor(Math.random() * this.state.studyQueue.length)];
+                    if (!options.some(opt => (opt.id || opt.word) === (randItem.id || randItem.word))) options.push(randItem);
+                }
+                options.sort(() => Math.random() - 0.5);
+
+options.forEach(opt => {
+                    var btn = document.createElement('button');
+                    btn.className = 'option-btn';
+                    
+                    if (aType === 'mc-py') btn.innerText = opt.pinyin;
+                    else if (qType === 'en') btn.innerText = opt.word || opt.simplified;
+                    else btn.innerText = opt.definition || opt.meaning || opt.english;
+
+                    // 🚨 Tag the correct button so we can find it if they get it wrong!
+                    btn.dataset.isCorrect = ((opt.id || opt.word) === (item.id || item.word)) ? 'true' : 'false';
+
+                    btn.onpointerdown = (e) => {
+                        e.preventDefault();
+                        e.stopPropagation();
+
+                        // Lock all buttons immediately so they can't double-click
+                        Array.from(optionsContainer.children).forEach(child => child.disabled = true);
+
+                        // ⏱️ Check user's preferred speed!
+                        let delaySpeed = document.getElementById('qz-delay-speed') ? document.getElementById('qz-delay-speed').value : 'normal';
+
+                        if (btn.dataset.isCorrect === 'true') {
+                            // CORRECT
+                            this.playSound('correct');
+                            btn.style.backgroundColor = '#d4edda';
+                            this.state.score++;
+                            
+                            // Apply Correct Delay
+                            let correctDelay = delaySpeed === 'instant' ? 300 : (delaySpeed === 'fast' ? 750 : 1500);
+                            setTimeout(() => this.nextItem(), correctDelay);
+                        } else {
+                            // WRONG
+                            this.playSound('wrong');
+                            btn.style.backgroundColor = '#f8d7da'; // Make their wrong choice red
+                            
+                            // 🚨 FIND THE CORRECT BUTTON AND "FLIP" IT!
+                            const correctBtn = Array.from(optionsContainer.children).find(c => c.dataset.isCorrect === 'true');
+                            if (correctBtn) {
+                                correctBtn.style.backgroundColor = '#d4edda'; // Turn right answer green
+                                correctBtn.style.border = '2px solid #28a745';
+                                
+                                const char = item.word || item.simplified || '';
+                                const py = item.pinyin || '';
+                                const mn = item.definition || item.english || '';
+                                
+                                // Inject the full details inside the correct button box!
+                                correctBtn.innerHTML = `
+                                    <div style="font-weight:900; font-size:1.3em; margin-bottom:4px; color:#155724;">✅ ${char}</div>
+                                    <div style="font-size:1em; font-family:'Century Gothic', sans-serif; color:#155724;">${py}</div>
+                                    <div style="font-size:0.95em; margin-top:4px; color:#155724; line-height:1.2;">${mn}</div>
+                                `;
+                            }
+
+                            if (hintEl && qType === 'zh') hintEl.classList.remove('hidden');
+
+                            // Apply Wrong Delay
+                            let wrongDelay = delaySpeed === 'instant' ? 1200 : (delaySpeed === 'fast' ? 2000 : 3500);
+                            setTimeout(() => this.nextItem(), wrongDelay);
+                        }
+                    };
+                    optionsContainer.appendChild(btn);
+                });
             }
-            options.sort(() => Math.random() - 0.5); 
-
-            options.forEach(opt => {
-                var btn = document.createElement('button');
-                btn.className = 'option-btn';
-                if (aType === 'mc-py') btn.innerText = opt.pinyin; 
-                else if (qType === 'en') btn.innerText = opt.word || opt.simplified;
-                else btn.innerText = opt.definition || opt.meaning || opt.english;
-
-                btn.onpointerdown = (e) => {
-                    e.preventDefault(); e.stopPropagation();
-                    Array.from(optionsContainer.children).forEach(child => child.disabled = true);
-                    if ((opt.id || opt.word) === (item.id || item.word)) {
-                        this.playSound('correct'); 
-                        btn.style.backgroundColor = '#d4edda'; 
-                        this.state.score++;
-                    } else {
-                        this.playSound('wrong'); 
-                        btn.style.backgroundColor = '#f8d7da';
-                        
-                        // Bonus: Auto-reveal Pinyin if you get it wrong!
-                        if (hintEl && qType === 'zh') hintEl.classList.remove('hidden');
-                    }
-                    setTimeout(() => this.nextItem(), 1500); 
-                };
-                optionsContainer.appendChild(btn);
-            });
-        }
     }
 
-        // --- 3. DYNAMIC COMPLETION SCREEN & SUGGESTIONS ---
+    // --- 3. DYNAMIC COMPLETION SCREEN & SUGGESTIONS ---
     showCompletion() {
         // 1. Hide screens and handle resume (keeping your existing logic)
         document.querySelectorAll('.study-view').forEach(v => v.classList.remove('active'));
@@ -1240,15 +1336,14 @@ nextItem() {
 
         // 2. Build the UI WITHOUT 'onclick' attributes
         msgContainer.innerHTML = `
-            <h1 style="font-size: 2.5rem;">🏆 Session Complete!</h1>
+            <h1 style="font-size: 2.5rem;">Session Complete!</h1>
             <p style="margin-bottom: 30px;">Excellent work reviewing this set.</p>
             <div style="display: flex; gap: 15px; justify-content: center; flex-wrap: wrap;">
-                <button class="action-btn" id="btn-restart-session">🔁 Restart Session</button>
-                <button class="action-btn" id="btn-direct-review" style="background-color: var(--primary-color); color: white;">🎯 Review Unknown</button>
-                <button class="action-btn" id="btn-go-flashcards">🗂️ Study Flashcards</button>
+                <button class="action-btn" id="btn-restart-session">Restart Session</button>
+                <button class="action-btn" id="btn-direct-review" style="background-color: var(--primary-color); color: white;">Review Unknown</button>
+                <button class="action-btn" id="btn-go-flashcards">Study Flashcards</button>
             </div>
         `;
-
         // 3. Attach listeners via JavaScript (Safe from CSP)
         document.getElementById('btn-restart-session').addEventListener('click', () => {
             this.state.currentIndex = 0;
@@ -1517,3 +1612,98 @@ nextItem() {
 
 let app;
 document.addEventListener("DOMContentLoaded", () => { app = new ChineseApp(); });
+// --- TYPE ANSWER SETTINGS DROPDOWN LISTENER ---
+document.addEventListener('DOMContentLoaded', () => {
+    const answerTypeSelect = document.getElementById('qz-answer-type');
+    const typeSettingsBox = document.getElementById('type-answer-settings');
+    
+    if (answerTypeSelect && typeSettingsBox) {
+        // Check initial state in case it's already selected
+        if (answerTypeSelect.value === 'type') {
+            typeSettingsBox.classList.remove('hidden');
+        }
+
+        // Listen for changes
+        answerTypeSelect.addEventListener('change', (e) => {
+            if (e.target.value === 'type') {
+                typeSettingsBox.classList.remove('hidden');
+            } else {
+                typeSettingsBox.classList.add('hidden');
+            }
+        });
+    }
+});
+
+// --- CLOSE FLOATING MENUS WHEN CLICKING THE BACKGROUND ---
+document.addEventListener('click', (event) => {
+    
+    // 1. Put the HTML IDs of all your floating menus/boxes here:
+    const floatingMenus = [
+        document.getElementById('type-answer-settings'),
+        // 🛑 Replace these with your actual IDs for your books/lessons/study mode boxes!
+        document.getElementById('your-books-menu-id'),     
+        document.getElementById('your-lessons-menu-id'),   
+        document.getElementById('your-study-mode-menu-id') 
+    ];
+
+    // 2. Put the HTML IDs of the buttons/selects that OPEN those menus here:
+    // (We need this so clicking the button to open it doesn't immediately close it)
+    const toggleButtons = [
+        document.getElementById('qz-a-type'),
+        // 🛑 Replace these with the actual IDs of the buttons you click to open the menus!
+        document.getElementById('your-books-button-id'),
+        document.getElementById('your-lessons-button-id'),
+        document.getElementById('your-study-mode-button-id')
+    ];
+
+    // 3. Check if the user clicked INSIDE one of the menus or ON one of the buttons
+    let clickedInsideMenu = floatingMenus.some(menu => menu && menu.contains(event.target));
+    let clickedToggleButton = toggleButtons.some(btn => btn && btn.contains(event.target));
+
+    // 4. If they clicked the background (outside the menus and buttons), hide them!
+    if (!clickedInsideMenu && !clickedToggleButton) {
+        floatingMenus.forEach(menu => {
+            // If the menu exists and is currently visible, hide it
+            if (menu && !menu.classList.contains('hidden')) {
+                menu.classList.add('hidden'); 
+                // Note: If you use something other than '.hidden' to hide things 
+                // (like menu.style.display = 'none'), change this line to match!
+            }
+        });
+    }
+});
+
+// =====================================================================
+// 🚀 CLEAN BACKGROUND CLICK LISTENER (FIXED)
+// =====================================================================
+document.addEventListener('click', (event) => {
+    const path = event.composedPath ? event.composedPath() : [];
+
+    // 1. Close Native <details> Menus (Settings, Books, Mode, Review)
+    // This safely closes the main settings window without messing up your dropdown choices inside!
+    document.querySelectorAll('details[open]').forEach(details => {
+        const clickedInside = path.includes(details) || details.contains(event.target);
+        if (!clickedInside) {
+            details.removeAttribute('open');
+        }
+    });
+
+    // 2. Close Custom Floating Dropdowns (Flashcard/Sentence Settings)
+    document.querySelectorAll('.dropdown-menu.show').forEach(menu => {
+        const dropdownParent = menu.closest('.dropdown');
+        const clickedInside = dropdownParent && (path.includes(dropdownParent) || dropdownParent.contains(event.target));
+        if (dropdownParent && !clickedInside) {
+            menu.classList.remove('show');
+        }
+    });
+});
+
+    // 3. Close Custom Floating Dropdowns (Flashcard/Sentence Settings)
+    document.querySelectorAll('.dropdown-menu.show').forEach(menu => {
+        const dropdownParent = menu.closest('.dropdown');
+        const clickedInside = dropdownParent && (path.includes(dropdownParent) || dropdownParent.contains(event.target));
+        if (dropdownParent && !clickedInside) {
+            menu.classList.remove('show');
+        }
+    });
+;
