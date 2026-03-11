@@ -1,4 +1,51 @@
 class ChineseApp {
+
+    // 💾 Saves the current live study session
+    saveActiveSession() {
+        const sessionData = {
+            studyQueue: this.state.studyQueue,
+            currentIndex: this.state.currentIndex,
+            currentMode: this.state.currentMode,
+            score: this.state.score || 0,
+            lastUpdated: Date.now()
+        };
+        localStorage.setItem('activeStudySession', JSON.stringify(sessionData));
+    }
+
+    // 📥 Loads the session if it exists
+    loadActiveSession() {
+        const saved = localStorage.getItem('activeStudySession');
+        if (!saved) return false;
+
+        try {
+            const data = JSON.parse(saved);
+            
+            // Optional: If the session is older than 12 hours, ignore it
+            const twelveHours = 12 * 60 * 60 * 1000;
+            if (Date.now() - data.lastUpdated > twelveHours) {
+                localStorage.removeItem('activeStudySession');
+                return false;
+            }
+
+            this.state.studyQueue = data.studyQueue;
+            this.state.currentIndex = data.currentIndex;
+            this.state.currentMode = data.currentMode;
+            this.state.score = data.score;
+            
+            // Switch to the saved mode and show the item
+            this.setMode(this.state.currentMode);
+            this.renderCurrentItem();
+            return true;
+        } catch (e) {
+            console.error("Error restoring session", e);
+            return false;
+        }
+    }
+
+    // 🧹 Clears the session (Call this when a session is finished)
+    clearActiveSession() {
+        localStorage.removeItem('activeStudySession');
+    }
     constructor() {
 
         // Inside constructor()
@@ -925,6 +972,7 @@ nextItem() {
     renderWritingChar() {
         const char = this.state.studyQueue[this.state.currentIndex];
         const charData = window.CHARS_DATA ? window.CHARS_DATA.find(c => c.hanzi === char) : null;
+        
         document.getElementById('wr-pinyin').innerText = charData ? charData.pinyin : char;
         document.getElementById('wr-meaning').innerText = charData ? charData.meaning : '';
 
@@ -935,12 +983,29 @@ nextItem() {
         const isDark = document.body.className.includes('dark') || document.body.className.includes('midnight');
 
         this.hanziWriter = HanziWriter.create('character-target-div', char, {
-            // 👇 INCREASED SIZE: 350x350 with a slightly thicker drawing width!
-            width: 350, height: 350, padding: 15, drawingWidth: 60,
+            width: 350, 
+            height: 350, 
+            padding: 30,       // 🚨 Best padding for Traditional strokes
+            drawingWidth: 40,  // 🚨 FIXED: 40 strictly prevents the "2 lines" ghosting
+            strokeWidth: 2,    // Thinner outline
             strokeColor: isDark ? '#E8E6E1' : '#000000',
             radicalColor: isDark ? '#5EBBBA' : '#007bff', 
             showOutline: !this.state.outlineHidden,
-            outlineColor: isDark ? '#334155' : '#e0e0e0'
+            outlineColor: isDark ? '#334155' : '#e0e0e0',
+
+            // 🇹🇼 STRICT TAIWAN MOE STROKE DATA 
+            charDataLoader: (char, onComplete) => {
+                fetch(`https://cdn.jsdelivr.net/npm/hanzi-writer-data-tw@0.1/${char}.json`)
+                    .then(res => res.json())
+                    .then(onComplete)
+                    .catch(() => {
+                        console.warn("Taiwan stroke data not found, falling back...");
+                        // If TW data fails to load for a rare character, fallback safely
+                        fetch(`https://cdn.jsdelivr.net/npm/hanzi-writer-data@2.0/${char}.json`)
+                            .then(res => res.json())
+                            .then(onComplete);
+                    });
+            }
         });
         
         document.getElementById('toggle-outline-btn').innerText = this.state.outlineHidden ? "👁️ Show Outline" : "🙈 Hide Outline";
