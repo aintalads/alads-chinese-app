@@ -347,14 +347,16 @@
         </div>
     </div>
 
-    <div class="qz-word-container" style="min-height: 140px; margin-bottom: 20px; box-shadow: var(--shadow-md); padding: 20px; border-radius: var(--border-radius); background: var(--card-bg); display: flex; flex-direction: column; justify-content: center; align-items: center;">
-        <h2 id="qz-word" style="margin: 0;"></h2>
-        <div id="qz-pinyin-hint" class="hidden" style="font-size: 1.5rem; margin-top: 5px; color: var(--text-muted);"></div>
+   <div class="qz-word-container" style="position: relative; min-height: 190px; margin-bottom: 20px; box-shadow: var(--shadow-md); padding: 40px 20px 20px; border-radius: var(--border-radius); background: var(--card-bg); display: flex; flex-direction: column; justify-content: center; align-items: center;">
         
-        <div class="qz-actions" style="margin-top: 15px;">
-            <button id="qz-sound-btn" class="icon-btn">🔊</button>
-            <button id="qz-pinyin-btn" class="icon-btn" onclick="app.togglePinyinHint()">拼</button>
+        <div class="qz-actions" style="position: absolute; top: 12px; right: 12px; display: flex; gap: 8px; margin: 0;">
+            <button id="qz-sound-btn" class="icon-btn" style="width: 36px; height: 36px; font-size: 1.1rem; border-radius: 10px; display: flex; justify-content: center; align-items: center; padding: 0;">🔉</button>
+            <button id="qz-pinyin-btn" class="icon-btn" onclick="app.togglePinyinHint()" style="width: 36px; height: 36px; font-size: 1.1rem; border-radius: 10px; display: flex; justify-content: center; align-items: center; padding: 0; font-family: sans-serif; font-weight: 700;">Aa</button>
         </div>
+
+        <h2 id="qz-word" style="margin: 0; font-size: clamp(2.5rem, 9vw, 4.5rem); text-align: center; line-height: 1.2;"></h2>
+        <div id="qz-pinyin-hint" class="hidden" style="font-size: clamp(1.4rem, 5vw, 2.2rem); margin-top: 10px; color: var(--text-muted); text-align: center;"></div>
+        
     </div>
 
     <div id="qz-options" class="quiz-options"></div>
