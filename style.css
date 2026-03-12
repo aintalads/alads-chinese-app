@@ -1224,17 +1224,17 @@ html, body {
 
 /* 4. The Examples Section (Seamless scroll, no ugly boxes) */
 .card-extra-info {
-    width: 100%;
-    padding: 0 25px 40px 25px; /* Lots of breathing room at the bottom */
+    width: 100% !important;
+    padding: 0 25px 40px 25px !important; /* Lots of breathing room at the bottom */
     background: transparent !important; /* NO MORE BACKGROUND */
     border: none !important; /* NO MORE BORDER */
-    display: flex;
-    flex-direction: column;
-    gap: 30px; /* Elegant spacing between different examples */
-    box-sizing: border-box;
-    min-height: fit-content; 
+    display: flex !important;
+    flex-direction: column !important;
+    gap: 30px !important; /* Elegant spacing between different examples */
+    box-sizing: border-box !important;
+    min-height: fit-content !important; 
+    overflow: hidden !important; /* 👈 MAGIC FIX: Stops invisible scrollbars from breaking your swipe! */
 }
-
 /* Add a tiny, elegant divider line instead of a massive box */
 .card-extra-info::before {
     content: '';
@@ -1357,6 +1357,7 @@ html, body {
     font-size: 0.95rem !important;
     color: #888 !important;
     animation: bounce 2s infinite !important;
+    pointer-events: none !important;
 }
 
 /* ==========================================================================
