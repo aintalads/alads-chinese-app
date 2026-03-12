@@ -1008,8 +1008,8 @@ nextItem() {
             }
         });
         
-        document.getElementById('toggle-outline-btn').innerText = this.state.outlineHidden ? "👁️ Show Outline" : "🙈 Hide Outline";
-        this.hanziWriter.quiz();
+        document.getElementById('toggle-outline-btn').innerText = this.state.outlineHidden ? "Show Outline" : "Hide Outline";
+        this.resetWriting(); // Bind the quiz properly
     }
 
    toggleOutline() {
@@ -1025,22 +1025,30 @@ nextItem() {
             if(btn) btn.innerText = "Hide Outline"; 
         }
     }
+
     animateCharacter() {
         if (!this.hanziWriter) return;
-        // Cancels the quiz and draws the character perfectly for you
+        this.hanziWriter.cancelQuiz(); // 🚨 FIX: Cancels practice before drawing
         this.hanziWriter.animateCharacter({
             onComplete: () => {
-                // Restart the quiz 1 second after the animation finishes
-                setTimeout(() => this.hanziWriter.quiz(), 1000);
+                setTimeout(() => this.resetWriting(), 1000); // Restart practice after animation
             }
         });
     }
 
     resetWriting() {
         if (!this.hanziWriter) return;
-        // Calling .quiz() again instantly wipes the canvas clean
-        this.hanziWriter.quiz(); 
+        this.hanziWriter.quiz({
+            onComplete: () => {
+                // 🚨 FIX: Reward the user when they successfully trace it!
+                this.playSound('correct');
+                if (typeof this.triggerConfetti === 'function') {
+                    this.triggerConfetti();
+                }
+            }
+        }); 
     }
+
     renderSentence() {
         const s = this.state.studyQueue[this.state.currentIndex];
         if (!s) return;
@@ -1062,10 +1070,10 @@ nextItem() {
         const btn = document.getElementById('sn-auto-play-btn');
         if(!btn) return;
         if (this.state.isSentenceAutoPlaying) {
-            btn.innerText = "⏸️ Stop Slideshow"; btn.classList.add('active');
+            btn.innerText = "Stop Slideshow"; btn.classList.add('active');
             this.runSentenceSlideshowStep();
         } else {
-            btn.innerText = "▶️ Slideshow"; btn.classList.remove('active');
+            btn.innerText = "Start Slideshow"; btn.classList.remove('active');
             clearTimeout(this.sentenceSlideshowTimeout);
         }
     }
@@ -1109,7 +1117,6 @@ nextItem() {
 
     // --- 💾 AUTO-SAVE FEATURE ---
     saveSession() {
-        // Don't save if there is nothing to study
         if (!this.state.studyQueue || this.state.studyQueue.length === 0) return; 
         
         const sessionData = {
@@ -1120,7 +1127,6 @@ nextItem() {
             history: this.state.history || []
         };
         
-        // Save to the phone's hard drive!
         localStorage.setItem('mandarinActiveSession', JSON.stringify(sessionData));
     }
 
@@ -1132,21 +1138,33 @@ nextItem() {
         var aType = document.getElementById('qz-a-type') ? document.getElementById('qz-a-type').value : 'mc';
         
         var scoreUi = document.getElementById('quiz-score-ui');
-        if (scoreUi) scoreUi.innerText = `🏆 Score: ${this.state.score || 0} / ${this.state.studyQueue.length}`;
+        if (scoreUi) scoreUi.innerText = `Score: ${this.state.score || 0} / ${this.state.studyQueue.length}`;
 
         var questionText = qType === 'zh' ? (item.word || item.simplified) : (qType === 'py' ? item.pinyin : (item.definition || item.english));
         var correctMeaning = qType === 'zh' ? ((aType === 'mc-py') ? item.pinyin : (item.definition || item.english)) : (item.word || item.simplified);
         
-        document.getElementById('qz-word').innerText = questionText;
+        var topWord = document.getElementById('qz-word');
+        if (topWord) {
+            topWord.innerText = questionText;
+            // 🚀 DYNAMIC FONT: TWKai for Chinese, Quicksand for English/Pinyin
+            if (qType === 'zh') {
+                topWord.style.setProperty('font-family', "'TWKai', 'LXGW WenKai TC', 'KaiTi', serif", 'important');
+                topWord.style.setProperty('font-weight', "400", 'important');
+            } else {
+                topWord.style.setProperty('font-family', "'Quicksand', sans-serif", 'important');
+                topWord.style.setProperty('font-weight', "700", 'important');
+            }
+        }
 
-        // --- 🚨 THE FIX: Restore the Pinyin Hint and Sound Button! 🚨 ---
         var hintEl = document.getElementById('qz-pinyin-hint');
         var pinyinBtn = document.getElementById('qz-pinyin-btn');
         if (hintEl) {
-            hintEl.classList.add('hidden'); // Hide it at the start of each question
-            hintEl.innerText = item.pinyin || ""; // Actually give it the pinyin text!
+            hintEl.classList.add('hidden'); 
+            hintEl.innerText = item.pinyin || ""; 
+            // 🚀 FORCE PINYIN TO USE QUICKSAND FONT
+            hintEl.style.setProperty('font-family', "'Quicksand', sans-serif", 'important');
+            hintEl.style.setProperty('font-weight', "600", 'important');
             
-            // Only show the Pinyin button if the question is in Chinese characters
             if (pinyinBtn) {
                 pinyinBtn.style.display = (qType === 'zh') ? 'inline-block' : 'none';
             }
@@ -1160,24 +1178,27 @@ nextItem() {
             };
         }
         
-        // Auto-play audio if enabled
         if (this.state.autoAudio) this.playAudio(item.word || item.simplified, 'zh-CN');
-        // --------------------------------------------------------------
         
         var optionsContainer = document.getElementById('qz-options');
         if(optionsContainer) optionsContainer.innerHTML = ''; 
 
-        // --- THE "TYPE ANSWER" MODE (NO BUTTON, ENTER KEY ONLY) ---
+        // --- THE "TYPE ANSWER" MODE ---
+       // --- THE "TYPE ANSWER" MODE ---
         if (aType === 'type' && optionsContainer) {
-            optionsContainer.style.display = 'block'; 
+            optionsContainer.style.display = 'flex'; 
+            optionsContainer.style.flexDirection = 'column';
+            optionsContainer.style.alignItems = 'center';
+            optionsContainer.style.width = '100%';
             
             const inputField = document.createElement('input');
             inputField.type = 'text';
-            inputField.placeholder = "Type your answer and press Enter...";
+            inputField.placeholder = "Type your answer...";
             
-            // Clean styling for the input box
+            // 🚀 Perfectly centered input box for mobile
             inputField.style.cssText = `
                 width: 100%; 
+                box-sizing: border-box;
                 padding: 15px; 
                 font-size: 1.2rem; 
                 border-radius: 12px; 
@@ -1189,117 +1210,134 @@ nextItem() {
                 color: var(--text-main);
                 margin-top: 15px;
             `;
-            
-            optionsContainer.appendChild(inputField);
-            setTimeout(() => inputField.focus(), 100); // Auto-focus
 
-            // Listen ONLY for the Enter key
-           // Listen ONLY for the Enter key
+            // 🚀 The new Mobile-Friendly Submit / Next Button
+            const submitBtn = document.createElement('button');
+            submitBtn.innerText = "Submit Answer";
+            submitBtn.style.cssText = `
+                width: 100%;
+                box-sizing: border-box;
+                padding: 15px;
+                font-size: 1.2rem;
+                font-weight: bold;
+                border-radius: 12px;
+                border: none;
+                background: var(--primary-color);
+                color: white;
+                margin-top: 15px;
+                box-shadow: var(--shadow-sm);
+            `;
+
+            optionsContainer.appendChild(inputField);
+            optionsContainer.appendChild(submitBtn);
+            setTimeout(() => inputField.focus(), 100); 
+
+            // 🧠 The universal grading function (works for both Enter key AND Button click)
+            const processAnswer = () => {
+                // If already wrong/graded, pressing the button again moves to next question!
+                if (inputField.readOnly) {
+                    this.nextItem();
+                    return;
+                }
+
+                let userAnswer = inputField.value.trim().toLowerCase();
+                let isCorrect = false;
+
+                const typeZhTarget = document.getElementById('type-zh-target') ? document.getElementById('type-zh-target').value : 'english';
+                const typeEnTarget = document.getElementById('type-en-target') ? document.getElementById('type-en-target').value : 'char';
+
+                const normalizePinyin = (str) => {
+                    return str.normalize("NFD").replace(/[\u0300-\u036f]/g, "").replace(/[^a-z]/gi, "").toLowerCase();
+                };
+
+                if (qType === 'en') {
+                    if (typeEnTarget === 'pinyin') {
+                        const correctPinyin = normalizePinyin(item.pinyin || '');
+                        let cleanedUser = normalizePinyin(userAnswer);
+                        isCorrect = (cleanedUser === correctPinyin);
+                    } else { 
+                        const correctChar = item.word || item.simplified || '';
+                        isCorrect = (userAnswer === correctChar);
+                    }
+                } 
+                else { 
+                    if (typeZhTarget === 'pinyin') {
+                        const correctPinyin = normalizePinyin(item.pinyin || '');
+                        let cleanedUser = normalizePinyin(userAnswer);
+                        isCorrect = (cleanedUser === correctPinyin);
+                    } else { 
+                        let correctFull = (item.definition || item.english || correctMeaning).toLowerCase();
+                        let cleanedCorrect = correctFull.replace(/\([^)]*\)/g, '').trim();
+                        const userWords = userAnswer.split(/\s+/);
+                        const correctWords = cleanedCorrect.split(/[\s,;/.!?'"-]+/);
+                        
+                        isCorrect = userWords.some(w => w.length > 1 && correctWords.includes(w)) || 
+                                    (cleanedCorrect.includes(userAnswer) && userAnswer.length > 2);
+                    }
+                }
+
+                if (isCorrect && userAnswer !== "") {
+                    // CORRECT
+                    this.playSound('correct'); 
+                    inputField.style.borderColor = '#28a745'; 
+                    inputField.style.backgroundColor = '#d4edda';
+                    inputField.style.color = '#155724';
+                    this.state.score++;
+                    inputField.disabled = true; 
+                    submitBtn.style.display = 'none'; // Hide button, it's auto-advancing
+                    
+                    let delaySpeed = document.getElementById('qz-delay-speed') ? document.getElementById('qz-delay-speed').value : 'normal';
+                    let correctDelay = delaySpeed === 'instant' ? 300 : (delaySpeed === 'fast' ? 750 : 1500);
+                    setTimeout(() => this.nextItem(), correctDelay);
+
+                } else {
+                    // WRONG
+                    this.playSound('wrong'); 
+                    inputField.style.borderColor = '#dc3545';
+                    inputField.style.backgroundColor = '#f8d7da';
+                    inputField.style.color = '#721c24';
+                    inputField.readOnly = true; 
+                    
+                    // Change the button to be a "Next" button
+                    submitBtn.innerText = "Next Question ➔";
+                    submitBtn.style.background = "#334155"; 
+                    
+                    // 🚀 DISPLAY FULL ANSWER IN THE TOP QUESTION BOX
+                    const correctChar = item.word || item.simplified || '';
+                    const pinyin = item.pinyin || '';
+                    const meaning = item.definition || item.english || correctMeaning;
+                    
+                    const topBox = document.getElementById('qz-word');
+                    if (topBox) {
+                        topBox.innerHTML = `
+                            <div style="font-size: 0.35em; color: #dc3545; margin-bottom: 10px; font-family: 'Quicksand', sans-serif; font-weight: 700; text-transform: uppercase; letter-spacing: 1px;">Incorrect</div>
+                            <div style="color: var(--primary-color); line-height: 1.1;">${correctChar}</div>
+                            <div style="font-size: 0.5em; color: var(--text-muted); margin-top: 10px; font-family: 'Quicksand', sans-serif; font-weight: 500;">${pinyin}</div>
+                            <div style="font-size: 0.4em; color: var(--text-main); margin-top: 5px; font-family: 'Quicksand', sans-serif; font-weight: 600; white-space: normal;">${meaning}</div>
+                        `;
+                    }
+
+                    // Hide the separate pinyin hint since we just put it in the main box
+                    if (hintEl) hintEl.classList.add('hidden');
+                }
+            };
+
+            // Allow BOTH the Enter Key and the Submit Button to trigger the check
             inputField.addEventListener('keydown', (e) => {
                 if (e.key === 'Enter') {
                     e.preventDefault(); 
-                    
-                    // 1. IF ALREADY WRONG: Pressing Enter again moves to the next question!
-                    if (inputField.readOnly) {
-                        this.nextItem();
-                        return;
-                    }
-
-                   // --- NEW SETTINGS-AWARE GRADING LOGIC START ---
-                // --- NEW SETTINGS-AWARE GRADING LOGIC START ---
-                    let userAnswer = inputField.value.trim().toLowerCase();
-                    let isCorrect = false;
-
-                    // Grab the settings the user chose
-                    const typeZhTarget = document.getElementById('type-zh-target') ? document.getElementById('type-zh-target').value : 'english';
-                    const typeEnTarget = document.getElementById('type-en-target') ? document.getElementById('type-en-target').value : 'char';
-
-                    // 🧠 NEW: Helper function to completely ignore tones, accents, and numbers
-                    const normalizePinyin = (str) => {
-                        // 1. normalize("NFD") separates letters from their accents. 
-                        // 2. The first replace() deletes those floating accents.
-                        // 3. The second replace(/[^a-z]/gi) deletes EVERYTHING that isn't a basic a-z letter (ignoring spaces, punctuation, and tone numbers like 1-4)
-                        return str.normalize("NFD").replace(/[\u0300-\u036f]/g, "").replace(/[^a-z]/gi, "").toLowerCase();
-                    };
-
-                    // 1. IF THE QUESTION IS ENGLISH
-                    if (qType === 'en') {
-                        if (typeEnTarget === 'pinyin') {
-                            const correctPinyin = normalizePinyin(item.pinyin || '');
-                            let cleanedUser = normalizePinyin(userAnswer);
-                            isCorrect = (cleanedUser === correctPinyin);
-                        } else { // 'char'
-                            const correctChar = item.word || item.simplified || '';
-                            isCorrect = (userAnswer === correctChar);
-                        }
-                    } 
-                    // 2. IF THE QUESTION IS CHINESE
-                    else { 
-                        if (typeZhTarget === 'pinyin') {
-                            const correctPinyin = normalizePinyin(item.pinyin || '');
-                            let cleanedUser = normalizePinyin(userAnswer);
-                            isCorrect = (cleanedUser === correctPinyin);
-                        } else { // 'english'
-                            let correctFull = (item.definition || item.english || correctMeaning).toLowerCase();
-                            
-                            // 🧠 The Forgiving English Grading System
-                            let cleanedCorrect = correctFull.replace(/\([^)]*\)/g, '').trim();
-                            
-                            // Split what the user typed into words
-                            const userWords = userAnswer.split(/\s+/);
-                            // Split the correct answer into words
-                            const correctWords = cleanedCorrect.split(/[\s,;/.!?'"-]+/);
-                            
-                            // It is correct if:
-                            // 1. They typed a word (longer than 1 letter) that matches a word in the correct answer OR
-                            // 2. The correct answer contains exactly what they typed (e.g. they typed 'apple' for 'apples')
-                            isCorrect = userWords.some(w => w.length > 1 && correctWords.includes(w)) || 
-                                        (cleanedCorrect.includes(userAnswer) && userAnswer.length > 2);
-                        }
-                    }
-                    // --- NEW SETTINGS-AWARE GRADING LOGIC END ---
-                    // --- NEW SETTINGS-AWARE GRADING LOGIC END ---
-
-                    if (isCorrect && userAnswer !== "") {
-                        // CORRECT!
-                        this.playSound('correct'); 
-                        inputField.style.borderColor = '#28a745'; 
-                        inputField.style.backgroundColor = '#d4edda';
-                        inputField.style.color = '#155724';
-                        this.state.score++;
-                        inputField.disabled = true; // Fully lock it
-                        
-                        // Check user's preferred speed!
-let delaySpeed = document.getElementById('qz-delay-speed') ? document.getElementById('qz-delay-speed').value : 'normal';
-let correctDelay = delaySpeed === 'instant' ? 300 : (delaySpeed === 'fast' ? 750 : 1500);
-setTimeout(() => this.nextItem(), correctDelay);
-
-                    } else {
-                        // WRONG!
-                        this.playSound('wrong'); 
-                        inputField.style.borderColor = '#dc3545';
-                        inputField.style.backgroundColor = '#f8d7da';
-                        inputField.style.color = '#721c24';
-                        
-                        // 1. Get ALL the info (Character, Pinyin, Meaning)
-                        const correctChar = item.word || item.simplified || '';
-                        const pinyin = item.pinyin || '';
-                        const meaning = item.definition || item.english || correctMeaning;
-                        
-                        // 2. Put ALL of it into the text box so they can read it!
-                        inputField.value = `❌ Answer: ${correctChar} | ${pinyin} | ${meaning}  (Press Enter)`;
-                        
-                        // Lock the input from typing, but keep it active so 'Enter' still works
-                        inputField.readOnly = true; 
-                        
-                        // Auto-reveal Pinyin hint above if it's hidden
-                        if (hintEl && qType === 'zh') hintEl.classList.remove('hidden');
-                    }
+                    processAnswer();
                 }
             });
+            
+            submitBtn.onclick = (e) => {
+                e.preventDefault();
+                processAnswer();
+            };
 
         // --- NORMAL MULTIPLE CHOICE MODE ---
-       // --- NORMAL MULTIPLE CHOICE MODE ---
+
+        // --- NORMAL MULTIPLE CHOICE MODE ---
             } else if (optionsContainer) {
                 optionsContainer.style.display = 'grid';
                 var options = [item];
@@ -1309,62 +1347,67 @@ setTimeout(() => this.nextItem(), correctDelay);
                 }
                 options.sort(() => Math.random() - 0.5);
 
-options.forEach(opt => {
+               options.forEach(opt => {
                     var btn = document.createElement('button');
                     btn.className = 'option-btn';
                     
-                    if (aType === 'mc-py') btn.innerText = opt.pinyin;
-                    else if (qType === 'en') btn.innerText = opt.word || opt.simplified;
-                    else btn.innerText = opt.definition || opt.meaning || opt.english;
+                    // 🚀 SMART FONT ASSIGNMENT FOR THE BUTTONS
+                    if (aType === 'mc-py') {
+                        btn.innerText = opt.pinyin;
+                        btn.style.setProperty('font-family', "'Quicksand', sans-serif", 'important');
+                        btn.style.setProperty('font-weight', "600", 'important');
+                    }
+                    else if (qType === 'en') {
+                        btn.innerText = opt.word || opt.simplified;
+                        // Answer is Chinese characters
+                        btn.style.setProperty('font-family', "'TWKai', 'LXGW WenKai TC', 'KaiTi', serif", 'important');
+                        btn.style.setProperty('font-weight', "400", 'important');
+                    }
+                    else {
+                        btn.innerText = opt.definition || opt.meaning || opt.english;
+                        btn.style.setProperty('font-family', "'Quicksand', sans-serif", 'important');
+                        btn.style.setProperty('font-weight', "600", 'important');
+                    }
 
-                    // 🚨 Tag the correct button so we can find it if they get it wrong!
                     btn.dataset.isCorrect = ((opt.id || opt.word) === (item.id || item.word)) ? 'true' : 'false';
 
                     btn.onpointerdown = (e) => {
                         e.preventDefault();
                         e.stopPropagation();
 
-                        // Lock all buttons immediately so they can't double-click
                         Array.from(optionsContainer.children).forEach(child => child.disabled = true);
 
-                        // ⏱️ Check user's preferred speed!
                         let delaySpeed = document.getElementById('qz-delay-speed') ? document.getElementById('qz-delay-speed').value : 'normal';
 
                         if (btn.dataset.isCorrect === 'true') {
-                            // CORRECT
                             this.playSound('correct');
                             btn.style.backgroundColor = '#d4edda';
                             this.state.score++;
                             
-                            // Apply Correct Delay
                             let correctDelay = delaySpeed === 'instant' ? 300 : (delaySpeed === 'fast' ? 750 : 1500);
                             setTimeout(() => this.nextItem(), correctDelay);
                         } else {
-                            // WRONG
                             this.playSound('wrong');
-                            btn.style.backgroundColor = '#f8d7da'; // Make their wrong choice red
+                            btn.style.backgroundColor = '#f8d7da'; 
                             
-                            // 🚨 FIND THE CORRECT BUTTON AND "FLIP" IT!
                             const correctBtn = Array.from(optionsContainer.children).find(c => c.dataset.isCorrect === 'true');
                             if (correctBtn) {
-                                correctBtn.style.backgroundColor = '#d4edda'; // Turn right answer green
+                                correctBtn.style.backgroundColor = '#d4edda'; 
                                 correctBtn.style.border = '2px solid #28a745';
                                 
                                 const char = item.word || item.simplified || '';
                                 const py = item.pinyin || '';
                                 const mn = item.definition || item.english || '';
                                 
-                                // Inject the full details inside the correct button box!
                                 correctBtn.innerHTML = `
-                                    <div style="font-weight:900; font-size:1.3em; margin-bottom:4px; color:#155724;">✅ ${char}</div>
-                                    <div style="font-size:1em; font-family:'Century Gothic', sans-serif; color:#155724;">${py}</div>
-                                    <div style="font-size:0.95em; margin-top:4px; color:#155724; line-height:1.2;">${mn}</div>
+                                    <div style="font-family:'TWKai', serif; font-weight:400; font-size:1.4em; margin-bottom:4px; color:#155724;">${char}</div>
+                                    <div style="font-family:'Quicksand', sans-serif; font-weight:600; font-size:1em; color:#155724;">${py}</div>
+                                    <div style="font-family:'Quicksand', sans-serif; font-weight:600; font-size:0.95em; margin-top:4px; color:#155724; line-height:1.2; white-space:normal;">${mn}</div>
                                 `;
                             }
 
                             if (hintEl && qType === 'zh') hintEl.classList.remove('hidden');
 
-                            // Apply Wrong Delay
                             let wrongDelay = delaySpeed === 'instant' ? 1200 : (delaySpeed === 'fast' ? 2000 : 3500);
                             setTimeout(() => this.nextItem(), wrongDelay);
                         }
@@ -1787,3 +1830,140 @@ document.addEventListener('click', (event) => {
         }
     }
 }); // <-- End of the global click listener
+
+
+// ==========================================================================
+// 🚀 SMART AUTO-RESIZE: CHINESE SENTENCES BASED ON LENGTH
+// ==========================================================================
+const sentenceSizer = new MutationObserver(() => {
+    document.querySelectorAll('.fc-ex-zh').forEach(zhBox => {
+        // Prevent running multiple times on the same sentence
+        if (zhBox.dataset.resized) return; 
+
+        // Count how many characters are in the sentence
+        const charCount = zhBox.innerText.trim().length;
+
+        if (charCount <= 6) {
+            // 🚀 VERY SHORT (1-6 chars): Make it absolutely massive!
+            zhBox.style.setProperty('font-size', 'clamp(3rem, 13vw, 5rem)', 'important');
+            zhBox.style.setProperty('line-height', '1.2', 'important');
+        } 
+        else if (charCount <= 12) {
+            // 🚀 MEDIUM (7-12 chars): Still very large, but safe for wrapping
+            zhBox.style.setProperty('font-size', 'clamp(2.2rem, 9vw, 3.5rem)', 'important');
+            zhBox.style.setProperty('line-height', '1.3', 'important');
+        } 
+        else if (charCount <= 20) {
+            // 🚀 LONG (13-20 chars): Shrink it down so it fits gracefully
+            zhBox.style.setProperty('font-size', 'clamp(1.6rem, 7vw, 2.4rem)', 'important');
+            zhBox.style.setProperty('line-height', '1.4', 'important');
+        } 
+        else {
+            // 🚀 VERY LONG (21+ chars): Shrink to standard size to prevent breaking the card
+            zhBox.style.setProperty('font-size', 'clamp(1.3rem, 5vw, 1.8rem)', 'important');
+            zhBox.style.setProperty('line-height', '1.5', 'important');
+        }
+        
+        // Mark as resized so we don't calculate it again
+        zhBox.dataset.resized = "true";
+    });
+});
+
+// Start watching the app for flashcard flips
+sentenceSizer.observe(document.body, { childList: true, subtree: true });
+
+// ==========================================================================
+// 🚀 SMART AUTO-RESIZE v3: SAFE & CRASH-FREE
+// ==========================================================================
+document.addEventListener('DOMContentLoaded', () => {
+    const sentenceSizer = new MutationObserver((mutations) => {
+        // Only look for example boxes that haven't been resized yet
+        const zhBoxes = document.querySelectorAll('.fc-ex-zh:not([data-resized="true"])');
+        
+        zhBoxes.forEach(zhBox => {
+            // Strip out punctuation/English to get the TRUE Chinese character count
+            const textStr = zhBox.textContent.replace(/[^\u4e00-\u9fa5]/g, '');
+            const charCount = textStr.length;
+            
+            if (charCount === 0) return;
+
+            // Grab the Pinyin and English boxes
+            const parent = zhBox.closest('.fc-examples') || zhBox.parentElement;
+            const pyBox = parent ? parent.querySelector('.fc-ex-py') : null;
+            const enBox = parent ? parent.querySelector('.fc-ex-en') : null;
+
+            if (charCount <= 8) {
+                // 🚀 SUPER SHORT (1-8 chars)
+                zhBox.style.setProperty('font-size', 'min(14vw, 4.5rem)', 'important');
+                zhBox.style.setProperty('line-height', '1.3', 'important');
+                if(pyBox) pyBox.style.setProperty('font-size', 'min(6.5vw, 2rem)', 'important');
+                if(enBox) enBox.style.setProperty('font-size', 'min(5.5vw, 1.8rem)', 'important');
+            } 
+            else if (charCount <= 16) {
+                // 🚀 MEDIUM (9-16 chars)
+                zhBox.style.setProperty('font-size', 'min(10vw, 3.5rem)', 'important');
+                zhBox.style.setProperty('line-height', '1.35', 'important');
+                if(pyBox) pyBox.style.setProperty('font-size', 'min(5.5vw, 1.8rem)', 'important');
+                if(enBox) enBox.style.setProperty('font-size', 'min(5vw, 1.6rem)', 'important');
+            } 
+            else {
+                // 🚀 LONG (17+ chars)
+                zhBox.style.setProperty('font-size', 'min(8vw, 2.5rem)', 'important');
+                zhBox.style.setProperty('line-height', '1.4', 'important');
+                if(pyBox) pyBox.style.setProperty('font-size', 'min(5vw, 1.5rem)', 'important');
+                if(enBox) enBox.style.setProperty('font-size', 'min(4.5vw, 1.4rem)', 'important');
+            }
+            
+            // Mark as resized so it NEVER runs on this box again and causes lag
+            zhBox.setAttribute('data-resized', 'true');
+        });
+    });
+
+    // ONLY watch for new flashcards being rendered. DO NOT watch attributes.
+    sentenceSizer.observe(document.body, { childList: true, subtree: true });
+});
+
+// ==========================================================================
+// 🚀 SMART AUTO-RESIZE: FRONT FLASHCARD (ONE-LINE STRICT)
+// ==========================================================================
+document.addEventListener('DOMContentLoaded', () => {
+    const frontCardSizer = new MutationObserver(() => {
+        // Target the main front text (usually #fc-front-text or .char-hz)
+        const frontBoxes = document.querySelectorAll('#fc-front-text, .char-hz');
+        
+        frontBoxes.forEach(box => {
+            // Prevent lag by only running when the word actually changes
+            if (box.dataset.frontResized === box.innerText) return; 
+            
+            const charCount = box.innerText.trim().length;
+            if (charCount === 0) return;
+
+            // 🚨 1. ABSOLUTELY FORCE THE WORD TO STAY ON ONE LINE
+            box.style.setProperty('white-space', 'nowrap', 'important');
+            box.style.setProperty('word-break', 'keep-all', 'important');
+            box.style.setProperty('display', 'block', 'important');
+            box.style.setProperty('width', '100%', 'important');
+
+            // 🚀 2. DYNAMIC SIZING BASED ON CHARACTER COUNT
+            if (charCount <= 2) {
+                // 1-2 characters: Massive and bold
+                box.style.setProperty('font-size', 'clamp(4rem, 25vw, 8rem)', 'important');
+            } else if (charCount <= 4) {
+                // 3-4 characters (Idioms): Large, but safe
+                box.style.setProperty('font-size', 'clamp(3rem, 18vw, 6rem)', 'important');
+            } else if (charCount <= 6) {
+                // 5-6 characters: Scaled down
+                box.style.setProperty('font-size', 'clamp(2rem, 12vw, 4rem)', 'important');
+            } else {
+                // 7+ characters: Shrink aggressively so it doesn't fall off the sides
+                box.style.setProperty('font-size', 'clamp(1.5rem, 8vw, 3rem)', 'important');
+            }
+            
+            // Remember this specific word so we don't recalculate it unnecessarily
+            box.dataset.frontResized = box.innerText;
+        });
+    });
+
+    // Watch the app safely
+    frontCardSizer.observe(document.body, { childList: true, subtree: true });
+});
