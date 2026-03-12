@@ -492,7 +492,7 @@ class ChineseApp {
         if (!this.state.studyQueue || this.state.studyQueue.length === 0) {
             
             // Trigger confetti for the congratulation effect!
-            if (typeof this.triggerConfetti === 'function') this.triggerConfetti();
+           // if (typeof this.triggerConfetti === 'function') this.triggerConfetti();
             
             const mc = document.getElementById('mode-current');
             const mt = document.getElementById('mode-total');
@@ -799,7 +799,7 @@ nextItem() {
             let searchWord = item.word || item.simplified;
             let found = window.sentences.find(s => s.sentence && s.sentence.includes(searchWord));
             if (found) {
-                exBox.innerHTML = `<strong>📖 Example:</strong><br>${found.sentence}<br><span style="color:var(--text-muted); font-size: 0.9em;">${found.english}</span>`;
+                exBox.innerHTML = `<strong>Example:</strong><br>${found.sentence}<br><span style="color:var(--text-muted); font-size: 0.9em;">${found.english}</span>`;
                 exBox.classList.remove('hidden');
             }
         }
