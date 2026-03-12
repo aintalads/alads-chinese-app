@@ -1,20 +1,42 @@
 /* ==========================================================================
-   📥 IMPORT FOUNDER KAITI (FZKai) FONT
+   📥 1. LOAD TWKAI.WOFF2 (CHINESE FONT)
+   ========================================================================== */
+@font-face {
+    font-family: 'TWKai'; 
+    src: url('./twkai.woff2?v=1') format('woff2'); /* 👈 Make sure format says woff2! */
+    font-weight: normal;
+    font-style: normal;
+    font-display: swap;
+}
+
+/* ==========================================================================
+   📥 2. APPLY CHINESE FONT TO CHINESE TEXT
    ========================================================================== */
 #fc-front-text, 
 #sn-chinese, 
 #qz-word, 
 .char-hz, 
 .fc-ex-zh,
-#character-target-div text {
-    /* FZKai comes first. If it fails, it falls back to system Kaiti */
-    font-family: 'FZKai', "KaiTi", "Kaiti TC", "BiauKai", serif !important;
-    
-    /* Synthetic Bold (The secret to making it look thick) */
-    font-weight: bold !important;
-    -webkit-text-stroke: 1.2px currentColor; 
-    
+#character-target-div text,
+.option-btn,              
+.extra-info-box,          
+.fc-breakdown,            
+#qz-pinyin-hint,          
+.quiz-feedback,           
+input[type="text"] {      
+    /* 🚀 Apply TWKai! */
+    font-family: 'TWKai', "LXGW WenKai TC", "LXGW WenKai", "KaiTi", serif !important;
+    font-weight: 400 !important; 
+    -webkit-text-stroke: 0px transparent !important; 
     -webkit-font-smoothing: antialiased;
+}
+
+/* ==========================================================================
+   📥 3. APPLY SOFT FRIENDLY FONT TO EVERYTHING ELSE (ENGLISH)
+   ========================================================================== */
+body {
+    /* 🚀 Apply Quicksand globally */
+    font-family: 'Quicksand', sans-serif !important; 
 }
 :root {
     /* Your Custom Color Palette */
@@ -70,11 +92,11 @@ body {
 
 
 /* --- UPDATED FONT FAMILY FOR CHINESE --- */
+/* --- UPDATED FONT FAMILY FOR CHINESE --- */
 * { 
     box-sizing: border-box; 
     margin: 0; 
     padding: 0; 
-    font-family: 'Noto Sans TC', 'PingFang TC', 'Microsoft JhengHei', -apple-system, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; 
     -webkit-tap-highlight-color: transparent; 
 }
 
@@ -548,7 +570,7 @@ body { background-color: var(--bg-main); color: var(--text-main); }
     transform: scale(1.02);
 }
 .extra-info-box.magnified strong { font-size: 1.8rem; }
-.extra-info-box::after { content: '🔍'; position: absolute; top: 8px; right: 8px; font-size: 1rem; opacity: 0.4; transition: 0.2s; }
+.extra-info-box::after { content: ''; position: absolute; top: 8px; right: 8px; font-size: 1rem; opacity: 0.4; transition: 0.2s; }
 .extra-info-box:hover::after { opacity: 1; }
 .extra-info-box.magnified::after { content: '✖️'; opacity: 0.6; font-size: 0.9rem; }
 
@@ -1123,7 +1145,7 @@ html, body {
 .char-hz, 
 .fc-ex-zh,
 #character-target-div text {
-    font-family: 'FZKai', 'FancyFreeFont', "KaiTi", "Kaiti TC", "BiauKai", serif !important;
+    font-family: 'FZKai1', 'FancyFreeFont', "KaiTi", "Kaiti TC", "BiauKai", serif !important;
     font-weight: bold !important; /* Tells the browser to try synthetic bold */
     
     /* THE SECRET SAUCE: Artificially thickens the brush strokes perfectly */
@@ -1261,4 +1283,131 @@ html, body {
 .fc-breakdown div:last-child {
     border-bottom: none;
     padding-bottom: 0;
+}
+
+/* ==========================================================================
+   🚀 NUCLEAR FONT OVERRIDE FOR MAIN CHARACTERS
+   (Placed at the bottom so nothing can override it!)
+   ========================================================================== */
+.card-front h1#fc-front-text,
+.qz-word-container h2#qz-word {
+    font-family: 'TWKai', "LXGW WenKai TC", "KaiTi", serif !important;
+    font-weight: normal !important;
+    -webkit-text-stroke: 0px transparent !important;
+}
+
+/* ==========================================================================
+   🚀 FIX FLASHCARD BACK (CENTERING & SCROLLING)
+   ========================================================================== */
+.card-back {
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-start; 
+    align-items: center;
+    overflow-y: auto !important; /* Force scrolling to work! */
+    height: 100%;
+    width: 100%;
+    padding: 20px;
+    box-sizing: border-box;
+    text-align: center;
+}
+
+/* Push the pinyin & meaning to the dead center of the screen */
+.card-main-info {
+    display: flex;
+    flex-direction: column;
+    justify-content: center; 
+    align-items: center;     
+    min-height: 100%; /* Take up full height of the first view */
+    width: 100%;
+    position: relative;
+    padding-bottom: 50px; /* Leave space for the hint arrow */
+}
+
+/* Put the scroll hint arrow neatly at the bottom */
+.scroll-down-hint {
+    position: absolute;
+    bottom: 10px;
+    left: 50%;
+    transform: translateX(-50%);
+    font-size: 0.9rem;
+    color: #888;
+    animation: bounce 2s infinite;
+}
+
+/* The extra info (examples) flows below */
+.card-extra-info {
+    display: flex !important;
+    flex-direction: column !important;
+    justify-content: center !important; 
+    align-items: center !important;
+    height: 100% !important; 
+}
+
+/* ==========================================================================
+   🚀 1. PERFECTLY CENTER THE "SWIPE FOR EXAMPLES" HINT
+   ========================================================================== */
+.scroll-down-hint {
+    position: absolute !important;
+    bottom: 25px !important;
+    left: 50% !important;             
+    transform: translateX(-50%) !important; /* This guarantees absolute dead center */
+    width: 100% !important;
+    text-align: center !important;  
+    font-size: 0.95rem !important;
+    color: #888 !important;
+    animation: bounce 2s infinite !important;
+}
+
+/* ==========================================================================
+   🚀 2. CLEAN UP THE EXAMPLES BOX
+   ========================================================================== */
+.card-extra-info::before {
+    display: none !important; /* Hides the little divider line */
+}
+
+.extra-info-box, 
+.fc-breakdown {
+    background: transparent !important;
+    border: none !important;
+    box-shadow: none !important;
+    padding: 0 !important;
+    margin: 0 0 30px 0 !important;
+    width: 100% !important;
+    display: flex !important;
+    flex-direction: column !important;
+    align-items: center !important; /* Centers everything horizontally */
+    justify-content: center !important;
+}
+
+/* ==========================================================================
+   🚀 3. MASSIVE CENTERED TEXT
+   ========================================================================== */
+/* The Chinese Sentence */
+.fc-ex-zh {
+    font-size: 3.5rem !important;  /* MASSIVE! */
+    line-height: 1.3 !important;
+    color: var(--text-main) !important;
+    text-align: center !important; 
+    margin-bottom: 15px !important;
+    width: 100% !important;
+}
+
+/* The Pinyin */
+.fc-ex-py {
+    font-size: 1.5rem !important;  /* Readable Pinyin */
+    color: var(--primary-color) !important;
+    text-align: center !important;
+    margin-bottom: 8px !important;
+    width: 100% !important;
+}
+
+/* The English Translation */
+.fc-ex-en {
+    font-size: 1.25rem !important;  /* Soft, friendly English */
+    color: var(--text-muted) !important;
+    text-align: center !important;
+    margin-bottom: 30px !important;
+    width: 100% !important;
+    white-space: normal !important; 
 }
