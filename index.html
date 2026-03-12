@@ -4,13 +4,12 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Alads | Chinese Learning</title>
-<link rel="preconnect" href="https://fonts.googleapis.com">
+    
+    <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Quicksand:wght@400;500;600;700&display=swap" rel="stylesheet">
 
-    <link rel="stylesheet" href="style.css?v=200">
-
-   
+    <link rel="stylesheet" href="style.css?v=1005">
 
     <link rel="manifest" href="manifest.json">
     
@@ -19,14 +18,12 @@
     <meta name="apple-mobile-web-app-title" content="Mandarin">
     <link rel="apple-touch-icon" href="https://cdn-icons-png.flaticon.com/512/3233/3233483.png">
 
-   <script>
+    <script>
         if ('serviceWorker' in navigator) {
-            navigator.serviceWorker.getRegistrations().then(function(registrations) {
-                for(let registration of registrations) {
-                    registration.unregister().then(function(boolean) {
-                        console.log("Old Offline Memory Destroyed!");
-                    });
-                }
+            window.addEventListener('load', () => {
+                navigator.serviceWorker.register('./sw.js')
+                    .then(reg => console.log('Service Worker Registered Properly!'))
+                    .catch(err => console.error('Service Worker Failed:', err));
             });
         }
     </script>
@@ -357,7 +354,6 @@
     <div id="qz-options" class="quiz-options"></div>
     <div id="quiz-feedback" class="quiz-feedback hidden"></div>
 </div>
-    <canvas id="confetti-canvas"></canvas>
     
     <script>
         function closeOtherDetails(clickedDetails) {
