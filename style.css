@@ -1197,6 +1197,9 @@ html, body {
     color: var(--text-main);
 }
 
+/* ==========================================================================
+   🎯 MEANING AND ANIMATIONS (PRESERVED)
+   ========================================================================== */
 #fc-meaning {
     margin: 10px 0 0 0;
     font-size: clamp(1.2rem, 5vw, 2rem) !important;
@@ -1205,89 +1208,14 @@ html, body {
     font-weight: 600;
 }
 
-/* 3. The Bouncing Swipe Hint at the bottom of the first view */
-.scroll-down-hint {
-    position: absolute;
-    bottom: 15px;
-    font-size: 0.9rem;
-    color: var(--text-muted);
-    opacity: 0.7;
-    animation: bounce 2s infinite;
-    pointer-events: none; /* So it doesn't block clicks */
-}
-
 @keyframes bounce {
     0%, 20%, 50%, 80%, 100% { transform: translateY(0); }
     40% { transform: translateY(-10px); }
     60% { transform: translateY(-5px); }
 }
 
-/* 4. The Examples Section (Seamless scroll, no ugly boxes) */
-.card-extra-info {
-    width: 100% !important;
-    padding: 0 25px 40px 25px !important; /* Lots of breathing room at the bottom */
-    background: transparent !important; /* NO MORE BACKGROUND */
-    border: none !important; /* NO MORE BORDER */
-    display: flex !important;
-    flex-direction: column !important;
-    gap: 30px !important; /* Elegant spacing between different examples */
-    box-sizing: border-box !important;
-    min-height: fit-content !important; 
-    overflow: hidden !important; /* 👈 MAGIC FIX: Stops invisible scrollbars from breaking your swipe! */
-}
-/* Add a tiny, elegant divider line instead of a massive box */
-.card-extra-info::before {
-    content: '';
-    display: block;
-    width: 40px;
-    height: 4px;
-    background: var(--primary-color);
-    border-radius: 4px;
-    margin: 0 auto 10px auto;
-    opacity: 0.3;
-}
-
-/* Strip all background/borders from the text blocks inside */
-.extra-info-box, .fc-breakdown {
-    background: transparent !important;
-    border: none !important;
-    box-shadow: none !important;
-    padding: 0 !important;
-    text-align: left; /* Left-align examples for better reading */
-}
-
-/* Make the titles of the examples look like a clean book header */
-.extra-info-box strong, 
-.fc-breakdown strong {
-    display: block;
-    font-size: 1.1rem;
-    color: var(--primary-color);
-    margin-bottom: 8px;
-    font-weight: 700;
-    letter-spacing: 0.5px;
-}
-
-/* Style the example sentences to look clean and breathable */
-.extra-info-box div, 
-.fc-breakdown div {
-    font-size: 1.05rem;
-    line-height: 1.6;
-    color: var(--text-main);
-    margin-bottom: 12px;
-    border-bottom: 1px solid rgba(0,0,0,0.05); /* Very faint line between sentences */
-    padding-bottom: 12px;
-}
-
-/* Remove the line from the very last sentence */
-.extra-info-box div:last-child, 
-.fc-breakdown div:last-child {
-    border-bottom: none;
-    padding-bottom: 0;
-}
-
 /* ==========================================================================
    🚀 NUCLEAR FONT OVERRIDE FOR MAIN CHARACTERS
-   (Placed at the bottom so nothing can override it!)
    ========================================================================== */
 .card-front h1#fc-front-text,
 .qz-word-container h2#qz-word {
@@ -1297,74 +1225,57 @@ html, body {
 }
 
 /* ==========================================================================
-   🚀 FIX FLASHCARD BACK (CENTERING & SCROLLING)
+   🚀 NATIVE APP TOUCH FIX (STOPS SCROLLING FROM BREAKING SWIPES)
+   ========================================================================== */
+html, body {
+    overscroll-behavior-y: none !important; /* Stops the bouncy pull-to-refresh effect */
+}
+
+/* ==========================================================================
+   🚀 THE TWO-PAGE LAYOUT (MAIN INFO TOP, EXAMPLES BOTTOM)
    ========================================================================== */
 .card-back {
-    display: flex;
-    flex-direction: column;
-    justify-content: flex-start; 
-    align-items: center;
-    overflow-y: auto !important; /* Force scrolling to work! */
-    height: 100%;
-    width: 100%;
-    padding: 20px;
-    box-sizing: border-box;
-    text-align: center;
+    display: block !important; 
+    overflow-y: auto !important; /* Lets you scroll down vertically */
+    overflow-x: hidden !important; /* Prevents swipe glitches */
+    height: 100% !important;
+    width: 100% !important;
+    padding: 0 !important;
+    touch-action: pan-y !important; /* 👈 MAGIC FIX: Lets JS handle horizontal swipes! */
 }
 
-/* Push the pinyin & meaning to the dead center of the screen */
+/* PAGE 1: The Main Term (Pinyin & Meaning) */
 .card-main-info {
-    display: flex;
-    flex-direction: column;
-    justify-content: center; 
-    align-items: center;     
-    min-height: 100%; /* Take up full height of the first view */
-    width: 100%;
-    position: relative;
-    padding-bottom: 50px; /* Leave space for the hint arrow */
+    display: flex !important;
+    flex-direction: column !important;
+    justify-content: center !important;
+    align-items: center !important;
+    min-height: 100% !important; /* Takes exactly 1 full screen */
+    width: 100% !important;
+    position: relative !important;
 }
 
-/* Put the scroll hint arrow neatly at the bottom */
-.scroll-down-hint {
-    position: absolute;
-    bottom: 10px;
-    left: 50%;
-    transform: translateX(-50%);
-    font-size: 0.9rem;
-    color: #888;
-    animation: bounce 2s infinite;
-}
-
-/* The extra info (examples) flows below */
+/* PAGE 2: The Examples Section (Below the fold) */
 .card-extra-info {
     display: flex !important;
     flex-direction: column !important;
-    justify-content: center !important; 
+    justify-content: center !important;
     align-items: center !important;
-    height: 100% !important; 
-}
-
-/* ==========================================================================
-   🚀 1. PERFECTLY CENTER THE "SWIPE FOR EXAMPLES" HINT
-   ========================================================================== */
-.scroll-down-hint {
-    position: absolute !important;
-    bottom: 25px !important;
-    left: 50% !important;             
-    transform: translateX(-50%) !important; /* This guarantees absolute dead center */
+    min-height: 100% !important; /* Takes up its own full screen below */
     width: 100% !important;
-    text-align: center !important;  
-    font-size: 0.95rem !important;
-    color: #888 !important;
-    animation: bounce 2s infinite !important;
-    pointer-events: none !important;
+    padding: 20px !important;
+    box-sizing: border-box !important;
+    background: transparent !important;
+    border: none !important;
 }
 
 /* ==========================================================================
-   🚀 2. CLEAN UP THE EXAMPLES BOX
+   🚀 HIDE EMOJIS & CLEAN INNER BOXES
    ========================================================================== */
-.card-extra-info::before {
-    display: none !important; /* Hides the little divider line */
+.card-extra-info::before,
+.extra-info-box strong, 
+.fc-breakdown strong {
+    display: none !important; /* Kills the divider line and emojis */
 }
 
 .extra-info-box, 
@@ -1373,42 +1284,56 @@ html, body {
     border: none !important;
     box-shadow: none !important;
     padding: 0 !important;
-    margin: 0 0 30px 0 !important;
+    margin: 0 !important;
     width: 100% !important;
     display: flex !important;
     flex-direction: column !important;
-    align-items: center !important; /* Centers everything horizontally */
+    align-items: center !important; 
     justify-content: center !important;
+    gap: 15px !important;
 }
 
 /* ==========================================================================
-   🚀 3. MASSIVE CENTERED TEXT
+   🚀 MASSIVE CENTERED TEXT
    ========================================================================== */
-/* The Chinese Sentence */
 .fc-ex-zh {
-    font-size: 3.5rem !important;  /* MASSIVE! */
+    font-size: 3.5rem !important;  
     line-height: 1.3 !important;
     color: var(--text-main) !important;
     text-align: center !important; 
-    margin-bottom: 15px !important;
+    margin: 0 0 15px 0 !important;
     width: 100% !important;
 }
 
-/* The Pinyin */
 .fc-ex-py {
-    font-size: 1.5rem !important;  /* Readable Pinyin */
+    font-size: 1.8rem !important;  
     color: var(--primary-color) !important;
     text-align: center !important;
-    margin-bottom: 8px !important;
+    margin: 0 0 8px 0 !important;
     width: 100% !important;
 }
 
-/* The English Translation */
 .fc-ex-en {
-    font-size: 1.25rem !important;  /* Soft, friendly English */
+    font-size: 1.4rem !important;  
     color: var(--text-muted) !important;
     text-align: center !important;
-    margin-bottom: 30px !important;
+    margin: 0 0 30px 0 !important;
     width: 100% !important;
     white-space: normal !important; 
+}
+
+/* ==========================================================================
+   🚀 PERFECTLY CENTER THE "SWIPE FOR EXAMPLES" HINT
+   ========================================================================== */
+.scroll-down-hint {
+    position: absolute !important;
+    bottom: 25px !important;
+    left: 50% !important;             
+    transform: translateX(-50%) !important; 
+    width: 100% !important;
+    text-align: center !important;  
+    font-size: 0.95rem !important;
+    color: #888 !important;
+    animation: bounce 2s infinite !important;
+    pointer-events: none !important; 
 }
