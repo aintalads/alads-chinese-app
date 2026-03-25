@@ -18,7 +18,6 @@
 .char-hz, 
 .fc-ex-zh,
 #character-target-div text,
-.option-btn,              
 .extra-info-box,          
 .fc-breakdown,            
 #qz-pinyin-hint,          
@@ -273,30 +272,42 @@ details[open].control-group .dropdown-content { display: block; animation: slide
 .sentence-container { text-align: center; max-width: 600px; margin: 0 auto 30px auto; padding: 40px 20px; background: var(--card-bg); border-radius: 24px; border: 1px solid var(--border-color); box-shadow: var(--shadow-sm); }
 
 /* 🚀 AUTO-ADJUSTING SENTENCE TEXT (FITS ANY LENGTH PERFECTLY) */
+/* 🚀 AUTO-ADJUSTING SENTENCE TEXT (FITS ANY LENGTH PERFECTLY) */
 .chinese-text { 
-    font-size: clamp(1.6rem, 7.5vw, 2.8rem) !important; 
+    font-size: clamp(1.4rem, 7vw, 2.8rem) !important; 
     font-weight: 500; 
     margin-bottom: 15px; 
     color: var(--text-main); 
-    word-break: keep-all !important; 
-    overflow-wrap: break-word !important; 
+    
+    /* 🚨 THE TRUE FIX: Delete 'keep-all', force the characters to wrap! */
+    white-space: normal !important;
+    word-break: break-all !important; 
+    overflow-wrap: anywhere !important; 
+    
+    width: 100%;
+    padding: 0 10px;
+    box-sizing: border-box;
 }
 
 .pinyin-text { 
-    font-size: clamp(1.1rem, 4.5vw, 1.6rem) !important; 
+    font-size: clamp(1.1rem, 5vw, 1.4rem); 
     color: var(--text-muted); 
     margin-bottom: 25px; 
     font-weight: 400; 
-    overflow-wrap: break-word !important; 
+    white-space: normal; 
+    word-break: break-word;
+    padding: 0 10px;
+    box-sizing: border-box;
 }
 
 .english-text { 
-    font-size: clamp(1rem, 3.5vw, 1.3rem) !important; 
+    font-size: clamp(1rem, 4.5vw, 1.2rem); 
     color: var(--text-main); 
     margin-top: 20px; 
-    line-height: 1.4 !important;
-    white-space: normal !important; 
-    overflow-wrap: break-word !important; 
+    white-space: normal; 
+    word-break: break-word;
+    padding: 0 10px;
+    box-sizing: border-box;
 }
 
 .hidden { display: none; }
@@ -958,9 +969,17 @@ html, body {
 }
 
 /* Make sure the sentence characters are large enough to read the brush strokes */
+/* Make sure the sentence characters are large enough to read, but shrink on mobile */
 #sn-chinese {
-    font-size: 3.5rem !important;
-    line-height: 1.8;
+    font-size: clamp(1.8rem, 8vw, 3.5rem) !important;
+    line-height: 1.5;
+    
+    /* 🚨 THE REAL FIX: This safely allows Chinese characters to drop to the next line */
+    white-space: normal !important; 
+    word-break: break-word; 
+    width: 100%;
+    padding: 0 10px;
+    box-sizing: border-box;
 }
 
 /* ==========================================================================
@@ -1108,18 +1127,19 @@ html, body {
 #fc-front-text, 
 #qz-word {
     /* 1. Allow wrapping ONLY if it completely runs out of room */
+  /* 1. ABSOLUTELY FORCE WRAPPING (No 'keep-all' allowed!) */
     white-space: normal !important; 
-    overflow-wrap: break-word;
-    word-break: keep-all; 
+    overflow-wrap: anywhere !important;
+    word-break: break-word !important; 
     
-    /* 2. Smarter dynamic size: Minimum 2rem, prefers 12vw, Maximum 5.5rem */
-    font-size: clamp(2rem, 12vw, 5.5rem) !important; 
+    /* 2. Smarter dynamic size: Shrinks all the way to 1.2rem on small phones! */
+    font-size: clamp(1.2rem, 7vw, 3.5rem) !important; 
     
     /* 3. Keep it neatly inside the white box */
     width: 100%;
     max-width: 100%;
     text-align: center;
-    line-height: 1.3;
+    line-height: 1.4;
     padding: 0 10px;
     box-sizing: border-box;
 }
@@ -1453,4 +1473,800 @@ overflow: hidden !important;/* Lets you scroll down vertically */
     background: rgba(0, 230, 118, 0.1) !important;
     border: 1px solid rgba(0, 230, 118, 0.4) !important;
     box-shadow: 0 0 10px rgba(0, 230, 118, 0.25) !important;
+}
+
+/* 🚨 ULTIMATE MOBILE OVERFLOW FIX 🚨 */
+
+/* 1. Force the parent container to NEVER be wider than the screen */
+.sentence-container {
+    width: 100% !important;
+    max-width: 100vw !important;
+    box-sizing: border-box !important;
+    padding: 0 15px !important;
+    overflow-x: hidden !important;
+}
+
+/* 2. Force the Chinese text to wrap and stay inside the box */
+/* 2. Force the Chinese text to wrap and stay inside the box WITH CUSTOM FONT */
+#sn-chinese, .chinese-text {
+    white-space: normal !important;
+    word-break: break-word !important; 
+    overflow-wrap: anywhere !important;
+    width: 100% !important;
+    max-width: 100% !important;
+    box-sizing: border-box !important;
+    display: block !important;
+    font-size: clamp(1.4rem, 7vw, 2.5rem) !important; 
+    
+    /* 🚀 THE FONT FIX: Perfectly match the Flashcards */
+    font-family: 'TWKai', "LXGW WenKai TC", "LXGW WenKai", "KaiTi", serif !important;
+    font-weight: 400 !important;
+    -webkit-text-stroke: 0px transparent !important; 
+    -webkit-font-smoothing: antialiased !important;
+}
+
+/* 🚀 SUPERSIZED FLASHCARD EXAMPLES 🚀 */
+
+/* Add some space between the character breakdown and the examples */
+.fc-examples {
+    margin-top: 30px !important;
+    padding-bottom: 30px !important;
+}
+
+/* 1. Massive Chinese text */
+.fc-ex-zh {
+    font-size: clamp(2.2rem, 9vw, 3.5rem) !important; 
+    line-height: 1.5 !important;
+    margin-bottom: 15px !important;
+}
+
+/* 2. Much larger Pinyin */
+.fc-ex-py {
+    font-size: clamp(1.6rem, 6vw, 2.2rem) !important;
+    margin-bottom: 12px !important;
+}
+
+/* 3. Larger English translation with plenty of bottom spacing */
+.fc-ex-en {
+    font-size: clamp(1.4rem, 5vw, 1.8rem) !important;
+    line-height: 1.5 !important;
+    margin-bottom: 40px !important; 
+}
+
+/* 🚨 FORCE FLASHCARD EXAMPLES TO BREAK AND FILL THE PAGE 🚨 */
+
+/* 1. Let the container utilize the full width */
+.fc-examples {
+    width: 100% !important;
+    max-width: 100% !important;
+    box-sizing: border-box !important;
+    padding: 0 15px 40px 15px !important;
+}
+
+/* 2. Force ALL text to wrap naturally instead of staying on one line */
+.fc-ex-zh, .fc-ex-py, .fc-ex-en {
+    white-space: normal !important;
+    overflow-wrap: anywhere !important;
+    display: block !important;
+    width: 100% !important;
+    box-sizing: border-box !important;
+}
+
+/* 3. Force the Chinese text to break perfectly character-by-character */
+.fc-ex-zh {
+    word-break: break-all !important; 
+}
+
+/* 4. Allow English and Pinyin to break safely */
+.fc-ex-py, .fc-ex-en {
+    word-break: break-word !important; 
+}
+
+/* ==========================================================================
+   🎨 COLOR-CODED BACK HEADER 
+   ========================================================================== */
+.color-word {
+    font-size: clamp(2.5rem, 12vw, 4.5rem); /* Huge Chinese text */
+    font-weight: bold;
+    line-height: 1.2;
+    margin-bottom: 5px;
+    letter-spacing: 2px;
+}
+
+.color-pinyin {
+    font-size: clamp(1.6rem, 7vw, 2.5rem); /* Matching Pinyin size */
+    font-family: 'Quicksand', sans-serif;
+    letter-spacing: 1px;
+}
+
+/* 🚨 PERFECT SPACING: BACK OF CARD 🚨 */
+
+/* 1. Remove the invisible gap under the Chinese characters */
+#fc-back-word {
+    margin-bottom: 0px !important;
+    padding-bottom: 0px !important;
+}
+
+/* 2. Shrink the Pinyin and pull it tighter to the text */
+#fc-pinyin {
+    font-size: clamp(1.45rem, 6vw, 1.95rem) !important; /* Makes Pinyin smaller */
+    margin-top: 5px !important;    /* Tiny gap below the Chinese */
+    margin-bottom: 5px !important; /* Tiny gap above the English */
+    line-height: 1.2 !important;
+}
+
+/* 3. Pull the English meaning up closer to the Pinyin */
+#fc-meaning {
+    margin-top: 0px !important;
+    padding-top: 0px !important;
+}
+
+/* ==========================================================================
+   🔍 CHARACTER SEARCH MODAL (PREMIUM GLASSMORPHISM)
+   ========================================================================== */
+/* ==========================================================================
+   🔍 CHARACTER SEARCH MODAL (COMPACT GLASS DESIGN)
+   ========================================================================= */
+.modal-overlay {
+    position: fixed;
+    top: 0; left: 0; width: 100%; height: 100%;
+    background: rgba(0, 0, 0, 0.4);
+    display: flex; justify-content: center; align-items: center;
+    z-index: 99999 !important;
+    backdrop-filter: blur(5px);
+    -webkit-backdrop-filter: blur(5px);
+    opacity: 0; pointer-events: none; 
+    transition: opacity 0.3s ease;
+}
+
+.modal-overlay.active {
+    opacity: 1 !important; 
+    pointer-events: auto !important;
+}
+
+.modal-content.themed-modal {
+    background: rgba(255, 255, 255, 0.1);
+    backdrop-filter: blur(25px);
+    -webkit-backdrop-filter: blur(25px);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    box-shadow: 0 15px 35px rgba(0,0,0,0.2);
+    
+    width: 85%; 
+    max-width: 300px; /* 👈 Super compact for mobile */
+    max-height: 60vh; /* 👈 Shorter on mobile */
+    border-radius: 20px;
+    display: flex; flex-direction: column;
+    overflow: hidden;
+    max-height: 75vh !important; /* Forces the box to have a bottom edge */
+    overflow-y: auto !important; /* Turns on the scrollbar */
+    -webkit-overflow-scrolling: touch !important; /* Buttery smooth iPhone scrolling */
+    overscroll-behavior: contain !important; /* Stops the background app from scrolling */
+    touch-action: pan-y !important; /* Only allows up/down scrolling */
+}
+
+body.dark .modal-content.themed-modal,
+body.midnight .modal-content.themed-modal {
+    background: rgba(20, 20, 20, 0.4);
+    border: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+/* 🎯 HEADER: Center EVERYTHING dynamically */
+.modal-header {
+    display: grid;
+    grid-template-columns: 1fr 40px; /* Title takes most space, Button takes less */
+    align-items: center;
+    padding: 10px 16px; 
+    color: white; 
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+/* 🎯 CENTERED TITLE STACK */
+.modal-header h3 { 
+    grid-column: 1 / 2; /* Occupies the title column */
+    margin: 0; 
+    text-align: center; /* 👈 Centered! */
+    display: flex; flex-direction: column; align-items: center; /* Dynamic stack */
+    line-height: 1.1;
+    color: white;
+}
+
+/* "Occurrences of" text styling */
+#char-search-title .qz-q-type-label {
+    font-size: 0.9rem; /* Small, muted label */
+    opacity: 0.8;
+    font-weight: bold;
+    color: var(--text-muted, rgba(255, 255, 255, 0.7));
+}
+
+/* 🖌️ GIGANTIC CENTERED CHINESE CHARACTER BELOW TITLE */
+#char-search-target.chinese-text {
+    font-family: 'TWKai', serif;
+    font-size: clamp(3rem, 15vw, 4rem); /* 👈 Massive fluid size */
+    color: white;
+    font-weight: 900;
+    text-shadow: 0 4px 10px rgba(0,0,0,0.3);
+    line-height: 1; /* Tight stack */
+    display: inline-block;
+}
+
+/* 🎨 CLEANER PILL-SHAPED CLOSE BUTTON */
+.modal-header .close-btn { 
+    grid-column: 2 / 3; 
+    justify-self: end; /* Pushes to the right edge */
+    background: rgba(255, 255, 255, 0.15); 
+    border: none; 
+    color: white; 
+    cursor: pointer; 
+    width: 32px; height: 32px; 
+    border-radius: 50%;
+    display: flex; justify-content: center; align-items: center;
+    transition: all 0.2s ease;
+    box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+}
+
+.modal-header .close-btn:active {
+    transform: scale(0.95);
+}
+
+.modal-header .close-btn:hover {
+    background: rgba(255, 255, 255, 0.3);
+    transform: scale(1.05);
+}
+
+.modal-body {
+    padding: 10px; overflow-y: auto; 
+    display: flex; flex-direction: column; gap: 6px;
+    background: var(--card-bg, #ffffff);
+    border-radius: 0 0 20px 20px;
+    /* This forces mobile browsers to scroll smoothly and stops it from pulling the page! */
+    overscroll-behavior: contain;
+    -webkit-overflow-scrolling: touch; 
+    touch-action: pan-y;
+}
+.search-result-item {
+    padding: 10px; border-radius: 12px;
+    background: var(--bg-color, #f5f5f5);
+    border: 1px solid var(--border-color, #e0e0e0);
+}
+
+.search-result-word { 
+    font-family: 'TWKai', serif; 
+    font-size: clamp(1.4rem, 6vw, 1.7rem); 
+    margin-bottom: 3px; 
+}
+.search-result-py { font-size: 1rem; color: var(--text-muted, #777); font-weight: bold;}
+.search-result-en { font-size: 0.9rem; margin-top: 3px; line-height: 1.2; }
+/* 🪄 ANIMATED ACCORDION ARROW */
+.accordion-arrow {
+    transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    transform: rotate(-90deg); /* Points right when closed */
+    opacity: 0.7;
+    color: var(--text-color, #333);
+}
+
+body.dark .accordion-arrow, body.midnight .accordion-arrow {
+    color: white;
+}
+
+.book-group.expanded .accordion-arrow {
+    transform: rotate(0deg); /* Points down when open */
+    opacity: 1;
+}
+
+/* ==========================================================================
+   📚 BOOK GROUP ACCORDION (SOFT ANIMATIONS)
+   ========================================================================= */
+.book-group {
+    margin-bottom: 8px;
+    background: rgba(255, 255, 255, 0.4);
+    border-radius: 12px;
+    overflow: hidden;
+    border: 1px solid rgba(0,0,0,0.05);
+    transition: background 0.3s ease;
+}
+
+body.dark .book-group, body.midnight .book-group {
+    background: rgba(0, 0, 0, 0.2);
+    border: 1px solid rgba(255,255,255,0.05);
+}
+
+/* 📘 The Clickable Header */
+.book-group-header {
+    padding: 12px 14px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    background: rgba(0,0,0,0.03);
+    cursor: pointer;
+    transition: background 0.2s ease;
+    user-select: none;
+}
+
+.book-group-header:active {
+    background: rgba(0,0,0,0.08);
+}
+
+body.dark .book-group-header, body.midnight .book-group-header { background: rgba(255,255,255,0.03); }
+
+.book-title {
+    font-weight: bold;
+    font-size: 0.95rem;
+    color: var(--text-color, #333);
+}
+
+.book-badge {
+    color: white;
+    padding: 2px 8px;
+    border-radius: 20px;
+    font-size: 0.8rem;
+    font-weight: bold;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+}
+
+/* 🪄 Smooth Height Animation using CSS Grid Trick */
+.book-group-content {
+    display: grid;
+    grid-template-rows: 0fr; /* Collapsed */
+    transition: grid-template-rows 0.35s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.book-group.expanded .book-group-content {
+    grid-template-rows: 1fr; /* Expanded smoothly! */
+}
+
+.book-group-inner {
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    padding: 0 10px; 
+}
+
+/* Add padding inside when expanded so it doesn't jump */
+.book-group.expanded .book-group-inner {
+    padding: 10px;
+    border-top: 1px solid rgba(0,0,0,0.05);
+}
+
+/* Tweak the search result items so they look nice inside the accordion */
+.book-group .search-result-item {
+    background: var(--card-bg, #ffffff);
+    box-shadow: 0 2px 6px rgba(0,0,0,0.04);
+    border: none;
+}
+
+/* 🚨 ULTIMATE SCROLL FIX FOR THE SEARCH POPUP 🚨 */
+#char-search-modal {
+    overscroll-behavior: none !important; /* Stops the rubber-band bounce effect */
+}
+
+/* 🚨 SAFE SCROLL FIX FOR POPUP (WON'T BREAK APP) 🚨 */
+#char-search-modal .modal-content {
+    max-height: 70vh !important; 
+    overflow-y: auto !important; 
+    -webkit-overflow-scrolling: touch !important; 
+    overscroll-behavior: contain !important; /* Traps the scroll inside the box safely */
+    display: block !important;
+}
+
+/* 🚨 HIDE SCROLLBARS IN THE SEARCH POPUP BUT KEEP SCROLLING 🚨 */
+
+/* Hide scrollbar for Chrome, Safari, and newer Edge browsers */
+#char-search-modal .modal-content::-webkit-scrollbar,
+#char-search-modal .book-group-inner::-webkit-scrollbar {
+    display: none !important;
+    width: 0 !important;
+    background: transparent !important;
+}
+
+/* Hide scrollbar for Firefox and older Edge/IE */
+#char-search-modal .modal-content,
+#char-search-modal .book-group-inner {
+    -ms-overflow-style: none !important;  /* IE and Edge */
+    scrollbar-width: none !important;  /* Firefox */
+}
+
+/* 🗣️ VOICE SELECTOR DROPDOWN */
+.voice-select {
+    background: rgba(0, 0, 0, 0.05);
+    border: 1px solid rgba(0, 0, 0, 0.1);
+    border-radius: 20px;
+    padding: 6px 12px;
+    font-family: 'Quicksand', sans-serif;
+    font-size: 0.85rem;
+    font-weight: 600;
+    color: var(--text-color, #333);
+    cursor: pointer;
+    outline: none;
+    max-width: 140px; 
+    text-overflow: ellipsis;
+    -webkit-appearance: none; /* Removes default ugly browser styling */
+    appearance: none;
+}
+
+/* Dark mode support */
+body.dark .voice-select, 
+body.midnight .voice-select {
+    background: rgba(255, 255, 255, 0.1);
+    border-color: rgba(255, 255, 255, 0.2);
+    color: white;
+}
+/* 🚨 MASTER BACK-CARD AUTOSIZE SYSTEM (TONED DOWN) 🚨 */
+
+.card-main-info {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    width: 100%;
+    height: 100%;
+    padding: 20px;
+    box-sizing: border-box;
+    gap: 8px; /* Slightly tighter gap */
+}
+
+/* 🇨🇳 2. Main Chinese Characters (AUTO-FIT VERSION) */
+/* 🇨🇳 2. Main Chinese Characters */
+#fc-back-word {
+    /* Auto-adjusts size: Min 2.5rem, grows with screen, Max 5.5rem */
+    font-size: clamp(2.5rem, 15vw, 5.5rem) !important;
+    font-weight: normal;
+    color: var(--primary-color, #007bff);
+    line-height: 1.2;
+    margin: 0 !important;
+    text-align: center;
+    width: 100%;
+    
+    /* Forces long phrases to wrap to the next line automatically */
+    white-space: normal !important; 
+    word-break: break-all !important; 
+    overflow-wrap: anywhere !important;
+}
+
+/* 🚨 THE MISSING LINK: Force any clickable spans/characters inside to grow! 🚨 */
+#fc-back-word * {
+    font-size: inherit !important;
+    line-height: inherit !important;
+}
+
+/* 🇹🇼 3. Pinyin */
+/* 🇹🇼 3. Pinyin */
+#fc-pinyin {
+    /* Lowered from 8vw to 6vw, max down to 2.2rem */
+    font-size: clamp(1.2rem, 7vw, 2.2rem) !important;
+    color: #555;
+    margin: 0 !important;
+    text-align: center;
+    
+    /* 🚨 THE FIX: Force strict spacing and prevent syllable breaking! 🚨 */
+    word-spacing: 0.25em !important; /* Forces a clear, unbreakable gap between words */
+    word-break: keep-all !important; /* Forbids the browser from chopping words in half */
+    overflow-wrap: normal !important;
+    white-space: pre-wrap !important;
+}
+
+body.dark #fc-pinyin, body.midnight #fc-pinyin { 
+    color: #aaa; 
+}
+
+/* 🇬🇧 4. English Definition */
+#fc-meaning {
+    /* Lowered from 6vw to 5vw, max down to 2rem */
+    font-size: clamp(1rem, 6vw, 2rem) !important;
+    line-height: 1.3;
+    margin: 0 !important;
+    color: var(--text-color, #333);
+    text-align: center;
+    white-space: normal !important; 
+    word-break: break-word !important; 
+}
+
+/* 🚀 1. SETUP THE SCROLLABLE BOX AND SMALL ENGLISH */
+html body #fc-example-box,
+html body .extra-info-box {
+    width: 100% !important;
+    height: 35vh !important; 
+    overflow-y: auto !important; 
+    -webkit-overflow-scrolling: touch !important; 
+    scrollbar-width: none !important; 
+    -ms-overflow-style: none !important; 
+    font-size: 1.1rem !important; /* Locks English text small */
+}
+
+/* =========================================
+   🚀 FINAL EXAMPLE BOX FIX (CLEAN LAYOUT)
+   ========================================= */
+
+/* 1. The Scrollable Container (Fixes the buggy overflow) */
+html body .extra-info-box,
+html body #fc-example-box {
+    width: 100% !important;
+    max-height: 35vh !important; /* Uses max-height so it doesn't stretch the card unnecessarily */
+    overflow-y: auto !important; 
+    -webkit-overflow-scrolling: touch !important; 
+    
+    /* Hide ugly scrollbars */
+    scrollbar-width: none !important; 
+    -ms-overflow-style: none !important; 
+}
+
+html body .extra-info-box::-webkit-scrollbar,
+html body #fc-example-box::-webkit-scrollbar {
+    display: none !important;
+}
+
+/* 2. The English / Pinyin Text (Keep it normal so it fits) */
+html body .extra-info-box,
+html body .extra-info-box span:not(.char-hz):not(.fc-ex-zh) {
+    font-size: 1.1rem !important;
+    line-height: 1.4 !important;
+}
+
+/* 3. The Massive Chinese Characters */
+html body .fc-ex-zh,
+html body .extra-info-box .fc-ex-zh,
+html body .extra-info-box .char-hz {
+    font-size: 3.5rem !important; /* 👈 MASSIVE SIZE */
+    line-height: 1.3 !important;
+    
+    /* This ensures they stay in a clean readable row without breaking the box */
+    display: inline !important; 
+    white-space: normal !important;
+    word-wrap: break-word !important;
+}
+
+/* ==========================================================================
+   🚀 MODERN UI REFACTOR (CARDS & TYPOGRAPHY)
+   ========================================================================== */
+
+/* 1. Reusable Card Component */
+.modern-card {
+    background: var(--card-bg) !important;
+    border-radius: var(--border-radius) !important;
+    box-shadow: var(--shadow-sm) !important;
+    padding: 35px 25px !important;
+    display: flex !important;
+    flex-direction: column !important;
+    align-items: center !important;
+    justify-content: center !important;
+    text-align: center !important;
+    border: 1px solid var(--border-color) !important;
+    transition: transform 0.25s cubic-bezier(0.2, 0.8, 0.2, 1), box-shadow 0.25s ease !important;
+    width: 100% !important;
+    box-sizing: border-box !important;
+    position: relative;
+}
+
+/* Subtle lift and glow on hover */
+.modern-card:hover {
+    transform: translateY(-4px) !important;
+    box-shadow: var(--shadow-md) !important;
+}
+
+/* Fix background for Flashcard Back */
+.card-back {
+    background: var(--card-bg) !important;
+}
+
+/* 2. Strict Typography Hierarchy */
+/* Level 1: Chinese Characters (Prominent, Bold, Dark) */
+.text-chinese {
+    font-size: 3.5rem !important; 
+    font-weight: 700 !important;
+    line-height: 1.2 !important;
+    margin-bottom: 8px !important;
+    font-family: 'TWKai', "LXGW WenKai TC", "LXGW WenKai", "KaiTi", serif !important; 
+    -webkit-text-stroke: 0px transparent !important; 
+    -webkit-font-smoothing: antialiased !important;
+}
+.text-pinyin span {
+    margin: 0 !important;
+    padding: 0 !important;
+}
+
+/* Level 2: Pinyin (Medium, Muted) */
+.text-pinyin {
+    font-size: 1.4rem !important;
+    font-weight: 600 !important; /* Slightly bolder for clarity */
+    color: var(--primary-color) !important; /* Uses the specific theme's accent color! */
+    letter-spacing: 0.5px !important;
+    margin-bottom: 8px !important;
+    font-family: 'Quicksand', sans-serif !important;
+}
+.text-pinyin {
+    font-size: 1.4rem !important;
+    font-weight: 600 !important;
+    margin-bottom: 8px !important;
+    font-family: 'Quicksand', sans-serif !important;
+}
+/* Level 3: English Meaning (Small, Light/Secondary) */
+.text-english {
+    font-size: 1.1rem !important;
+    font-weight: 500 !important;
+    color: var(--text-muted) !important;
+    opacity: 0.85 !important;
+    line-height: 1.5 !important;
+    font-family: 'Quicksand', sans-serif !important;
+}
+.text-chinese, 
+.text-chinese * {
+    color: var(--text-main) !important;
+}
+/* 3. Responsive Scaling for Sentences & Quiz */
+.sentence-card .text-chinese, 
+.qz-word-container .text-chinese {
+    font-size: clamp(2rem, 6vw, 3.5rem) !important; /* Graceful shrink on small phones */
+    margin-bottom: 12px !important;
+}
+.sentence-card .text-pinyin,
+.qz-word-container .text-pinyin {
+    font-size: clamp(1.1rem, 4.5vw, 1.4rem) !important;
+    margin-bottom: 12px !important;
+}
+.sentence-card .text-english {
+    font-size: clamp(1rem, 3.5vw, 1.1rem) !important;
+}
+
+/* 4. Fix utility classes and Actions */
+.hidden {
+    display: none !important;
+    opacity: 0 !important;
+}
+
+.icon-btn {
+    background: transparent;
+    border: none;
+    color: var(--text-main);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    transition: transform 0.2s ease, opacity 0.2s ease;
+    z-index: 10;
+}
+
+.icon-btn:hover {
+    transform: scale(1.1);
+    opacity: 0.8;
+}
+
+/* 5. Smooth Reveal Animation for English Translations */
+#sn-english:not(.hidden) {
+    display: block !important;
+    animation: fadeInLift 0.4s ease forwards !important;
+}
+
+@keyframes fadeInLift {
+    from {
+        opacity: 0;
+        transform: translateY(10px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* ==========================================================================
+   🎈 FUN BUBBLE LOADER (DUOLINGO STYLE)
+   ========================================================================== */
+.fun-loader {
+    position: fixed;
+    inset: 0;
+    /* Playful, rich dark blue/slate gradient */
+    background: radial-gradient(circle at 50% 40%, #1e3a8a 0%, #0f172a 100%);
+    z-index: 99999;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    overflow: hidden;
+}
+
+.loader-content {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    transform: translateY(-5%);
+}
+
+/* The circle that holds the bubbles */
+.bubble-circle-container {
+    position: relative;
+    width: 200px;
+    height: 200px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-bottom: 30px;
+}
+
+/* The track where bubbles are injected */
+.bubble-track {
+    position: absolute;
+    inset: 0;
+}
+
+/* Individual Bubble Wrapper (rotates the bubble into position) */
+.bubble-wrapper {
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    top: 0;
+    left: 0;
+}
+
+/* The actual Bubble/Pill */
+.bubble {
+    position: absolute;
+    top: 0;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 12px;
+    height: 20px; /* Pill shape */
+    border-radius: 12px;
+    background: rgba(255, 255, 255, 0.08); /* Dim when empty */
+    transition: background 0.1s;
+}
+
+/* The bouncy animation when a bubble fills */
+.bubble.filled {
+    background: var(--active-color);
+    box-shadow: 0 0 12px var(--active-color);
+    /* Bouncy ease-out physics */
+    animation: bubblePop 0.5s cubic-bezier(0.34, 1.56, 0.64, 1) forwards; 
+}
+
+@keyframes bubblePop {
+    0% { transform: translateX(-50%) scale(0.8); }
+    50% { transform: translateX(-50%) scale(1.4); }
+    100% { transform: translateX(-50%) scale(1); }
+}
+
+/* The giant, playful percentage number */
+.fun-percentage {
+    font-family: 'Quicksand', sans-serif;
+    font-size: 3.5rem;
+    font-weight: 700;
+    color: #ffffff;
+    z-index: 10;
+    text-shadow: 0 4px 15px rgba(0,0,0,0.3);
+    font-variant-numeric: tabular-nums;
+    transition: transform 0.1s ease;
+}
+
+/* Title - Bolder, slightly rounded feel */
+.fun-title {
+    font-family: 'Quicksand', sans-serif;
+    font-size: 1.4rem;
+    font-weight: 700;
+    color: #f8fafc;
+    letter-spacing: 0.5px;
+    margin: 0;
+}
+
+/* Subtle footer */
+.fun-footer {
+    position: absolute;
+    bottom: 30px;
+    font-family: 'Quicksand', sans-serif;
+    font-size: 0.75rem;
+    font-weight: 600;
+    color: rgba(255, 255, 255, 0.3);
+    text-transform: uppercase;
+    letter-spacing: 1px;
+}
+
+/* 🎬 Exit Animation (Scale down and fade out playfully) */
+.fun-loader-exit {
+    opacity: 0;
+    transform: scale(0.9) translateY(20px);
+    transition: opacity 0.4s ease, transform 0.5s cubic-bezier(0.34, 1.56, 0.64, 1);
+    pointer-events: none;
+}
+
+/* Celebration glow at 100% */
+.celebrate-glow {
+    filter: brightness(1.3);
+    transform: scale(1.05);
+    transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
 }
