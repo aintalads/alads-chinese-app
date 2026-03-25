@@ -34,11 +34,134 @@
     <script src="hanzi-writer.min.js"></script>
 </head>
 <body>
+
+<div id="fun-loader" class="fun-loader">
+    <div class="loader-content">
+        
+        <div class="bubble-circle-container">
+            <div id="bubble-track" class="bubble-track"></div>
+            <div id="fun-percentage" class="fun-percentage">0%</div>
+        </div>
+        
+        <h1 class="fun-title">Road to TOCFL C1</h1>
+    </div>
+    
+    <div class="fun-footer">Aladen Study Method</div>
+</div>
+<script>
+    class FunBubbleLoader {
+        constructor() {
+            this.el = document.getElementById('fun-loader');
+            this.trackEl = document.getElementById('bubble-track');
+            this.percentEl = document.getElementById('fun-percentage');
+            
+            this.bubbles = [];
+            this.totalBubbles = 36; 
+            this.glowGreen = '#4ade80';
+
+            this.state = {
+                currentVal: 0,
+                targetVal: 0,
+                isFinished: false
+            };
+
+            if (this.el && this.trackEl) {
+                this.buildBubbles();
+                this.init();
+            }
+        }
+
+        buildBubbles() {
+            const angleStep = 360 / this.totalBubbles;
+            for (let i = 0; i < this.totalBubbles; i++) {
+                const wrapper = document.createElement('div');
+                wrapper.className = 'bubble-wrapper';
+                wrapper.style.transform = `rotate(${i * angleStep}deg)`;
+                
+                const bubble = document.createElement('div');
+                bubble.className = 'bubble';
+                bubble.style.setProperty('--active-color', this.glowGreen);
+                
+                wrapper.appendChild(bubble);
+                this.trackEl.appendChild(wrapper);
+                this.bubbles.push(bubble);
+            }
+        }
+
+        init() {
+            // 🚀 AUTOMATIC PROGRESS: It goes all the way to 100 now.
+            this.simulation = setInterval(() => {
+                // Adds between 1% and 4% every tick
+                this.state.targetVal += Math.random() * 3 + 1; 
+                
+                // When it hits 100, stop the timer
+                if (this.state.targetVal >= 100) {
+                    this.state.targetVal = 100;
+                    clearInterval(this.simulation); 
+                }
+            }, 100); // ⏱️ Master Speed: 100ms is pretty fast. Increase to 200 or 300 to slow the whole thing down.
+
+            requestAnimationFrame(() => this.loop());
+        }
+
+        loop() {
+            if (this.state.isFinished) return;
+
+            this.state.currentVal += (this.state.targetVal - this.state.currentVal) * 0.1;
+
+            // Trigger the exit sequence when it visually hits 100
+            if (this.state.currentVal >= 99.5 && this.state.targetVal === 100) {
+                this.state.currentVal = 100;
+                this.finish();
+            }
+
+            const visualPercentage = Math.floor(this.state.currentVal);
+            
+            if (this.percentEl) {
+                this.percentEl.textContent = visualPercentage + '%';
+                this.percentEl.style.transform = `scale(${1 + (visualPercentage % 2) * 0.05})`;
+            }
+
+            const bubblesToFill = Math.floor((this.state.currentVal / 100) * this.totalBubbles);
+            for (let i = 0; i < this.totalBubbles; i++) {
+                if (i < bubblesToFill) {
+                    if (!this.bubbles[i].classList.contains('filled')) {
+                        this.bubbles[i].classList.add('filled');
+                    }
+                }
+            }
+
+            if (!this.state.isFinished) {
+                requestAnimationFrame(() => this.loop());
+            }
+        }
+
+        finish() {
+            this.state.isFinished = true;
+            if (this.percentEl) this.percentEl.textContent = '100%';
+            
+            if (this.trackEl) this.trackEl.classList.add('celebrate-glow');
+
+            setTimeout(() => {
+                if (this.el) {
+                    this.el.classList.add('fun-loader-exit');
+                    setTimeout(() => this.el.remove(), 500); 
+                }
+            }, 300);
+        }
+    }
+
+    // Start the loader automatically
+    new FunBubbleLoader();
+</script>
     <nav class="navbar">
         <div class="nav-left">
             <div class="logo">Alads</div>
         </div>
         <div class="nav-controls">
+            <select id="voice-selector" class="voice-select" onchange="app.changeVoice(this.value)">
+                <option value="">Loading voices...</option>
+            </select>
             <div class="streak" title="Daily Streak">🔥 <span id="streak-count">0</span></div>
             
             <select id="theme-selector" class="theme-dropdown" onchange="app.changeTheme(this.value)">
@@ -49,10 +172,10 @@
                 <option value="midnight">Night</option>
             </select>
             <a href="mailto:aladendmohr@gmail.com?subject=App%20Suggestions:%20Mandarin%20Flashcards" 
-       style="text-decoration: none; font-size: 1.2rem; cursor: pointer; padding: 5px;" 
-       title="Send Suggestions">
-       💡
-    </a>
+               style="text-decoration: none; font-size: 1.2rem; cursor: pointer; padding: 5px;" 
+               title="Send Suggestions">
+               💡
+            </a>
         </div>
     </nav>
 
@@ -115,14 +238,14 @@
                 <h2 id="current-title" style="display: none;">Flashcards</h2>
                 
                 <div style="display: flex; gap: 15px; align-items: center;">
-                   <div id="fc-session-stats" style="display: flex; gap: 12px; font-weight: bold;">
-    <div class="stat-box stat-unknown" title="Study More (Unknown)">
-        <span id="stat-study-count">0</span>
-    </div>
-    <div class="stat-box stat-known" title="Known Words">
-        <span id="stat-known-count">0</span>
-    </div>
-</div>
+                    <div id="fc-session-stats" style="display: flex; gap: 12px; font-weight: bold;">
+                        <div class="stat-box stat-unknown" title="Study More (Unknown)">
+                            <span id="stat-study-count">0</span>
+                        </div>
+                        <div class="stat-box stat-known" title="Known Words">
+                            <span id="stat-known-count">0</span>
+                        </div>
+                    </div>
                     
                     <div style="display: flex; align-items: center; gap: 10px;">
                         <div class="progress-bar-wrapper" style="width: 100px; height: 10px; background: var(--border-color); border-radius: 10px; overflow: hidden; box-shadow: inset 0 1px 2px rgba(0,0,0,0.05);">
@@ -144,11 +267,10 @@
                         document.getElementById('visual-progress-bar').style.width = (current / total * 100) + '%';
                     };
                     
-                    // Watch for any background changes made by your app.js and fill the bar visually
                     const observer = new MutationObserver(updateBar);
                     observer.observe(document.getElementById('mode-current'), { childList: true, characterData: true, subtree: true });
                     observer.observe(document.getElementById('mode-total'), { childList: true, characterData: true, subtree: true });
-                    updateBar(); // Set initial load state
+                    updateBar();
                 });
             </script>
 
@@ -196,25 +318,27 @@
                         <div class="card-inner">
                             <div class="card-front">
                                 <button class="card-audio-btn" onclick="app.playCurrentFlashcardAudio(event)">🔊</button>
-                                <h1 id="fc-front-text">漢字</h1>
+                                <h1 id="fc-front-text" class="text-chinese">漢字</h1>
                             </div>
-    <div class="card-back">
-    <div class="card-main-info">
-        <button class="card-audio-btn" onclick="app.playCurrentFlashcardAudio(event)">🔊</button>
-        <h1 id="fc-pinyin"></h1>
-        <h2 id="fc-meaning"></h2>
-        
-        <div class="scroll-down-hint" id="scroll-hint-icon">Tap to scroll down-sentence</div>
-    </div>
-    
-    <div class="card-extra-info">
-        <div id="fc-radical-box" class="extra-info-box hidden"></div>
-        <div id="fc-example-box" class="extra-info-box hidden"></div>
-        <div id="fc-breakdown" class="fc-breakdown"></div>
-        
-        <div class="scroll-up-hint">Tap to scroll up</div>
-    </div>
-</div>
+                            <div class="card-back">
+                                <div class="card-main-info" style="display: flex; flex-direction: column; align-items: center; justify-content: center; height: 100%; text-align: center; position: relative;">
+                                    <button class="icon-btn" onclick="app.playCurrentFlashcardAudio(event)" style="position: absolute; top: 15px; right: 15px; background: transparent; border: none; font-size: 1.5rem; cursor: pointer;">🔊</button>
+                                    
+                                    <h1 id="fc-back-word" class="text-chinese" style="margin-bottom: 5px; text-align: center;"></h1> 
+                                    <h1 id="fc-pinyin" class="text-pinyin" style="font-size: 2.2rem; margin-bottom: 15px;"></h1>
+                                    <h2 id="fc-meaning" class="text-english" style="font-size: 1.4rem;"></h2>
+                                    
+                                    <div class="scroll-down-hint" id="scroll-hint-icon" style="margin-top: 25px;">Tap to scroll down</div>
+                                </div>
+                                
+                                <div class="card-extra-info">
+                                    <div id="fc-radical-box" class="extra-info-box hidden"></div>
+                                    <div id="fc-example-box" class="extra-info-box hidden"></div>
+                                    <div id="fc-breakdown" class="fc-breakdown"></div>
+                                    
+                                    <div class="scroll-up-hint">Tap to scroll up</div>
+                                </div>
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -226,7 +350,7 @@
                 <p class="hint-text">Swipe card, tap to flip, or use ← / → / Space keys.</p>
             </div>
 
-           <div id="view-writing" class="study-view">
+            <div id="view-writing" class="study-view">
                 <div class="writing-container" style="display: flex; flex-direction: column; align-items: center; gap: 15px; padding-top: 20px; width: 100%;">
 
                     <div class="writing-controls-row">
@@ -236,10 +360,10 @@
                         <button class="action-btn" onclick="app.nextItem()">Next</button>
                     </div>
 
-                    <div class="writing-card">
+                    <div class="writing-card modern-card">
                         <div class="character-info" style="text-align: center; margin-bottom: 10px;">
-                            <h2 id="wr-pinyin" style="font-size: 2.2rem; margin: 0; color: var(--text-main);"></h2>
-                            <p id="wr-meaning" style="color: var(--text-muted); font-size: 1.1rem; margin: 5px 0 0 0;"></p>
+                            <h2 id="wr-pinyin" class="text-pinyin" style="font-size: 2.2rem; margin: 0; color: var(--text-main);"></h2>
+                            <p id="wr-meaning" class="text-english" style="color: var(--text-muted); font-size: 1.1rem; margin: 5px 0 0 0;"></p>
                         </div>
                         
                         <div id="character-target-div"></div>
@@ -266,100 +390,103 @@
                         </div>
                     </div>
                 </div>
-                <div class="sentence-container">
-                    <h2 id="sn-chinese" class="chinese-text"></h2>
-                    <button class="audio-btn" onclick="app.playSentenceAudio()"></button>
-                    <h3 id="sn-pinyin" class="pinyin-text"></h3>
-                    <div class="translation-box">
-                        <button id="reveal-translation-btn" onclick="app.revealSentence()"> Show Translation</button>
-                        <p id="sn-english" class="english-text hidden"></p>
+                
+                <div class="modern-card sentence-card" style="position: relative; margin-bottom: 20px;">
+                    <button class="icon-btn" onclick="app.playSentenceAudio()" style="position: absolute; top: 15px; right: 15px; background: transparent; border: none; font-size: 1.2rem; cursor: pointer;">🔊</button>
+                    
+                    <h2 id="sn-chinese" class="text-chinese"></h2>
+                    <h3 id="sn-pinyin" class="text-pinyin"></h3>
+                    
+                    <div class="translation-box" style="margin-top: 15px; width: 100%;">
+                        <button id="reveal-translation-btn" class="action-btn" onclick="app.revealSentence()" style="margin: 0 auto; display: block;"> Show Translation</button>
+                        <p id="sn-english" class="text-english hidden" style="margin-top: 15px;"></p>
                     </div>
                 </div>
-                <div class="sentence-controls">
-                    <button onclick="app.prevItem()"> Prev</button>
-                    <button onclick="app.shuffleItems()"> Shuffle</button>
-                    <button onclick="app.nextItem()"> Next</button>
+
+                <div class="sentence-controls" style="display: flex; gap: 10px; justify-content: center;">
+                    <button class="action-btn" onclick="app.prevItem()"> Prev</button>
+                    <button class="action-btn" onclick="app.shuffleItems()"> Shuffle</button>
+                    <button class="action-btn" onclick="app.nextItem()"> Next</button>
                 </div>
             </div>
 
-          <div id="view-quiz" class="study-view">
-    
-    <div style="display: flex; justify-content: center; align-items: center; gap: 15px; margin-bottom: 15px; position: relative;">
-        
-        <details class="quiz-settings-glass" style="margin: 0;">
-            <summary style="font-size: 1rem; padding: 8px 16px;">
-                <span>Settings</span>
-            </summary>
-            
-            <div class="glass-content" style="position: absolute; top: calc(100% + 10px); left: 50%; transform: translateX(-50%); z-index: 1000; width: max-content; background: var(--card-bg); border-radius: 16px; padding: 20px; box-shadow: var(--shadow-md); border: 1px solid var(--border-color);">
-                
-                <div class="setting-row" style="margin-bottom: 15px;">
-                    <label style="display:block; margin-bottom: 5px; color: var(--text-muted); font-weight: bold;">Question:</label>
-                    <select id="qz-q-type" onchange="app.renderCurrentItem()" style="width: 100%; padding: 8px; border-radius: 8px; border: 1px solid var(--border-color); background: var(--bg-color); color: var(--text-main);">
-                        <option value="zh">Chinese</option>
-                        <option value="py">Pinyin</option>
-                        <option value="en">English</option>
-                    </select>
-                </div>
-                
-                <div class="setting-row">
-                    <label style="display:block; margin-bottom: 5px; color: var(--text-muted); font-weight: bold;">Answer:</label>
-                    <select id="qz-a-type" onchange="app.renderCurrentItem(); document.getElementById('type-answer-settings').classList.toggle('hidden', this.value !== 'type')" style="width: 100%; padding: 8px; border-radius: 8px; border: 1px solid var(--border-color); background: var(--bg-color); color: var(--text-main);">
-                        <option value="mc">Choice (Meaning)</option>
-                        <option value="mc-py">Choice (Pinyin)</option>
-                        <option value="type">Type Answer</option>
-                    </select>
+            <div id="view-quiz" class="study-view">
+                <div style="display: flex; justify-content: center; align-items: center; gap: 15px; margin-bottom: 15px; position: relative;">
+                    <details class="quiz-settings-glass" style="margin: 0;">
+                        <summary style="font-size: 1rem; padding: 8px 16px;">
+                            <span>Settings</span>
+                        </summary>
+                        
+                        <div class="glass-content" style="position: absolute; top: calc(100% + 10px); left: 50%; transform: translateX(-50%); z-index: 1000; width: max-content; background: var(--card-bg); border-radius: 16px; padding: 20px; box-shadow: var(--shadow-md); border: 1px solid var(--border-color);">
+                            
+                            <div class="setting-row" style="margin-bottom: 15px;">
+                                <label style="display:block; margin-bottom: 5px; color: var(--text-muted); font-weight: bold;">Question:</label>
+                                <select id="qz-q-type" onchange="app.renderCurrentItem()" style="width: 100%; padding: 8px; border-radius: 8px; border: 1px solid var(--border-color); background: var(--bg-color); color: var(--text-main);">
+                                    <option value="zh">Chinese</option>
+                                    <option value="py">Pinyin</option>
+                                    <option value="en">English</option>
+                                </select>
+                            </div>
+                            
+                            <div class="setting-row">
+                                <label style="display:block; margin-bottom: 5px; color: var(--text-muted); font-weight: bold;">Answer:</label>
+                                <select id="qz-a-type" onchange="app.renderCurrentItem(); document.getElementById('type-answer-settings').classList.toggle('hidden', this.value !== 'type')" style="width: 100%; padding: 8px; border-radius: 8px; border: 1px solid var(--border-color); background: var(--bg-color); color: var(--text-main);">
+                                    <option value="mc">Choice (Meaning)</option>
+                                    <option value="mc-py">Choice (Pinyin)</option>
+                                    <option value="type">Type Answer</option>
+                                </select>
+                            </div>
+
+                            <div class="setting-row" style="margin-top: 15px;">
+                                <label style="display:block; margin-bottom: 5px; color: var(--text-muted); font-weight: bold;">Delay Speed:</label>
+                                <select id="qz-delay-speed" style="width: 100%; padding: 8px; border-radius: 8px; border: 1px solid var(--border-color); background: var(--bg-color); color: var(--text-main);">
+                                    <option value="normal">Normal</option>
+                                    <option value="fast">Fast</option>
+                                    <option value="instant">Instant</option>
+                                </select>
+                            </div>
+
+                            <div id="type-answer-settings" class="hidden" style="background: var(--bg-grad-2); padding: 15px; border-radius: var(--border-radius-sm); margin-top: 15px; border: 1px solid var(--border-color); animation: slideUpFade 0.3s ease-out;">
+                                <div style="font-weight: 800; margin-bottom: 12px; color: var(--primary-color); font-size: 1.1rem;">Typing Rules</div>
+                                
+                                <label style="display: block; margin-bottom: 12px; font-size: 0.95rem; color: var(--text-main);">
+                                    If question is <strong>Chinese</strong>, I will type:<br>
+                                    <select id="type-zh-target" style="width: 100%; padding: 10px; margin-top: 5px; border-radius: 8px; border: 1px solid var(--border-color); background: var(--card-bg); font-family: inherit;">
+                                        <option value="english">English Meaning</option>
+                                        <option value="pinyin">Pinyin</option>
+                                    </select>
+                                </label>
+
+                                <label style="display: block; font-size: 0.95rem; color: var(--text-main);">
+                                    If question is <strong>English</strong>, I will type:<br>
+                                    <select id="type-en-target" style="width: 100%; padding: 10px; margin-top: 5px; border-radius: 8px; border: 1px solid var(--border-color); background: var(--card-bg); font-family: inherit;">
+                                        <option value="char">Chinese Characters</option>
+                                        <option value="pinyin">Pinyin</option>
+                                    </select>
+                                </label>
+                            </div>
+
+                        </div>
+                    </details>
+                    <div id="quiz-score-ui" class="quiz-score" style="font-weight: 800; background: transparent; color: var(--primary-color); padding: 10px 15px; font-size: 1.1rem; display: flex; align-items: center; gap: 8px;">
+                        🏆 <span style="letter-spacing: 0.5px;">Score: 0 / 0</span>
+                    </div>
                 </div>
 
-                <div class="setting-row" style="margin-top: 15px;">
-                    <label style="display:block; margin-bottom: 5px; color: var(--text-muted); font-weight: bold;">Delay Speed:</label>
-                    <select id="qz-delay-speed" style="width: 100%; padding: 8px; border-radius: 8px; border: 1px solid var(--border-color); background: var(--bg-color); color: var(--text-main);">
-                        <option value="normal">Normal</option>
-                        <option value="fast">Fast</option>
-                        <option value="instant">Instant</option>
-                    </select>
-                </div>
-
-                <div id="type-answer-settings" class="hidden" style="background: var(--bg-grad-2); padding: 15px; border-radius: var(--border-radius-sm); margin-top: 15px; border: 1px solid var(--border-color); animation: slideUpFade 0.3s ease-out;">
-                    <div style="font-weight: 800; margin-bottom: 12px; color: var(--primary-color); font-size: 1.1rem;">Typing Rules</div>
+                <div class="modern-card qz-word-container" style="position: relative; margin-bottom: 20px; min-height: 160px;">
+                    <button id="qz-sound-btn" class="icon-btn" style="position: absolute; top: 15px; right: 15px; background: transparent; border: none; font-size: 1.2rem; cursor: pointer;">🔊</button>
+                    <button id="qz-pinyin-btn" class="icon-btn" onclick="app.togglePinyinHint()" style="position: absolute; top: 15px; left: 15px; background: transparent; border: none; font-size: 1.2rem; cursor: pointer; color: var(--text-muted);">拼</button>
                     
-                    <label style="display: block; margin-bottom: 12px; font-size: 0.95rem; color: var(--text-main);">
-                        If question is <strong>Chinese</strong>, I will type:<br>
-                        <select id="type-zh-target" style="width: 100%; padding: 10px; margin-top: 5px; border-radius: 8px; border: 1px solid var(--border-color); background: var(--card-bg); font-family: inherit;">
-                            <option value="english">English Meaning</option>
-                            <option value="pinyin">Pinyin</option>
-                        </select>
-                    </label>
-
-                    <label style="display: block; font-size: 0.95rem; color: var(--text-main);">
-                        If question is <strong>English</strong>, I will type:<br>
-                        <select id="type-en-target" style="width: 100%; padding: 10px; margin-top: 5px; border-radius: 8px; border: 1px solid var(--border-color); background: var(--card-bg); font-family: inherit;">
-                            <option value="char">Chinese Characters</option>
-                            <option value="pinyin">Pinyin</option>
-                        </select>
-                    </label>
+                    <h2 id="qz-word" class="text-chinese" style="margin: 0;"></h2>
+                    <div id="qz-pinyin-hint" class="text-pinyin hidden" style="margin-top: 10px;"></div>
                 </div>
 
+                <div id="qz-options" class="quiz-options"></div>
+                <div id="quiz-feedback" class="quiz-feedback hidden"></div>
             </div>
-        </details>
-    <div id="quiz-score-ui" class="quiz-score" style="font-weight: 800; background: transparent; color: var(--primary-color); padding: 10px 15px; font-size: 1.1rem; display: flex; align-items: center; gap: 8px;">
-            🏆 <span style="letter-spacing: 0.5px;">Score: 0 / 0</span>
-        </div>
+            
+        </main>
     </div>
-
-    <div class="qz-word-container" style="min-height: 140px; margin-bottom: 20px; box-shadow: var(--shadow-md); padding: 20px; border-radius: var(--border-radius); background: var(--card-bg); display: flex; flex-direction: column; justify-content: center; align-items: center;">
-        <h2 id="qz-word" style="margin: 0;"></h2>
-        <div id="qz-pinyin-hint" class="hidden" style="font-size: 1.5rem; margin-top: 5px; color: var(--text-muted);"></div>
-        
-        <div class="qz-actions" style="margin-top: 15px;">
-            <button id="qz-sound-btn" class="icon-btn">🔊</button>
-            <button id="qz-pinyin-btn" class="icon-btn" onclick="app.togglePinyinHint()">拼</button>
-        </div>
-    </div>
-
-    <div id="qz-options" class="quiz-options"></div>
-    <div id="quiz-feedback" class="quiz-feedback hidden"></div>
-</div>
     
     <script>
         function closeOtherDetails(clickedDetails) {
@@ -371,7 +498,16 @@
     
     <script src="app.js?v=100"></script>
 
-    
+    <div id="char-search-modal" class="modal-overlay" onclick="app.closeCharSearch()">
+        <div class="modal-content themed-modal" onclick="event.stopPropagation()">
+            <div id="char-search-header" class="modal-header">
+                <h3 id="char-search-title">
+                    <span class="qz-q-type-label">Occurrences of</span><br>
+                    <span id="char-search-target" class="chinese-text"></span>
+                </h3>
+            </div>
+            <div id="char-search-results"></div>
+        </div>
+    </div>
 </body>
-
 </html>
