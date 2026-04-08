@@ -1,0 +1,2690 @@
+/* ==========================================================================
+   📥 1. LOAD TWKAI.WOFF2 (CHINESE FONT)
+   ========================================================================== */
+@font-face {
+    font-family: 'TWKai'; 
+    src: url('./twkai.woff2?v=1') format('woff2'); /* 👈 Make sure format says woff2! */
+    font-weight: normal;
+    font-style: normal;
+    font-display: swap;
+}
+
+/* ==========================================================================
+   📥 2. APPLY CHINESE FONT TO CHINESE TEXT
+   ========================================================================== */
+#fc-front-text, 
+#sn-chinese, 
+#qz-word, 
+.char-hz, 
+.fc-ex-zh,
+#character-target-div text,
+.extra-info-box,          
+.fc-breakdown,            
+#qz-pinyin-hint,          
+.quiz-feedback,           
+input[type="text"] {      
+    /* 🚀 Apply TWKai! */
+    font-family: 'TWKai', "LXGW WenKai TC", "LXGW WenKai", "KaiTi", serif !important;
+    font-weight: 400 !important; 
+    -webkit-text-stroke: 0px transparent !important; 
+    -webkit-font-smoothing: antialiased;
+}
+
+/* ==========================================================================
+   📥 3. APPLY SOFT FRIENDLY FONT TO EVERYTHING ELSE (ENGLISH)
+   ========================================================================== */
+body {
+    /* 🚀 Apply Quicksand globally */
+    font-family: 'Quicksand', sans-serif !important; 
+}
+:root {
+    /* Your Custom Color Palette */
+    --blue-dianne: #204E59;
+    --surfie-green: #0C7A79;
+    --atoll: #0A6F75;
+    --fountain-blue: #5EBBBA;
+    --black: #000000;
+    --gray: #808080;
+
+    /* --- LIGHT MODE (Complimentary Teal/Mint) --- */
+    --bg-color: #F0F7F7 !important;       /* A very soft, clean mint-white */
+    --bg-grad-2: #E2EFEF !important;      /* A slightly deeper soft teal for the gradient */
+    --card-bg: #ffffff !important;        /* Keep cards pure white so they pop */
+    --text-main: #1A2B2E !important;      /* Dark teal-grey text (softer than pure black) */
+    --text-muted: #55757A !important;     /* Muted teal text */
+    --border-color: #D1E3E3 !important;   /* Soft teal borders */
+    --primary-color: var(--surfie-green);
+    
+    /* Soft UI Variables */
+    --border-radius: 24px;
+    --border-radius-sm: 16px;
+    --shadow-sm: 0 4px 12px rgba(12, 122, 121, 0.08); /* Shadow tinted with your primary color! */
+    --shadow-md: 0 16px 40px rgba(12, 122, 121, 0.12);
+}
+
+/* --- DARK MODE THEME COLORS --- */
+[data-theme="dark"], body.dark-mode {
+    --bg-color: #0A181C !important;       /* An extremely dark, rich Blue Dianne */
+    --bg-grad-2: #122B31 !important;      /* A deep ocean gradient */
+    --card-bg: #1A3A42 !important;        /* Dark teal for the cards */
+    --text-main: #F0F7F7 !important;      /* Bright mint-white for easy reading */
+    --text-muted: #9BB8B8 !important;     /* Bright silver/teal for secondary text */
+    --border-color: #26525D !important;   /* Dark teal borders */
+    --shadow-sm: 0 4px 12px rgba(0, 0, 0, 0.3);
+    --shadow-md: 0 16px 40px rgba(0, 0, 0, 0.5);
+}
+
+/* Force all text globally to obey the theme */
+body {
+    /* We use var(--bg-color) so it flips when the theme changes */
+    background-color: var(--bg-color) !important;
+    background: linear-gradient(135deg, var(--bg-color) 0%, var(--bg-grad-2) 100%) !important;
+    
+    color: var(--text-main);
+    margin: 0;
+    font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+    min-height: 100vh;
+    transition: background-color 0.4s ease, color 0.4s ease; /* Makes the color swap smooth */
+    background-attachment: fixed;
+}
+
+
+
+/* --- UPDATED FONT FAMILY FOR CHINESE --- */
+/* --- UPDATED FONT FAMILY FOR CHINESE --- */
+* { 
+    box-sizing: border-box; 
+    margin: 0; 
+    padding: 0; 
+    -webkit-tap-highlight-color: transparent; 
+}
+
+*:focus { outline: none !important; }
+
+/* GLOBALLY DISABLE HORIZONTAL SCROLLING (STRICT) */
+html, body { 
+    background-color: var(--bg-color)!important; 
+    color: var(--text-main); 
+    line-height: 1.5; 
+    transition: background 0.3s, color 0.3s; 
+    overflow-x: hidden !important; /* STRICTLY NO HORIZONTAL SWIPING */
+    max-width: 100vw;
+    width: 100%;
+}
+
+/* Navbar */
+.navbar { display: flex; justify-content: space-between; align-items: center; padding: 15px 5%; background: var(--card-bg); border-bottom: 1px solid var(--border-color); position: sticky; top: 0; z-index: 1000; box-shadow: var(--shadow-sm); }
+.nav-left { display: flex; align-items: center; gap: 15px; }
+.logo { font-size: 1.5rem; font-weight: 700; color: var(--text-main); }
+.nav-controls { display: flex; gap: 20px; align-items: center; }
+.streak { font-size: 1rem; font-weight: 600; color: var(--text-muted); }
+#dark-mode-btn { background: none; border: none; font-size: 1.2rem; cursor: pointer; color: var(--text-main); }
+
+#mobile-menu-btn, .icon-btn-clean, #mobile-overlay { display: none !important; }
+
+#app-workspace { display: flex; flex-direction: column; max-width: 1000px; margin: 20px auto; gap: 20px; padding: 0 20px; min-height: calc(100vh - 100px); overflow-x: hidden; }
+
+/* ==========================================
+   --- 3 HORIZONTAL TOP TABS ---
+   ========================================== */
+.sidebar { 
+    width: 100%; 
+    display: flex; 
+    flex-direction: row; 
+    gap: 15px; 
+    flex-shrink: 0; 
+    margin-bottom: 10px; 
+    position: relative; 
+    z-index: 500; 
+}
+
+.control-group { 
+    flex: 1; 
+    position: static; 
+    background: rgba(255, 255, 255, 0.7); 
+    background: color-mix(in srgb, var(--card-bg) 75%, transparent); 
+    backdrop-filter: blur(12px); 
+    -webkit-backdrop-filter: blur(12px); 
+    border-radius: var(--border-radius-sm); 
+    border: 1px solid color-mix(in srgb, var(--border-color) 60%, transparent); 
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.08); 
+}
+
+.control-group summary { list-style: none; cursor: pointer; display: flex; justify-content: center; align-items: center; gap: 10px; padding: 15px; font-weight: 700; color: var(--primary-color); background: rgba(12, 122, 121, 0.04); font-size: 1rem; border-radius: var(--border-radius-sm); user-select: none; outline: none; transition: background 0.3s;}
+.control-group summary:hover { background: rgba(12, 122, 121, 0.08); }
+.control-group summary h3 { margin: 0; font-size: 1rem; }
+.control-group summary::-webkit-details-marker { display: none; }
+.toggle-icon { font-size: 0.8rem; transition: transform 0.4s cubic-bezier(0.34, 1.56, 0.64, 1); }
+details[open] summary .toggle-icon { transform: rotate(180deg); }
+
+.dropdown-content, .progress-box { 
+    position: absolute; 
+    top: calc(100% + 10px); 
+    left: 0; 
+    right: 0; 
+    width: 100%; 
+    box-sizing: border-box; 
+    background: rgba(255, 255, 255, 0.85); 
+    background: color-mix(in srgb, var(--card-bg) 85%, transparent); 
+    backdrop-filter: blur(16px);
+    -webkit-backdrop-filter: blur(16px);
+    z-index: 999; 
+    box-shadow: 0 16px 40px rgba(0,0,0,0.25); 
+    border-radius: var(--border-radius-sm); 
+    border: 1px solid color-mix(in srgb, var(--border-color) 60%, transparent);
+    padding: 20px;
+    max-height: 55vh; 
+    overflow-y: auto; 
+    -webkit-overflow-scrolling: touch; 
+}
+
+details.control-group .dropdown-content { display: none; }
+details[open].control-group .dropdown-content { display: block; animation: slideDownFixed 0.25s ease; }
+
+@keyframes slideDownFixed { 
+    from { opacity: 0; margin-top: -15px; } 
+    to { opacity: 1; margin-top: 0; } 
+}
+
+.chip-label { font-size: 0.9rem; font-weight: 600; margin-bottom: 10px; display: flex; justify-content: space-between; align-items: center; }
+.text-btn { background: none; border: none; color: var(--primary-color); font-size: 0.8rem; cursor: pointer; text-decoration: underline; }
+.chip-container { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 10px; }
+.chip { padding: 8px 14px; border: 1px solid var(--border-color); border-radius: 9999px; font-size: 0.9rem; cursor: pointer; user-select: none; transition: 0.2s; background: var(--bg-color); color: var(--text-main); }
+.chip:hover { border-color: var(--primary-color); }
+.chip.active { background: var(--primary-color); color: var(--card-bg); border-color: var(--primary-color); }
+
+.apply-btn { width: 100%; padding: 12px; background: var(--primary-color); color: var(--card-bg); border: none; border-radius: 9999px; font-weight: 600; cursor: pointer; margin-top: 5px; transition: 0.2s; }
+.apply-btn:hover { background: var(--primary-hover); }
+
+.mode-buttons { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+.mode-btn { background: var(--bg-color); color: var(--text-muted); padding: 12px; border-radius: 12px; text-align: center; font-size: 0.95rem; border: none; transition: 0.2s; font-weight: 600; cursor: pointer; }
+.mode-btn:hover { background: var(--accent-color); color: var(--text-main); }
+.mode-btn.active { background: var(--text-main); color: var(--bg-color); }
+
+.progress-box p { font-size: 0.9rem; font-weight: 600; margin-bottom: 8px; }
+.progress-bar-container { height: 6px; background: var(--border-color); border-radius: 4px; overflow: hidden; margin-bottom: 15px; }
+.progress-bar-fill { height: 100%; background: var(--primary-color); width: 0%; transition: width 0.5s ease; }
+.review-btn { background: var(--bg-color); color: var(--text-main); border: 1px solid var(--border-color); width: 100%; padding: 12px; border-radius: 9999px; font-size: 0.95rem; font-weight: 600; cursor: pointer; transition: 0.2s; }
+.review-btn:hover { border-color: var(--primary-color); }
+
+.study-area { flex-grow: 1; display: flex; flex-direction: column; position: relative; z-index: 1; }
+
+.study-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 25px; padding-bottom: 15px; border-bottom: 2px solid var(--border-color); flex-wrap: wrap; gap: 10px; }
+.study-header h2 { font-size: 1.5rem; font-weight: 700; color: var(--text-main); margin: 0; }
+.progress-indicator { font-size: 1rem; font-weight: 700; color: var(--primary-color); background: var(--card-bg); padding: 8px 18px; border-radius: 12px; border: 1px solid var(--border-color); box-shadow: var(--shadow-sm); }
+
+.study-view { display: none; animation: fadeIn 0.3s ease-out; flex-grow: 1; }
+.study-view.active { display: flex; flex-direction: column; justify-content: center; }
+@keyframes fadeIn { from { opacity: 0; transform: translateY(5px); } to { opacity: 1; transform: translateY(0); } }
+
+.dropdown { position: relative; display: inline-block; }
+.dropdown-menu { display: none; position: absolute; right: 0; top: 110%; background: var(--card-bg); min-width: 200px; box-shadow: var(--shadow-md); border-radius: var(--border-radius-sm); z-index: 100; overflow: hidden; border: 1px solid var(--border-color); animation: slideDownFixed 0.2s ease; }
+.dropdown-menu.show { display: flex; flex-direction: column; }
+.dropdown-item { padding: 14px 16px; border: none; background: none; text-align: left; width: 100%; cursor: pointer; color: var(--text-main); font-size: 0.95rem; transition: background 0.2s; border-radius: 0; font-weight: 500; }
+.dropdown-item-group { padding: 10px 4px; border-bottom: 1px solid var(--border-color); border-top: 1px solid var(--border-color);}
+.dropdown-item:hover { background: var(--bg-color); }
+
+/* ==========================================
+   --- FLASHCARDS & SWIPE FIXES ---
+   ========================================== */
+.flashcard-container { display: flex; justify-content: center; align-items: center; perspective: 1000px; height: 380px; margin-bottom: 40px; }
+.card { 
+    width: 340px; 
+    height: 100%; 
+    cursor: pointer; 
+    transition: transform 0.1s; 
+    position: relative; 
+    margin: 0 auto; 
+    user-select: none; 
+    -webkit-user-select: none;
+    touch-action: pan-y; 
+}
+.card-inner { width: 100%; height: 100%; transition: transform 0.6s cubic-bezier(0.34, 1.56, 0.64, 1), box-shadow 0.3s ease; transform-style: preserve-3d; position: relative; box-shadow: var(--shadow-md); border-radius: 28px; }
+.card:hover .card-inner, .card:active .card-inner { box-shadow: 0 16px 40px rgba(12, 122, 121, 0.15); transform: translateY(-5px); }
+.card.is-flipped .card-inner { transform: rotateY(180deg); }
+.card.is-flipped:hover .card-inner { transform: rotateY(180deg) translateY(-5px); }
+
+.card-front { touch-action: none; }
+.card-front, .card-back { width: 100%; height: 100%; position: absolute; backface-visibility: hidden; display: flex; flex-direction: column; justify-content: center; align-items: center; background: var(--card-bg); border-radius: 28px; padding: 30px; text-align: center; border: 1px solid var(--border-color); }
+.card-back { justify-content: flex-start !important; /* Forces the text to start at the top */
+    padding-top: 40px !important; /* Gives it nice breathing room at the top */
+    padding-bottom: 40px !important;transform: rotateY(180deg); overflow-y: auto; touch-action: pan-y; }
+
+.card-front h1 { font-size: 3.5rem; font-weight: 500; margin: 0; color: var(--text-main); }
+.card-back h2 { font-size: clamp(1.8rem, 6vw, 2.5rem);
+    margin-top: 10px;font-size: 2.5rem; color: var(--text-main); font-weight: 500; margin-bottom: 15px; }
+.card-back p { font-size: 1.5rem; color: var(--text-muted); }
+
+.flashcard-controls { display: flex; justify-content: center; gap: 15px; margin-bottom: 15px; }
+.swipe-btn { padding: 12px 24px; font-size: 1rem; font-weight: 600; border-radius: 9999px; background: var(--card-bg); color: var(--text-main); border: 1px solid var(--border-color); transition: 0.2s; cursor: pointer; }
+.swipe-btn:hover { background: var(--accent-color); border-color: var(--primary-color); }
+.swipe-btn.flip { background: var(--primary-color); color: var(--card-bg); border-color: var(--primary-color); }
+.hint-text { text-align: center; font-size: 0.85rem; color: var(--text-muted); }
+
+/* Writing Mode */
+.writing-container { text-align: center; max-width: 400px; margin: 0 auto; }
+.hanzi-box { width: 250px; height: 250px; margin: 20px auto; background: var(--card-bg); border: 1px solid var(--border-color); border-radius: 20px; box-shadow: var(--shadow-sm); position: relative; }
+.writing-controls { display: flex; justify-content: center; gap: 10px; margin-top: 20px; }
+.writing-controls button { background: var(--card-bg); color: var(--text-main); border: 1px solid var(--border-color); padding: 10px 20px; border-radius: 9999px; font-weight: 600; transition: 0.2s; cursor: pointer; }
+.writing-controls button:hover { border-color: var(--primary-color); }
+
+/* Sentence Mode */
+.sentence-container { text-align: center; max-width: 600px; margin: 0 auto 30px auto; padding: 40px 20px; background: var(--card-bg); border-radius: 24px; border: 1px solid var(--border-color); box-shadow: var(--shadow-sm); }
+
+/* 🚀 AUTO-ADJUSTING SENTENCE TEXT (FITS ANY LENGTH PERFECTLY) */
+/* 🚀 AUTO-ADJUSTING SENTENCE TEXT (FITS ANY LENGTH PERFECTLY) */
+.chinese-text { 
+    font-size: clamp(1.4rem, 7vw, 2.8rem) !important; 
+    font-weight: 500; 
+    margin-bottom: 15px; 
+    color: var(--text-main); 
+    
+    /* 🚨 THE TRUE FIX: Delete 'keep-all', force the characters to wrap! */
+    white-space: normal !important;
+    word-break: break-all !important; 
+    overflow-wrap: anywhere !important; 
+    
+    width: 100%;
+    padding: 0 10px;
+    box-sizing: border-box;
+}
+
+.pinyin-text { 
+    font-size: clamp(1.1rem, 5vw, 1.4rem); 
+    color: var(--text-muted); 
+    margin-bottom: 25px; 
+    font-weight: 400; 
+    white-space: normal; 
+    word-break: break-word;
+    padding: 0 10px;
+    box-sizing: border-box;
+}
+
+.english-text { 
+    font-size: clamp(1rem, 4.5vw, 1.2rem); 
+    color: var(--text-main); 
+    margin-top: 20px; 
+    white-space: normal; 
+    word-break: break-word;
+    padding: 0 10px;
+    box-sizing: border-box;
+}
+
+.hidden { display: none; }
+.sentence-controls { display: flex; justify-content: center; gap: 10px; }
+.sentence-controls button, #reveal-translation-btn { background: var(--primary-color); color: var(--card-bg); border: none; padding: 10px 20px; border-radius: 9999px; font-weight: 600; transition: 0.2s; cursor: pointer;}
+.audio-btn { background: var(--accent-color); color: var(--text-main); border: none; border-radius: 9999px; padding: 6px 16px; font-size: 0.9rem; font-weight: 600; margin-bottom: 20px; cursor: pointer;}
+/* Completion View */
+.completion-message { text-align: center; padding: 60px 20px; }
+.completion-message h1 { color: var(--text-main); font-size: 2.5rem; margin-bottom: 15px; }
+.completion-message p { color: var(--text-muted); font-size: 1.2rem; }
+
+#confetti-canvas { position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; pointer-events: none; z-index: 9999; display: none; }
+
+/* ==========================================
+   --- STRICT MOBILE RESPONSIVENESS (NO HORIZONTAL SWIPE) ---
+   ========================================== */
+@media (max-width: 800px) {
+    #app-workspace { 
+        padding: 0 10px; 
+        width: 100%; 
+        max-width: 100vw; /* Hard limit */
+        box-sizing: border-box; 
+        #qz-options, .quiz-options { 
+        display: grid !important; 
+        grid-template-columns: 1fr 1fr; /* This splits it into 2 columns */
+        gap: 12px !important; 
+        margin-top: 8px;
+    }
+    }
+    }
+    
+    .sidebar { 
+        flex-direction: row; 
+        gap: 5px; /* TIGHTENED GAP to allow buttons to be wider */
+        width: 100%; 
+        flex-wrap: nowrap; 
+        justify-content: space-between;
+    } 
+    
+    .control-group { 
+        flex: 1 1 0%; 
+        width: 33.3%; /* Exactly one third each */
+        min-width: 0; 
+        transition: flex 0.4s cubic-bezier(0.25, 1, 0.5, 1);
+    }
+
+    details[open].control-group {
+        flex: 4 1 0%; /* Takes 4x more space than the closed tabs */
+    }
+
+    .control-group summary { 
+        padding: 10px 2px; /* Less side padding gives text more room */
+        flex-direction: column; 
+        gap: 2px; 
+        height: 100%; 
+        width: 100%;
+        box-sizing: border-box;
+    }
+
+    .control-group summary h3 { 
+        font-size: 0.85rem; /* Larger, readable text */
+        text-align: center; 
+        white-space: nowrap; 
+        overflow: hidden; 
+        text-overflow: ellipsis; 
+        width: 100%;
+        margin: 0;
+        padding: 0;
+    }
+
+    .toggle-icon { display: none; } 
+    
+    .card { width: 100%; max-width: 340px; }
+    .study-header { flex-direction: column; gap: 10px; align-items: flex-start; }
+
+
+/* --- Manage Study List View --- */
+.manage-list-btn { background: transparent; color: var(--text-muted); border: 1px solid var(--border-color); width: 100%; padding: 10px; border-radius: 9999px; font-size: 0.9rem; font-weight: 600; cursor: pointer; margin-top: 10px; transition: 0.2s; }
+.manage-list-btn:hover { background: var(--border-color); color: var(--text-main); }
+.manage-review-container { background: var(--card-bg); padding: 30px; border-radius: var(--border-radius); border: 1px solid var(--border-color); box-shadow: var(--shadow-sm); max-width: 600px; margin: 0 auto; width: 100%; }
+.manage-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; border-bottom: 1px solid var(--border-color); padding-bottom: 15px; }
+.manage-header h3 { color: var(--text-main); font-size: 1.2rem; }
+.clear-btn { background: var(--wrong-color); color: white; border: none; padding: 8px 16px; border-radius: 9999px; font-weight: 600; cursor: pointer; transition: 0.2s; }
+.clear-btn:hover { opacity: 0.9; }
+.add-review-box { display: flex; gap: 10px; margin-bottom: 20px; flex-wrap: wrap; }
+.review-select { flex-grow: 1; margin-bottom: 0; min-width: 200px; }
+.add-btn { background: var(--correct-color); color: white; border: none; padding: 10px 16px; border-radius: 9999px; font-weight: 600; cursor: pointer; transition: 0.2s; }
+.add-btn:hover { opacity: 0.9; }
+.review-list-wrapper { max-height: 400px; overflow-y: auto; border: 1px solid var(--border-color); border-radius: 16px; background: var(--bg-color); }
+.review-list { list-style: none; margin: 0; padding: 0; }
+.review-list li { display: flex; justify-content: space-between; align-items: center; padding: 12px 15px; border-bottom: 1px solid var(--border-color); }
+.review-list li:last-child { border-bottom: none; }
+.review-item-text { font-weight: 600; color: var(--text-main); font-size: 1.1rem; display: flex; gap: 10px; align-items: center; flex-wrap: wrap;}
+.review-item-pinyin { font-weight: 400; color: var(--text-muted); font-size: 0.95rem; }
+.remove-btn { background: transparent; color: var(--wrong-color); border: 1px solid var(--wrong-color); padding: 5px 12px; border-radius: 6px; cursor: pointer; font-size: 0.8rem; font-weight: 600; transition: 0.2s; }
+.remove-btn:hover { background: var(--wrong-color); color: white; }
+
+/* --- New Features Styles --- */
+.card-audio-btn { position: absolute; top: 15px; right: 15px; background: var(--accent-color); border: none; border-radius: 50%; width: 40px; height: 40px; font-size: 1.2rem; cursor: pointer; display: flex; justify-content: center; align-items: center; transition: 0.2s; z-index: 10; }
+.card-audio-btn:hover { transform: scale(1.1); background: var(--border-color); }
+
+.writing-controls { flex-wrap: wrap; }
+.practice-btn { background: var(--primary-color) !important; color: var(--card-bg) !important; border-radius: 9999px !important; }
+
+/* Auto-Play Button Styles */
+.auto-play-btn { background: transparent; border: 2px solid var(--primary-color); color: var(--text-main); padding: 8px 16px; border-radius: 9999px; font-weight: bold; cursor: pointer; transition: 0.3s ease; margin-bottom: 15px; }
+.auto-play-btn.active { background: var(--primary-color); color: #ffffff; border-color: var(--primary-color); }
+
+.top-controls { display: flex; gap: 10px; justify-content: center; margin-bottom: 15px; flex-wrap: wrap; }
+
+button { border-radius: 9999px; padding: 10px 20px; font-weight: 600; cursor: pointer; transition: all 0.2s ease-in-out; backdrop-filter: blur(4px); font-family: inherit; font-size: 0.95rem; }
+
+.action-btn, .add-btn, .clear-btn, .manage-list-btn, .apply-btn, .review-btn, .practice-btn { background-color: rgba(0, 120, 215, 0.1); border: 1px solid rgba(0, 120, 215, 0.3); color: #005a9e; }
+.action-btn:hover, .apply-btn:hover { background-color: rgba(0, 120, 215, 0.2); border-color: rgba(0, 120, 215, 0.5); transform: translateY(-2px); }
+.swipe-btn.right { background-color: rgba(40, 167, 69, 0.1); border: 1px solid rgba(40, 167, 69, 0.3); color: #1e7e34; }
+.swipe-btn.right:hover { background-color: rgba(40, 167, 69, 0.2); border-color: rgba(40, 167, 69, 0.5); transform: translateY(-2px); }
+.swipe-btn.left { background-color: rgba(220, 53, 69, 0.1); border: 1px solid rgba(220, 53, 69, 0.3); color: #bd2130; }
+.swipe-btn.left:hover { background-color: rgba(220, 53, 69, 0.2); border-color: rgba(220, 53, 69, 0.5); transform: translateY(-2px); }
+.swipe-btn.flip, .sentence-controls button, .writing-controls button { background-color: rgba(108, 117, 125, 0.1); border: 1px solid rgba(108, 117, 125, 0.3); color: #495057; }
+.swipe-btn.flip:hover, .sentence-controls button:hover, .writing-controls button:hover { background-color: rgba(108, 117, 125, 0.2); transform: translateY(-2px); }
+
+@media (min-width: 1024px) {
+    .flashcard-container { height: 500px; perspective: 1500px; }
+    .card { width: 450px; height: 100%; }
+    #fc-front-text { font-size: 6rem; }
+    #fc-pinyin { font-size: clamp(1.0rem, 6vw, 2.5rem); /* Scales down automatically */
+    word-break: break-word; 
+    white-space: normal; /* Allows wrapping to a new line */
+    line-height: 1.2;
+    width: 100%;
+    padding: 0 10px;
+    box-sizing: border-box; }
+    #fc-meaning { font-size: 1.8rem; }
+}
+
+/* ==========================================
+   --- UPGRADED QUIZ DESIGN (BIGGER SIZE) ---
+   ========================================== */
+.quiz-settings { display: flex; justify-content: center; align-items: center; gap: 20px; padding: 15px; margin-bottom: 30px; background: linear-gradient(135deg, #f8f9fa, #e9ecef); border-radius: 12px; box-shadow: 0 4px 6px rgba(0,0,0,0.05); flex-wrap: wrap; border: 1px solid #dee2e6; }
+.setting-group label { font-weight: 600; margin-right: 8px; color: #495057; }
+.setting-group select { padding: 10px 14px; border-radius: 8px; border: 1px solid #ced4da; background-color: white; cursor: pointer; outline: none; transition: border-color 0.2s; font-size: 1rem; }
+.setting-group select:focus { border-color: #007bff; }
+.quiz-score { font-weight: bold; color: #fff; background-color: #007bff; padding: 10px 20px; border-radius: 20px; font-size: 1.2rem; box-shadow: 0 2px 4px rgba(0,123,255,0.3); }
+
+.qz-word-container { 
+    display: flex; 
+    flex-direction: column; /* Stacks the text and audio button vertically if it gets tight */
+    justify-content: center; 
+    align-items: center; 
+    margin-bottom: 25px; 
+    padding: 25px; 
+    background-color: var(--card-bg); 
+    border-radius: 20px; 
+    box-shadow: 0 6px 20px rgba(0,0,0,0.08); 
+    min-height: 180px; /* Made slightly taller for 2-line sentences */
+    width: 100%;
+    box-sizing: border-box;
+    overflow: hidden;  
+}
+
+.qz-word-container h2 { 
+    margin: 0; 
+    /* THE FIX: clamp lets the font be 5rem for short words, but shinks it for long ones */
+    font-size: clamp(1.8rem, 8vw, 4.5rem); 
+    color: #212529; 
+    text-align: center;
+    line-height: 1.2;
+    width: 100%;
+    color: var(--text-main);
+    
+    /* THE FIX: Allows the sentence to wrap and stay inside the box */
+    word-break: break-word; 
+    white-space: normal; 
+}
+
+.qz-actions {
+    display: flex;
+    gap: 15px;
+    margin-top: 15px;
+    justify-content: center;
+}
+
+#qz-pinyin-hint {
+    font-size: 1.8rem;
+    color: var(--text-muted);
+    margin-top: 10px;
+    font-weight: 400;
+    text-align: center;
+    animation: fadeIn 0.3s ease;
+}
+
+#qz-pinyin-btn {
+    font-size: 1.5rem;
+    font-weight: 700;
+    color: var(--primary-color);
+}
+.icon-btn { background: #f1f3f5; border: none; cursor: pointer; font-size: 1.8rem; margin-left: 20px; width: 60px; height: 60px; border-radius: 50%; transition: background 0.2s, transform 0.1s; display: flex; justify-content: center; align-items: center;}
+.icon-btn:hover { background: #e2e6ea; }
+.icon-btn:active { transform: scale(0.95); }
+
+.quiz-options { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; width: 100%; max-width: 750px; margin: 0 auto; } 
+.option-btn { padding: 15px 20px; 
+    font-size: clamp(1.1rem, 4vw, 1.3rem); 
+    border-radius: 16px; 
+    white-space: normal; /* CRITICAL: Lets long choices wrap! */
+    word-break: break-word;
+    height: auto; /* Lets the button grow taller if text is long */
+    min-height: 60px;
+    line-height: 1.3; } 
+.option-btn:hover:not(:disabled) { border-color: #007bff; background-color: #f8f9fa; transform: translateY(-3px); box-shadow: 0 6px 12px rgba(0,0,0,0.08); }
+.quiz-input { width: 100%; max-width: 600px; padding: 20px; font-size: 1.5rem; margin: 0 auto 20px auto; display: block; border-radius: 16px; border: 2px solid #ced4da; outline: none; transition: border-color 0.2s, box-shadow 0.2s; text-align: center; }
+.quiz-input:focus { border-color: #007bff; box-shadow: 0 0 0 4px rgba(0,123,255,0.25); }
+.quiz-feedback { text-align: center; margin-top: 20px; font-size: 1.5rem; padding: 20px; border-radius: 12px; }
+
+/* ==========================================
+   --- PREMIUM THEMES & EXTRA FEATURES ---
+   ========================================== */
+:root {
+    --bg-main: #f4f7f6;
+    --nav-bg: #ffffff;
+    --text-main: #333333;
+    --text-muted: #666666;
+    --card-bg: #ffffff;
+    --primary-color: #007bff;
+    --accent-color: rgba(0,0,0,0.05);
+}
+
+body.theme-dark { --bg-main: #121212; --nav-bg: #1e1e1e; --text-main: #e0e0e0; --text-muted: #a0a0a0; --card-bg: #2d2d2d; --primary-color: #4da3ff; --accent-color: rgba(255,255,255,0.08); }
+body.theme-matcha { 
+    --bg-color: #ebf6bd !important; 
+    --bg-grad-2: #E4E9D1 !important; 
+    --card-bg: #ffffff !important; 
+    --text-main: #2b3a1d !important; 
+    --text-muted: #4f5a43 !important; 
+    --border-color: #dcedc8 !important;
+    --primary-color: #556b2f !important; 
+}
+body.theme-sakura { 
+    --bg-color: #eddade !important; 
+    --bg-grad-2: #FFE3E8 !important; 
+    --card-bg: #ffffff !important; 
+    --text-main: #4a2c3a !important; 
+    --text-muted: #8a5a70 !important; 
+    --border-color: #ffd1dc !important;
+    --primary-color: #ff69b4 !important; 
+}
+body.theme-midnight { 
+    --bg-color: #0f172a !important; 
+    --bg-grad-2: #1e293b !important; 
+    --card-bg: #334155 !important; 
+    --text-main: #e2e8f0 !important; 
+    --text-muted: #94a3b8 !important; 
+    --border-color: #475569 !important;
+    --primary-color: #8b5cf6 !important; 
+}
+body { background-color: var(--bg-main); color: var(--text-main); }
+.navbar { background-color: var(--nav-bg); }
+.card-inner .card-front, .card-inner .card-back { background-color: var(--card-bg); color: var(--text-main); }
+.quiz-settings { background-color: var(--nav-bg); }
+.qz-word-container { background-color: var(--card-bg); color: var(--text-main); }
+
+.theme-dropdown { padding: 8px 12px; border-radius: 8px; border: 1px solid #ccc; background-color: var(--card-bg); color: var(--text-main); font-weight: bold; cursor: pointer; outline: none; margin-left: 15px; }
+
+/* ==========================================
+   --- MAGNIFYING EXAMPLE SENTENCES ---
+   ========================================== */
+.extra-info-box {
+    margin-top: 15px;
+    padding: 12px;
+    background-color: var(--accent-color);
+    border-radius: 8px;
+    font-size: 0.95rem;
+    text-align: left;
+    line-height: 1.4;
+    border-left: 4px solid var(--primary-color);
+    cursor: zoom-in;
+    transition: all 0.35s cubic-bezier(0.4, 0, 0.2, 1);
+    transform-origin: top center;
+    position: relative; 
+}
+.extra-info-box.hidden { display: none; }
+.extra-info-box strong { color: var(--primary-color); transition: all 0.3s ease; }
+
+.extra-info-box.magnified {
+    font-size: 1.5rem;
+    line-height: 1.6;
+    padding: 20px;
+    background-color: var(--card-bg);
+    border: 2px solid var(--primary-color);
+    border-left: 8px solid var(--primary-color);
+    box-shadow: 0 12px 30px rgba(0,0,0,0.15);
+    cursor: zoom-out;
+    margin-top: 20px;
+    margin-bottom: 10px;
+    transform: scale(1.02);
+}
+.extra-info-box.magnified strong { font-size: 1.8rem; }
+.extra-info-box::after { content: ''; position: absolute; top: 8px; right: 8px; font-size: 1rem; opacity: 0.4; transition: 0.2s; }
+.extra-info-box:hover::after { opacity: 1; }
+.extra-info-box.magnified::after { content: '✖️'; opacity: 0.6; font-size: 0.9rem; }
+
+.speed-select { padding: 8px 12px; border-radius: 8px; border: 1px solid #ccc; background-color: var(--card-bg); color: var(--text-main); font-weight: 600; cursor: pointer; outline: none; font-size: 0.95rem; }
+.speed-select:focus { border-color: var(--primary-color); }
+body {
+    overscroll-behavior-x: none; /* Stops the iPhone "swipe edge to go back" feature */
+}
+
+#flashcard {
+    touch-action: none !important; /* Forces the browser to NEVER try to scroll when touching the card */
+    -webkit-user-select: none; /* Stops text highlighting from freezing the card */
+    user-select: none;
+}
+
+.streak, 
+#quiz-score-ui, 
+#qz-pinyin-hint, 
+.completion-message p {
+    color: var(--text-muted) !important; /* Forces the dynamic grey */
+    font-weight: 500; /* Makes the numbers and letters slightly thicker so they are easier to read */
+}
+
+/* Make sure the main quiz text always uses the bright white/pure black */
+#qz-word {
+    color: var(--text-main) !important;
+}
+
+/* ==========================================
+   --- SOFT UI UPGRADE (ROUNDED CORNERS) ---
+   ========================================== */
+
+/* Large containers get massive smooth curves */
+.card, 
+#flashcard, 
+.qz-word-container,
+.completion-message {
+    border-radius: 28px !important;
+}
+
+/* Medium interactive elements get pill-like curves */
+.option-btn, 
+.action-btn, 
+.chip, 
+.quiz-input {
+    border-radius: 18px !important;
+}
+
+/* Smaller interface buttons get neat circular curves */
+button, 
+.icon-btn, 
+.audio-btn, 
+select {
+    border-radius: 14px;
+}
+
+/* Make sure the sidebar feels cohesive */
+.sidebar {
+    border-radius: 0 24px 24px 0; /* Rounds the right side of the sidebar */
+}
+
+/* On mobile, standardizes the expanding tabs we built earlier */
+@media (max-width: 800px) {
+    .control-group summary {
+        border-radius: 16px;
+    }
+}
+
+/* ==========================================
+   --- GLASSY BUBBLE (GLASSMORPHISM) UI ---
+   ========================================== */
+
+/* Give the background a slight gradient so the glass effect shows up better */
+body {
+    background: linear-gradient(135deg, var(--bg-color) 0%, #e0e8e8 100%);
+    background-attachment: fixed;
+}
+[data-theme="dark"], body.dark-mode {
+    background: linear-gradient(135deg, var(--bg-color) 0%, #1a2222 100%);
+}
+
+/* The Glassy Cards */
+/* The Glassy Cards */
+/* ==========================================
+   --- SOLID BUBBLE UI (MODERN & CLEAN) ---
+   ========================================== */
+
+/* The Solid Cards (Keeping the round corners, but original solid colors!) */
+.card, 
+#flashcard, 
+.qz-word-container,
+.completion-message {
+    background: var(--card-bg) !important; /* Back to the original solid color */
+    border: none !important; /* Remove the shiny glass border */
+    border-radius: 32px !important; /* Keep the nice bubble corners */
+    box-shadow: 0 8px 25px rgba(0, 0, 0, 0.08); /* Clean, soft shadow */
+    backdrop-filter: none !important; /* Turn off the glass blur */
+    -webkit-backdrop-filter: none !important;
+}
+
+/* Dark Mode Cards */
+[data-theme="dark"] .card, 
+[data-theme="dark"] #flashcard, 
+[data-theme="dark"] .qz-word-container,
+[data-theme="dark"] .completion-message {
+    background: var(--card-bg) !important; /* Solid dark grey */
+    box-shadow: 0 8px 25px rgba(0, 0, 0, 0.4);
+}
+
+/* Solid Buttons & Inputs (Like your Book/Lesson Selectors) */
+.option-btn, 
+.action-btn, 
+.chip, 
+.quiz-input,
+/* --- 1. THE DROP-DOWN FIX --- */
+select {
+    -webkit-appearance: none; /* This forces iPhones/Macs to listen to our custom CSS! */
+    -moz-appearance: none;
+    appearance: none;
+    
+    background: var(--card-bg);
+    border: 2px solid var(--border-color);
+    border-radius: 20px; 
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.03);
+    color: var(--text-main); 
+    padding: 10px 15px;
+    outline: none;
+    transition: all 0.3s ease;
+    cursor: pointer;
+    text-align: center;
+}
+
+/* Let the browser handle the option colors naturally so they never hide */
+select option {
+    background: var(--card-bg);
+    color: var(--text-main);
+}
+
+/* --- 2. THE GLOWING SELECTION ANIMATION --- */
+/* This creates a smooth radar-like pulse effect */
+@keyframes pulseGlow {
+    0% { box-shadow: 0 0 0 0 rgba(12, 122, 121, 0.4); }
+    70% { box-shadow: 0 0 0 10px rgba(12, 122, 121, 0); }
+    100% { box-shadow: 0 0 0 0 rgba(12, 122, 121, 0); }
+}
+
+select:focus, select:active {
+    border-color: var(--primary-color);
+    animation: pulseGlow 1.5s infinite; 
+    transform: scale(1.02); 
+}
+/* When you click/focus on the bubble, it highlights the border and pulses! */
+select:focus, select:active, .option-btn.active, .chip.active {
+    border-color: var(--primary-color) !important; /* Highlights the border in your primary color */
+    animation: pulseGlow 1.5s infinite; /* Triggers the glowing pulse animation */
+    transform: scale(1.02); /* Pops the bubble out slightly */
+}
+
+/* Dark Mode Buttons */
+[data-theme="dark"] .option-btn, 
+[data-theme="dark"] .action-btn, 
+[data-theme="dark"] .chip,
+[data-theme="dark"] select {
+    background: var(--card-bg) !important;
+    border: 2px solid var(--border-color) !important;
+}
+
+/* Button Press Effect */
+.option-btn:active, .action-btn:active, .chip:active {
+    transform: scale(0.96);
+    opacity: 0.8;
+}
+
+/* Make buttons pop when pressed */
+.option-btn:active, .action-btn:active, .chip:active {
+    transform: scale(0.95);
+    background: rgba(255, 255, 255, 0.8) !important;
+}
+
+/* ==========================================
+   --- ☢️ SUPER NUCLEAR BACKGROUND OVERRIDE --- 
+   ========================================== */
+
+/* 1. Force Light Mode on the HTML and Body */
+/* 1. Force Dynamic Mode on the HTML and Body */
+html, body {
+    /* Instead of hardcoded #F0F7F7, this listens to whatever theme you clicked! */
+    background: linear-gradient(135deg, var(--bg-color) 0%, var(--bg-grad-2) 100%) !important;
+    background-color: var(--bg-color) !important;
+    color: var(--text-main) !important;
+    min-height: 100vh !important;
+    margin: 0 !important;
+    padding: 0 !important;
+}
+/* 3. Strip the grey paint off EVERY possible container */
+#app, .container, .wrapper, main, .main-content, .study-view, #view-home, #view-study, #view-quiz, #view-complete {
+    background: transparent !important;
+    background-color: transparent !important;
+    box-shadow: none !important;
+}
+
+/* ==========================================
+   --- FLASHCARD SCROLLING BREAKDOWN ---
+   ========================================== */
+.fc-breakdown {
+    margin-top: 25px;
+    padding-top: 20px;
+    border-top: 2px dashed var(--border-color);
+    width: 100%;
+    text-align: left;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    padding-bottom: 20px; /* Gives space at the bottom when scrolling */
+}
+
+.char-breakdown-block {
+    display: flex;
+    align-items: center;
+    gap: 20px;
+    background: var(--accent-color);
+    padding: 16px 20px;
+    border-radius: 20px;
+    border: 1px solid var(--border-color);
+}
+
+.char-hz {
+    font-size: 3.5rem;
+    font-weight: 700;
+    color: var(--primary-color);
+    min-width: 65px;
+    text-align: center;
+}
+
+.char-details {
+    display: flex;
+    flex-direction: column;
+    font-size: 0.8rem;
+    color: var(--text-main);
+    line-height: 1.4;
+}
+
+.char-ex {
+    color: var(--text-muted);
+    font-size: 1.4rem;
+    margin-top: 4px;
+}
+.char-ex b {
+    color: var(--text-main);
+    font-size: 1.2rem;
+}
+
+@keyframes flash-success {
+    0% { background: var(--accent-color); }
+    50% { background: #d4edda; } /* Soft Green */
+    100% { background: var(--accent-color); }
+}
+
+.flash-update {
+    animation: flash-success 0.4s ease-out;
+}
+
+.card-back h1#fc-pinyin {
+    font-size: 2.35rem; /* Large Pinyin */
+    color: var(--primary-color);
+    margin-bottom: 3px;
+    font-weight: 600;
+}
+
+.card-back h2#fc-meaning {
+    font-size: 1.5rem; /* Medium Meaning */
+    color: var(--text-main);
+    margin-bottom: 5px;
+    font-weight: 400;
+}
+
+/* --- 🚨 MASSIVE FLASHCARD FIX 🚨 --- */
+/* --- 🚨 MASSIVE FLASHCARD FIX 🚨 --- */
+#view-flashcards.active {   /* <--- ADD .active HERE! */
+    display: flex;
+    flex-direction: column;
+    flex-grow: 1; 
+    justify-content: center; 
+    padding-bottom: 20px;
+}
+
+.flashcard {
+    width: 100%;
+    max-width: 550px; /* Makes the card much wider on desktop */
+    height: 60vh; /* Forces the card to take up 60% of the screen height! */
+    min-height: 400px; /* Safety net so it never gets too small on tiny phones */
+    margin: 0 auto; 
+}
+
+/* Make the text scale up to match the giant card */
+.fc-front #fc-front-text {
+    font-size: 5.5rem !important; /* Massive Chinese Characters */
+    margin-bottom: 15px;
+}
+
+.fc-front #fc-pinyin {
+    font-size: 1.8rem !important;
+}
+
+.fc-back #fc-meaning {
+    font-size: 1.4rem !important;
+    line-height: 1.6;
+}
+
+/* --- 🚨 MASSIVE WRITING PAD FIX 🚨 --- */
+.writing-card {
+    background-color: var(--card-bg) !important;
+    border-radius: 24px;
+    box-shadow: 0 8px 25px rgba(0, 0, 0, 0.08);
+    padding: 20px 20px 30px 20px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    margin: 0 auto;
+    border: 3px dashed var(--border-color);
+    width: 100%;
+    max-width: 380px; 
+}
+
+/* Forces the 4 buttons to fit perfectly on ONE line */
+.writing-controls-row {
+    display: flex;
+    gap: 6px;
+    width: 100%;
+    max-width: 400px;
+    justify-content: space-between;
+}
+
+.writing-controls-row .action-btn {
+    flex: 1; /* Makes them all share the row equally */
+    padding: 12px 2px; /* Less horizontal padding so they fit */
+    font-size: 0.85rem; 
+    white-space: nowrap; /* Prevents text from breaking into two lines */
+    text-align: center;
+}
+
+/* Make sure the writing view takes up the whole screen beautifully */
+#view-writing.active {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+/* --- 🚨 BEAUTIFUL HANDWRITING FONT (LXGW WENKAI) 🚨 --- */
+/* ==========================================================================
+   🚨 HANDWRITING FONT RESTORE & SENTENCE SIZING 🚨
+   ========================================================================== */
+
+#fc-front-text, 
+#sn-chinese, 
+#qz-word, 
+.char-hz {
+    /* Forces the app to use the downloaded handwriting font */
+   font-family: 'LXGW WenKai TC', cursive !important;
+    font-weight: 400 !important;
+}
+
+/* Make sure the sentence characters are large enough to read the brush strokes */
+/* Make sure the sentence characters are large enough to read, but shrink on mobile */
+#sn-chinese {
+    font-size: clamp(1.8rem, 8vw, 3.5rem) !important;
+    line-height: 1.5;
+    
+    /* 🚨 THE REAL FIX: This safely allows Chinese characters to drop to the next line */
+    white-space: normal !important; 
+    word-break: break-word; 
+    width: 100%;
+    padding: 0 10px;
+    box-sizing: border-box;
+}
+
+/* ==========================================================================
+   🚨 BULLETPROOF FLASHCARD BACK ORGANIZATION 🚨
+   ========================================================================== */
+
+#fc-extra-container {
+    width: 100%;
+    margin-top: 15px;
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+}
+
+/* 1. Standardized Example Sentences */
+.fc-example-box-inner {
+    background: var(--bg-color); 
+    border-radius: 12px;
+    padding: 16px;
+    text-align: left;
+    border-left: 4px solid var(--primary-color);
+    width: 100%;
+    box-sizing: border-box;
+}
+
+.fc-ex-zh {
+    font-family: 'LXGW WenKai TC', cursive !important; /* Keeps your nice handwriting! */
+    font-size: 1.4rem !important; 
+    color: var(--text-main);
+    margin-bottom: 6px;
+    line-height: 1.4;
+}
+
+.fc-ex-py {
+    font-size: 1rem !important;
+    color: var(--text-muted);
+    margin-bottom: 4px;
+}
+
+.fc-ex-en {
+    font-size: 0.95rem !important;
+    color: var(--text-muted);
+    font-style: italic;
+}
+
+/* 2. "Appears In" Tags Organization */
+.occurrences-container {
+    text-align: left;
+    padding: 10px 0;
+    border-top: 1px dashed var(--border-color);
+}
+
+.occurrences-title {
+    font-size: 0.8rem;
+    color: var(--text-muted);
+    margin-bottom: 10px;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    font-weight: 600;
+}
+
+.occurrences-list {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px; 
+}
+
+.occurrence-tag {
+    background: var(--bg-grad-2);
+    color: var(--primary-color);
+    padding: 6px 12px;
+    border-radius: 20px;
+    font-size: 0.8rem;
+    font-weight: 600;
+    border: 1px solid var(--border-color);
+    white-space: nowrap; 
+}
+
+/* Hide default arrows on the collapsible quiz settings */
+/* --- 🚨 FLOAT GLASS (GLASSMORPHISM) SETTINGS 🚨 --- */
+.quiz-settings-glass {
+    margin: 0 auto 20px auto;
+    width: fit-content; /* Makes it as small as possible */
+    min-width: 160px;
+    background: rgba(255, 255, 255, 0.4); /* Translucent white */
+    backdrop-filter: blur(10px); /* The "Frosted" effect */
+    -webkit-backdrop-filter: blur(10px);
+    border: 1px solid rgba(255, 255, 255, 0.5);
+    border-radius: 50px; /* Pill shape */
+    padding: 6px 15px;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.05);
+    transition: all 0.3s ease;
+    z-index: 100;
+}
+
+.quiz-settings-glass[open] {
+    border-radius: 20px; /* Squares out slightly when open */
+    width: 90%;
+    max-width: 300px;
+}
+
+.quiz-settings-glass summary {
+    list-style: none;
+    outline: none;
+    cursor: pointer;
+    text-align: center;
+    font-size: 0.85rem;
+    font-weight: 600;
+    color: var(--primary-color);
+}
+
+.quiz-settings-glass summary::-webkit-details-marker {
+    display: none;
+}
+
+.glass-content {
+    margin-top: 10px;
+    padding-top: 10px;
+    border-top: 1px solid rgba(0, 0, 0, 0.05);
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.setting-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-size: 0.8rem;
+}
+
+.setting-row select {
+    padding: 4px 8px;
+    border-radius: 8px;
+    border: 1px solid rgba(0, 0, 0, 0.1);
+    background: rgba(255, 255, 255, 0.8);
+    font-size: 0.8rem;
+    outline: none;
+}
+
+/* ==========================================================================
+   🚨 AUTO-SCALE & WRAP LONG WORDS (FIX OVERFLOW) 🚨
+   ========================================================================== */
+
+#fc-front-text, 
+#qz-word {
+    /* 1. Allow wrapping ONLY if it completely runs out of room */
+  /* 1. ABSOLUTELY FORCE WRAPPING (No 'keep-all' allowed!) */
+    white-space: normal !important; 
+    overflow-wrap: anywhere !important;
+    word-break: break-word !important; 
+    
+    /* 2. Smarter dynamic size: Shrinks all the way to 1.2rem on small phones! */
+    font-size: clamp(1.2rem, 7vw, 3.5rem) !important; 
+    
+    /* 3. Keep it neatly inside the white box */
+    width: 100%;
+    max-width: 100%;
+    text-align: center;
+    line-height: 1.4;
+    padding: 0 10px;
+    box-sizing: border-box;
+}
+
+/* ==========================================================================
+   🚨 QUIZ FEEDBACK BOX (SHOWN ON WRONG ANSWER) 🚨
+   ========================================================================== */
+.quiz-feedback {
+    background: var(--bg-color);
+    border: 2px solid #ff4d4f; /* Red border for wrong answer */
+    border-radius: var(--border-radius-sm);
+    padding: 20px;
+    margin-top: 20px;
+    text-align: center;
+    box-shadow: var(--shadow-sm);
+    animation: slideUpFade 0.3s ease-out;
+}
+
+.quiz-feedback.hidden {
+    display: none;
+}
+
+@keyframes slideUpFade {
+    from { opacity: 0; transform: translateY(10px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+/* Button to move to the next question */
+.feedback-next-btn {
+    background: var(--primary-color);
+    color: var(--card-bg);
+    border: none;
+    padding: 12px 24px;
+    border-radius: 12px;
+    font-size: 1.1rem;
+    font-weight: bold;
+    margin-top: 15px;
+    width: 100%;
+    cursor: pointer;
+    box-shadow: var(--shadow-sm);
+}
+
+
+#fc-front-text, 
+#sn-chinese, 
+#qz-word, 
+.char-hz, 
+.fc-ex-zh,
+#character-target-div text {
+    font-family: 'FZKai1', 'FancyFreeFont', "KaiTi", "Kaiti TC", "BiauKai", serif !important;
+    font-weight: bold !important; /* Tells the browser to try synthetic bold */
+    
+    /* THE SECRET SAUCE: Artificially thickens the brush strokes perfectly */
+    -webkit-text-stroke: 1.5px currentColor; 
+    
+    -webkit-font-smoothing: antialiased;
+}
+
+/* Ensure sentences are perfectly sized */
+#sn-chinese {
+    font-size: 2.2rem !important;
+    line-height: 1.5;
+    /* Sentences are smaller, so we use a slightly thinner stroke so it doesn't blur */
+    -webkit-text-stroke: 0.8px currentColor; 
+}
+
+/* ==========================================================================
+   🚨 SCROLLABLE CARD BACK DESIGN 🚨
+   ========================================================================== */
+
+/* 1. Make the back of the card scrollable */
+.card-back {
+    display: flex;
+    flex-direction: column;
+    overflow-y: auto; /* Enables native vertical swiping/scrolling! */
+    overflow-x: hidden;
+    padding: 0 !important; /* Remove default padding so the sections can stretch */
+    scroll-behavior: smooth;
+}
+
+/* 2. Center the Pinyin & Meaning to take up exactly one screen */
+.card-main-info {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    min-height: 100%; /* Forces this section to take up the whole card initially */
+    width: 100%;
+    padding: 20px;
+    box-sizing: border-box;
+    position: relative;
+}
+
+/* Make sure text is perfectly centered */
+#fc-pinyin {
+    margin: 0;
+    font-size: clamp(2rem, 8vw, 3.5rem) !important;
+    text-align: center;
+    color: var(--text-main);
+}
+
+/* ==========================================================================
+   🎯 MEANING AND ANIMATIONS (PRESERVED)
+   ========================================================================== */
+#fc-meaning {
+    margin: 10px 0 0 0;
+    font-size: clamp(1.2rem, 5vw, 2rem) !important;
+    text-align: center;
+    color: var(--primary-color);
+    font-weight: 600;
+}
+
+@keyframes bounce {
+    0%, 20%, 50%, 80%, 100% { transform: translateY(0); }
+    40% { transform: translateY(-10px); }
+    60% { transform: translateY(-5px); }
+}
+
+/* ==========================================================================
+   🚀 NUCLEAR FONT OVERRIDE FOR MAIN CHARACTERS
+   ========================================================================== */
+.card-front h1#fc-front-text,
+.qz-word-container h2#qz-word {
+    font-family: 'TWKai', "LXGW WenKai TC", "KaiTi", serif !important;
+    font-weight: normal !important;
+    -webkit-text-stroke: 0px transparent !important;
+}
+
+/* ==========================================================================
+   🚀 NATIVE APP TOUCH FIX (STOPS SCROLLING FROM BREAKING SWIPES)
+   ========================================================================== */
+html, body {
+    overscroll-behavior-y: none !important; /* Stops the bouncy pull-to-refresh effect */
+}
+
+/* ==========================================================================
+   🚀 THE TWO-PAGE LAYOUT (MAIN INFO TOP, EXAMPLES BOTTOM)
+   ========================================================================== */
+.card-back {
+    display: block !important; 
+overflow: hidden !important;/* Lets you scroll down vertically */
+/* Prevents swipe glitches */
+    height: 100% !important;
+    width: 100% !important;
+    padding: 0 !important;
+    touch-action: pan-y !important; /* 👈 MAGIC FIX: Lets JS handle horizontal swipes! */
+}
+
+/* PAGE 1: The Main Term (Pinyin & Meaning) */
+.card-main-info {
+    display: flex !important;
+    flex-direction: column !important;
+    justify-content: center !important;
+    align-items: center !important;
+    min-height: 100% !important; /* Takes exactly 1 full screen */
+    width: 100% !important;
+    position: relative !important;
+}
+
+/* PAGE 2: The Examples Section (Below the fold) */
+.card-extra-info {
+    display: flex !important;
+    flex-direction: column !important;
+    justify-content: center !important;
+    align-items: center !important;
+    min-height: 100% !important; /* Takes up its own full screen below */
+    width: 100% !important;
+    padding: 20px !important;
+    box-sizing: border-box !important;
+    background: transparent !important;
+    border: none !important;
+}
+
+/* ==========================================================================
+   🚀 HIDE EMOJIS & CLEAN INNER BOXES
+   ========================================================================== */
+.card-extra-info::before,
+.extra-info-box strong, 
+.fc-breakdown strong {
+    display: none !important; /* Kills the divider line and emojis */
+}
+
+.extra-info-box, 
+.fc-breakdown {
+    background: transparent !important;
+    border: none !important;
+    box-shadow: none !important;
+    padding: 0 !important;
+    margin: 0 !important;
+    width: 100% !important;
+    display: flex !important;
+    flex-direction: column !important;
+    align-items: center !important; 
+    justify-content: center !important;
+    gap: 15px !important;
+}
+
+/* ==========================================================================
+   🚀 AUTO-ADJUSTING SENTENCE TEXT (FITS THE CARD PERFECTLY)
+   ========================================================================== */
+
+/* The Chinese Text (Flashcard Examples & Sentence Mode) */
+.fc-ex-zh, #sn-chinese {
+    /* clamp(Minimum, Preferred based on screen width, Maximum) */
+    font-size: clamp(1.6rem, 7.5vw, 2.8rem) !important;  
+    line-height: 1.4 !important;
+    color: var(--text-main) !important;
+    text-align: center !important; 
+    width: 100% !important;
+    box-sizing: border-box !important;
+    
+    /* These two lines force long text to wrap beautifully inside the card */
+    word-break: keep-all !important; 
+    overflow-wrap: break-word !important; 
+    
+    margin: 0 0 15px 0 !important;
+}
+
+/* The Pinyin Text */
+.fc-ex-py, #sn-pinyin {
+    font-size: clamp(1.1rem, 4.5vw, 1.6rem) !important;  
+    color: var(--primary-color) !important;
+    text-align: center !important;
+    width: 100% !important;
+    box-sizing: border-box !important;
+    overflow-wrap: break-word !important;
+    margin: 0 0 10px 0 !important;
+}
+
+/* The English Translation */
+.fc-ex-en, #sn-english {
+    font-size: clamp(1rem, 3.5vw, 1.3rem) !important;  
+    color: var(--text-muted) !important;
+    text-align: center !important;
+    line-height: 1.4 !important;
+    width: 100% !important;
+    box-sizing: border-box !important;
+    white-space: normal !important; 
+    overflow-wrap: break-word !important;
+    margin: 0 0 30px 0 !important;
+}
+
+/* ==========================================================================
+   🚀 PERFECTLY CENTER THE "SWIPE FOR EXAMPLES" HINT
+   ========================================================================== */
+.scroll-down-hint {
+    position: absolute !important;
+    bottom: 25px !important;
+    left: 50% !important;             
+    transform: translateX(-50%) !important; 
+    width: 100% !important;
+    text-align: center !important;  
+    font-size: 0.95rem !important;
+    color: #888 !important;
+    animation: bounce 2s infinite !important;
+    pointer-events: none !important; 
+}
+
+/* ==========================================================================
+   🚀 FORCE UNIFORM ENGLISH & PINYIN FONTS (MATCH THE UI)
+   ========================================================================== */
+#fc-meaning,
+.fc-ex-py,
+.fc-ex-en,
+.scroll-down-hint {
+    /* This forces the text to use the native, clean UI font of the device */
+    font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif !important;
+    font-weight: 500 !important; /* Gives it a nice, crisp weight */
+}
+
+/* Make sure the English text specifically is super readable */
+.fc-ex-en {
+    font-weight: 400 !important; /* Slightly softer than the Pinyin/Meaning */
+}
+.scroll-down-hint,
+.scroll-up-hint {
+    font-size: 1.05rem !important;
+    color: var(--text-muted) !important;
+    animation: bounce 2s infinite !important;
+    pointer-events: auto !important; /* MAKES IT CLICKABLE */
+    cursor: pointer !important;
+    padding: 20px !important; /* Big invisible tap target */
+    text-align: center !important;
+    font-weight: bold !important;
+    z-index: 50 !important; /* 👈 Forces it to be on top of the card */
+}
+
+/* 👈 PERFECT HORIZONTAL CENTERING */
+.scroll-down-hint {
+    position: absolute !important;
+    bottom: 10px !important;
+    left: 50% !important; 
+    transform: translateX(-50%) !important; /* This mathematically forces dead-center */
+    width: 100% !important;
+}
+
+.scroll-up-hint {
+    margin-top: 20px !important;
+    margin-bottom: 30px !important;
+    width: 100% !important;
+}
+
+/* ==========================================================================
+   🚀 GLOWING STAT BOXES (KNOWN / UNKNOWN)
+   ========================================================================== */
+.stat-box {
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    min-width: 36px !important;
+    height: 32px !important;
+    padding: 0 10px !important;
+    border-radius: 8px !important;
+    font-size: 1.1rem !important;
+    font-weight: 800 !important;
+    box-sizing: border-box !important;
+    transition: all 0.3s ease !important;
+}
+
+/* 🔴 Red glowing box for "Study Again" (Unknown) */
+.stat-unknown {
+    color: #ff4d4d !important;
+    background: rgba(255, 77, 77, 0.1) !important;
+    border: 1px solid rgba(255, 77, 77, 0.4) !important;
+    box-shadow: 0 0 10px rgba(255, 77, 77, 0.25) !important;
+}
+
+/* 🟢 Green glowing box for "Got It" (Known) */
+.stat-known {
+    color: #00e676 !important;
+    background: rgba(0, 230, 118, 0.1) !important;
+    border: 1px solid rgba(0, 230, 118, 0.4) !important;
+    box-shadow: 0 0 10px rgba(0, 230, 118, 0.25) !important;
+}
+
+/* 🚨 ULTIMATE MOBILE OVERFLOW FIX 🚨 */
+
+/* 1. Force the parent container to NEVER be wider than the screen */
+.sentence-container {
+    width: 100% !important;
+    max-width: 100vw !important;
+    box-sizing: border-box !important;
+    padding: 0 15px !important;
+    overflow-x: hidden !important;
+}
+
+/* 2. Force the Chinese text to wrap and stay inside the box */
+/* 2. Force the Chinese text to wrap and stay inside the box WITH CUSTOM FONT */
+#sn-chinese, .chinese-text {
+    white-space: normal !important;
+    word-break: break-word !important; 
+    overflow-wrap: anywhere !important;
+    width: 100% !important;
+    max-width: 100% !important;
+    box-sizing: border-box !important;
+    display: block !important;
+    font-size: clamp(1.4rem, 7vw, 2.5rem) !important; 
+    
+    /* 🚀 THE FONT FIX: Perfectly match the Flashcards */
+    font-family: 'TWKai', "LXGW WenKai TC", "LXGW WenKai", "KaiTi", serif !important;
+    font-weight: 400 !important;
+    -webkit-text-stroke: 0px transparent !important; 
+    -webkit-font-smoothing: antialiased !important;
+}
+
+/* 🚀 SUPERSIZED FLASHCARD EXAMPLES 🚀 */
+
+/* Add some space between the character breakdown and the examples */
+.fc-examples {
+    margin-top: 30px !important;
+    padding-bottom: 30px !important;
+}
+
+/* 1. Massive Chinese text */
+.fc-ex-zh {
+    font-size: clamp(2.2rem, 9vw, 3.5rem) !important; 
+    line-height: 1.5 !important;
+    margin-bottom: 15px !important;
+}
+
+/* 2. Much larger Pinyin */
+.fc-ex-py {
+    font-size: clamp(1.6rem, 6vw, 2.2rem) !important;
+    margin-bottom: 12px !important;
+}
+
+/* 3. Larger English translation with plenty of bottom spacing */
+.fc-ex-en {
+    font-size: clamp(1.4rem, 5vw, 1.8rem) !important;
+    line-height: 1.5 !important;
+    margin-bottom: 40px !important; 
+}
+
+/* 🚨 FORCE FLASHCARD EXAMPLES TO BREAK AND FILL THE PAGE 🚨 */
+
+/* 1. Let the container utilize the full width */
+.fc-examples {
+    width: 100% !important;
+    max-width: 100% !important;
+    box-sizing: border-box !important;
+    padding: 0 15px 40px 15px !important;
+}
+
+/* 2. Force ALL text to wrap naturally instead of staying on one line */
+.fc-ex-zh, .fc-ex-py, .fc-ex-en {
+    white-space: normal !important;
+    overflow-wrap: anywhere !important;
+    display: block !important;
+    width: 100% !important;
+    box-sizing: border-box !important;
+}
+
+/* 3. Force the Chinese text to break perfectly character-by-character */
+.fc-ex-zh {
+    word-break: break-all !important; 
+}
+
+/* 4. Allow English and Pinyin to break safely */
+.fc-ex-py, .fc-ex-en {
+    word-break: break-word !important; 
+}
+
+/* ==========================================================================
+   🎨 COLOR-CODED BACK HEADER 
+   ========================================================================== */
+.color-word {
+    font-size: clamp(2.5rem, 12vw, 4.5rem); /* Huge Chinese text */
+    font-weight: bold;
+    line-height: 1.2;
+    margin-bottom: 5px;
+    letter-spacing: 2px;
+}
+
+.color-pinyin {
+    font-size: clamp(1.6rem, 7vw, 2.5rem); /* Matching Pinyin size */
+    font-family: 'Quicksand', sans-serif;
+    letter-spacing: 1px;
+}
+
+/* 🚨 PERFECT SPACING: BACK OF CARD 🚨 */
+
+/* 1. Remove the invisible gap under the Chinese characters */
+#fc-back-word {
+    margin-bottom: 0px !important;
+    padding-bottom: 0px !important;
+}
+
+/* 2. Shrink the Pinyin and pull it tighter to the text */
+#fc-pinyin {
+    font-size: clamp(1.45rem, 6vw, 1.95rem) !important; /* Makes Pinyin smaller */
+    margin-top: 5px !important;    /* Tiny gap below the Chinese */
+    margin-bottom: 5px !important; /* Tiny gap above the English */
+    line-height: 1.2 !important;
+}
+
+/* 3. Pull the English meaning up closer to the Pinyin */
+#fc-meaning {
+    margin-top: 0px !important;
+    padding-top: 0px !important;
+}
+
+/* ==========================================================================
+   🔍 CHARACTER SEARCH MODAL (PREMIUM GLASSMORPHISM)
+   ========================================================================== */
+/* ==========================================================================
+   🔍 CHARACTER SEARCH MODAL (COMPACT GLASS DESIGN)
+   ========================================================================= */
+.modal-overlay {
+    position: fixed;
+    top: 0; left: 0; width: 100%; height: 100%;
+    background: rgba(0, 0, 0, 0.4);
+    display: flex; justify-content: center; align-items: center;
+    z-index: 99999 !important;
+    backdrop-filter: blur(5px);
+    -webkit-backdrop-filter: blur(5px);
+    opacity: 0; pointer-events: none; 
+    transition: opacity 0.3s ease;
+}
+
+.modal-overlay.active {
+    opacity: 1 !important; 
+    pointer-events: auto !important;
+}
+
+.modal-content.themed-modal {
+    background: rgba(255, 255, 255, 0.1);
+    backdrop-filter: blur(25px);
+    -webkit-backdrop-filter: blur(25px);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    box-shadow: 0 15px 35px rgba(0,0,0,0.2);
+    
+    width: 85%; 
+    max-width: 300px; /* 👈 Super compact for mobile */
+    max-height: 60vh; /* 👈 Shorter on mobile */
+    border-radius: 20px;
+    display: flex; flex-direction: column;
+    overflow: hidden;
+    max-height: 75vh !important; /* Forces the box to have a bottom edge */
+    overflow-y: auto !important; /* Turns on the scrollbar */
+    -webkit-overflow-scrolling: touch !important; /* Buttery smooth iPhone scrolling */
+    overscroll-behavior: contain !important; /* Stops the background app from scrolling */
+    touch-action: pan-y !important; /* Only allows up/down scrolling */
+}
+
+body.dark .modal-content.themed-modal,
+body.midnight .modal-content.themed-modal {
+    background: rgba(20, 20, 20, 0.4);
+    border: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+/* 🎯 HEADER: Center EVERYTHING dynamically */
+.modal-header {
+    display: grid;
+    grid-template-columns: 1fr 40px; /* Title takes most space, Button takes less */
+    align-items: center;
+    padding: 10px 16px; 
+    color: white; 
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+/* 🎯 CENTERED TITLE STACK */
+.modal-header h3 { 
+    grid-column: 1 / 2; /* Occupies the title column */
+    margin: 0; 
+    text-align: center; /* 👈 Centered! */
+    display: flex; flex-direction: column; align-items: center; /* Dynamic stack */
+    line-height: 1.1;
+    color: white;
+}
+
+/* "Occurrences of" text styling */
+#char-search-title .qz-q-type-label {
+    font-size: 0.9rem; /* Small, muted label */
+    opacity: 0.8;
+    font-weight: bold;
+    color: var(--text-muted, rgba(255, 255, 255, 0.7));
+}
+
+/* 🖌️ GIGANTIC CENTERED CHINESE CHARACTER BELOW TITLE */
+#char-search-target.chinese-text {
+    font-family: 'TWKai', serif;
+    font-size: clamp(3rem, 15vw, 4rem); /* 👈 Massive fluid size */
+    color: white;
+    font-weight: 900;
+    text-shadow: 0 4px 10px rgba(0,0,0,0.3);
+    line-height: 1; /* Tight stack */
+    display: inline-block;
+}
+
+/* 🎨 CLEANER PILL-SHAPED CLOSE BUTTON */
+.modal-header .close-btn { 
+    grid-column: 2 / 3; 
+    justify-self: end; /* Pushes to the right edge */
+    background: rgba(255, 255, 255, 0.15); 
+    border: none; 
+    color: white; 
+    cursor: pointer; 
+    width: 32px; height: 32px; 
+    border-radius: 50%;
+    display: flex; justify-content: center; align-items: center;
+    transition: all 0.2s ease;
+    box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+}
+
+.modal-header .close-btn:active {
+    transform: scale(0.95);
+}
+
+.modal-header .close-btn:hover {
+    background: rgba(255, 255, 255, 0.3);
+    transform: scale(1.05);
+}
+
+.modal-body {
+    padding: 10px; overflow-y: auto; 
+    display: flex; flex-direction: column; gap: 6px;
+    background: var(--card-bg, #ffffff);
+    border-radius: 0 0 20px 20px;
+    /* This forces mobile browsers to scroll smoothly and stops it from pulling the page! */
+    overscroll-behavior: contain;
+    -webkit-overflow-scrolling: touch; 
+    touch-action: pan-y;
+}
+.search-result-item {
+    padding: 10px; border-radius: 12px;
+    background: var(--bg-color, #f5f5f5);
+    border: 1px solid var(--border-color, #e0e0e0);
+}
+
+.search-result-word { 
+    font-family: 'TWKai', serif; 
+    font-size: clamp(1.4rem, 6vw, 1.7rem); 
+    margin-bottom: 3px; 
+}
+.search-result-py { font-size: 1rem; color: var(--text-muted, #777); font-weight: bold;}
+.search-result-en { font-size: 0.9rem; margin-top: 3px; line-height: 1.2; }
+/* 🪄 ANIMATED ACCORDION ARROW */
+.accordion-arrow {
+    transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    transform: rotate(-90deg); /* Points right when closed */
+    opacity: 0.7;
+    color: var(--text-color, #333);
+}
+
+body.dark .accordion-arrow, body.midnight .accordion-arrow {
+    color: white;
+}
+
+.book-group.expanded .accordion-arrow {
+    transform: rotate(0deg); /* Points down when open */
+    opacity: 1;
+}
+
+/* ==========================================================================
+   📚 BOOK GROUP ACCORDION (SOFT ANIMATIONS)
+   ========================================================================= */
+.book-group {
+    margin-bottom: 8px;
+    background: rgba(255, 255, 255, 0.4);
+    border-radius: 12px;
+    overflow: hidden;
+    border: 1px solid rgba(0,0,0,0.05);
+    transition: background 0.3s ease;
+}
+
+body.dark .book-group, body.midnight .book-group {
+    background: rgba(0, 0, 0, 0.2);
+    border: 1px solid rgba(255,255,255,0.05);
+}
+
+/* 📘 The Clickable Header */
+.book-group-header {
+    padding: 12px 14px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    background: rgba(0,0,0,0.03);
+    cursor: pointer;
+    transition: background 0.2s ease;
+    user-select: none;
+}
+
+.book-group-header:active {
+    background: rgba(0,0,0,0.08);
+}
+
+body.dark .book-group-header, body.midnight .book-group-header { background: rgba(255,255,255,0.03); }
+
+.book-title {
+    font-weight: bold;
+    font-size: 0.95rem;
+    color: var(--text-color, #333);
+}
+
+.book-badge {
+    color: white;
+    padding: 2px 8px;
+    border-radius: 20px;
+    font-size: 0.8rem;
+    font-weight: bold;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+}
+
+/* 🪄 Smooth Height Animation using CSS Grid Trick */
+.book-group-content {
+    display: grid;
+    grid-template-rows: 0fr; /* Collapsed */
+    transition: grid-template-rows 0.35s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.book-group.expanded .book-group-content {
+    grid-template-rows: 1fr; /* Expanded smoothly! */
+}
+
+.book-group-inner {
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    padding: 0 10px; 
+}
+
+/* Add padding inside when expanded so it doesn't jump */
+.book-group.expanded .book-group-inner {
+    padding: 10px;
+    border-top: 1px solid rgba(0,0,0,0.05);
+}
+
+/* Tweak the search result items so they look nice inside the accordion */
+.book-group .search-result-item {
+    background: var(--card-bg, #ffffff);
+    box-shadow: 0 2px 6px rgba(0,0,0,0.04);
+    border: none;
+}
+
+/* 🚨 ULTIMATE SCROLL FIX FOR THE SEARCH POPUP 🚨 */
+#char-search-modal {
+    overscroll-behavior: none !important; /* Stops the rubber-band bounce effect */
+}
+
+/* 🚨 SAFE SCROLL FIX FOR POPUP (WON'T BREAK APP) 🚨 */
+#char-search-modal .modal-content {
+    max-height: 70vh !important; 
+    overflow-y: auto !important; 
+    -webkit-overflow-scrolling: touch !important; 
+    overscroll-behavior: contain !important; /* Traps the scroll inside the box safely */
+    display: block !important;
+}
+
+/* 🚨 HIDE SCROLLBARS IN THE SEARCH POPUP BUT KEEP SCROLLING 🚨 */
+
+/* Hide scrollbar for Chrome, Safari, and newer Edge browsers */
+#char-search-modal .modal-content::-webkit-scrollbar,
+#char-search-modal .book-group-inner::-webkit-scrollbar {
+    display: none !important;
+    width: 0 !important;
+    background: transparent !important;
+}
+
+/* Hide scrollbar for Firefox and older Edge/IE */
+#char-search-modal .modal-content,
+#char-search-modal .book-group-inner {
+    -ms-overflow-style: none !important;  /* IE and Edge */
+    scrollbar-width: none !important;  /* Firefox */
+}
+
+/* 🗣️ VOICE SELECTOR DROPDOWN */
+.voice-select {
+    background: rgba(0, 0, 0, 0.05);
+    border: 1px solid rgba(0, 0, 0, 0.1);
+    border-radius: 20px;
+    padding: 6px 12px;
+    font-family: 'Quicksand', sans-serif;
+    font-size: 0.85rem;
+    font-weight: 600;
+    color: var(--text-color, #333);
+    cursor: pointer;
+    outline: none;
+    max-width: 140px; 
+    text-overflow: ellipsis;
+    -webkit-appearance: none; /* Removes default ugly browser styling */
+    appearance: none;
+}
+
+/* Dark mode support */
+body.dark .voice-select, 
+body.midnight .voice-select {
+    background: rgba(255, 255, 255, 0.1);
+    border-color: rgba(255, 255, 255, 0.2);
+    color: white;
+}
+/* 🚨 MASTER BACK-CARD AUTOSIZE SYSTEM (TONED DOWN) 🚨 */
+
+.card-main-info {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    width: 100%;
+    height: 100%;
+    padding: 20px;
+    box-sizing: border-box;
+    gap: 8px; /* Slightly tighter gap */
+}
+
+/* 🇨🇳 2. Main Chinese Characters (AUTO-FIT VERSION) */
+/* 🇨🇳 2. Main Chinese Characters */
+#fc-back-word {
+    /* Auto-adjusts size: Min 2.5rem, grows with screen, Max 5.5rem */
+    font-size: clamp(2.5rem, 15vw, 5.5rem) !important;
+    font-weight: normal;
+    color: var(--primary-color, #007bff);
+    line-height: 1.2;
+    margin: 0 !important;
+    text-align: center;
+    width: 100%;
+    
+    /* Forces long phrases to wrap to the next line automatically */
+    white-space: normal !important; 
+    word-break: break-all !important; 
+    overflow-wrap: anywhere !important;
+}
+
+/* 🚨 THE MISSING LINK: Force any clickable spans/characters inside to grow! 🚨 */
+#fc-back-word * {
+    font-size: inherit !important;
+    line-height: inherit !important;
+}
+
+/* 🇹🇼 3. Pinyin */
+/* 🇹🇼 3. Pinyin */
+#fc-pinyin {
+    /* Lowered from 8vw to 6vw, max down to 2.2rem */
+    font-size: clamp(1.2rem, 7vw, 2.2rem) !important;
+    color: #555;
+    margin: 0 !important;
+    text-align: center;
+    
+    /* 🚨 THE FIX: Force strict spacing and prevent syllable breaking! 🚨 */
+    word-spacing: 0.25em !important; /* Forces a clear, unbreakable gap between words */
+    word-break: keep-all !important; /* Forbids the browser from chopping words in half */
+    overflow-wrap: normal !important;
+    white-space: pre-wrap !important;
+}
+
+body.dark #fc-pinyin, body.midnight #fc-pinyin { 
+    color: #aaa; 
+}
+
+/* 🇬🇧 4. English Definition */
+#fc-meaning {
+    /* Lowered from 6vw to 5vw, max down to 2rem */
+    font-size: clamp(1rem, 6vw, 2rem) !important;
+    line-height: 1.3;
+    margin: 0 !important;
+    color: var(--text-color, #333);
+    text-align: center;
+    white-space: normal !important; 
+    word-break: break-word !important; 
+}
+
+/* 🚀 1. SETUP THE SCROLLABLE BOX AND SMALL ENGLISH */
+html body #fc-example-box,
+html body .extra-info-box {
+    width: 100% !important;
+    height: 35vh !important; 
+    overflow-y: auto !important; 
+    -webkit-overflow-scrolling: touch !important; 
+    scrollbar-width: none !important; 
+    -ms-overflow-style: none !important; 
+    font-size: 1.1rem !important; /* Locks English text small */
+}
+
+/* =========================================
+   🚀 FINAL EXAMPLE BOX FIX (CLEAN LAYOUT)
+   ========================================= */
+
+/* 1. The Scrollable Container (Fixes the buggy overflow) */
+html body .extra-info-box,
+html body #fc-example-box {
+    width: 100% !important;
+    max-height: 35vh !important; /* Uses max-height so it doesn't stretch the card unnecessarily */
+    overflow-y: auto !important; 
+    -webkit-overflow-scrolling: touch !important; 
+    
+    /* Hide ugly scrollbars */
+    scrollbar-width: none !important; 
+    -ms-overflow-style: none !important; 
+}
+
+html body .extra-info-box::-webkit-scrollbar,
+html body #fc-example-box::-webkit-scrollbar {
+    display: none !important;
+}
+
+/* 2. The English / Pinyin Text (Keep it normal so it fits) */
+html body .extra-info-box,
+html body .extra-info-box span:not(.char-hz):not(.fc-ex-zh) {
+    font-size: 1.1rem !important;
+    line-height: 1.4 !important;
+}
+
+/* 3. The Massive Chinese Characters */
+html body .fc-ex-zh,
+html body .extra-info-box .fc-ex-zh,
+html body .extra-info-box .char-hz {
+    font-size: 3.5rem !important; /* 👈 MASSIVE SIZE */
+    line-height: 1.3 !important;
+    
+    /* This ensures they stay in a clean readable row without breaking the box */
+    display: inline !important; 
+    white-space: normal !important;
+    word-wrap: break-word !important;
+}
+
+/* ==========================================================================
+   🚀 MODERN UI REFACTOR (CARDS & TYPOGRAPHY)
+   ========================================================================== */
+
+/* 1. Reusable Card Component */
+.modern-card {
+    background: var(--card-bg) !important;
+    border-radius: var(--border-radius) !important;
+    box-shadow: var(--shadow-sm) !important;
+    padding: 35px 25px !important;
+    display: flex !important;
+    flex-direction: column !important;
+    align-items: center !important;
+    justify-content: center !important;
+    text-align: center !important;
+    border: 1px solid var(--border-color) !important;
+    transition: transform 0.25s cubic-bezier(0.2, 0.8, 0.2, 1), box-shadow 0.25s ease !important;
+    width: 100% !important;
+    box-sizing: border-box !important;
+    position: relative;
+}
+
+/* Subtle lift and glow on hover */
+.modern-card:hover {
+    transform: translateY(-4px) !important;
+    box-shadow: var(--shadow-md) !important;
+}
+
+/* Fix background for Flashcard Back */
+.card-back {
+    background: var(--card-bg) !important;
+}
+
+/* 2. Strict Typography Hierarchy */
+/* Level 1: Chinese Characters (Prominent, Bold, Dark) */
+.text-chinese {
+    font-size: 3.5rem !important; 
+    font-weight: 700 !important;
+    line-height: 1.2 !important;
+    margin-bottom: 8px !important;
+    font-family: 'TWKai', "LXGW WenKai TC", "LXGW WenKai", "KaiTi", serif !important; 
+    -webkit-text-stroke: 0px transparent !important; 
+    -webkit-font-smoothing: antialiased !important;
+}
+.text-pinyin span {
+    margin: 0 !important;
+    padding: 0 !important;
+}
+
+/* Level 2: Pinyin (Medium, Muted) */
+.text-pinyin {
+    font-size: 1.4rem !important;
+    font-weight: 600 !important; /* Slightly bolder for clarity */
+    color: var(--primary-color) !important; /* Uses the specific theme's accent color! */
+    letter-spacing: 0.5px !important;
+    margin-bottom: 8px !important;
+    font-family: 'Quicksand', sans-serif !important;
+}
+.text-pinyin {
+    font-size: 1.4rem !important;
+    font-weight: 600 !important;
+    margin-bottom: 8px !important;
+    font-family: 'Quicksand', sans-serif !important;
+}
+/* Level 3: English Meaning (Small, Light/Secondary) */
+.text-english {
+    font-size: 1.1rem !important;
+    font-weight: 500 !important;
+    color: var(--text-muted) !important;
+    opacity: 0.85 !important;
+    line-height: 1.5 !important;
+    font-family: 'Quicksand', sans-serif !important;
+}
+.text-chinese, 
+.text-chinese * {
+    color: var(--text-main) !important;
+}
+/* 3. Responsive Scaling for Sentences & Quiz */
+.sentence-card .text-chinese, 
+.qz-word-container .text-chinese {
+    font-size: clamp(2rem, 6vw, 3.5rem) !important; /* Graceful shrink on small phones */
+    margin-bottom: 12px !important;
+}
+.sentence-card .text-pinyin,
+.qz-word-container .text-pinyin {
+    font-size: clamp(1.1rem, 4.5vw, 1.4rem) !important;
+    margin-bottom: 12px !important;
+}
+.sentence-card .text-english {
+    font-size: clamp(1rem, 3.5vw, 1.1rem) !important;
+}
+
+/* 4. Fix utility classes and Actions */
+.hidden {
+    display: none !important;
+    opacity: 0 !important;
+}
+
+.icon-btn {
+    background: transparent;
+    border: none;
+    color: var(--text-main);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    transition: transform 0.2s ease, opacity 0.2s ease;
+    z-index: 10;
+}
+
+.icon-btn:hover {
+    transform: scale(1.1);
+    opacity: 0.8;
+}
+
+/* 5. Smooth Reveal Animation for English Translations */
+#sn-english:not(.hidden) {
+    display: block !important;
+    animation: fadeInLift 0.4s ease forwards !important;
+}
+
+@keyframes fadeInLift {
+    from {
+        opacity: 0;
+        transform: translateY(10px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* ==========================================================================
+   🎈 FUN BUBBLE LOADER (DUOLINGO STYLE)
+   ========================================================================== */
+.fun-loader {
+    position: fixed;
+    inset: 0;
+    /* Playful, rich dark blue/slate gradient */
+    background: radial-gradient(circle at 50% 40%, #1e3a8a 0%, #0f172a 100%);
+    z-index: 99999;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    overflow: hidden;
+}
+
+.loader-content {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    transform: translateY(-5%);
+}
+
+/* The circle that holds the bubbles */
+.bubble-circle-container {
+    position: relative;
+    width: 200px;
+    height: 200px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-bottom: 30px;
+}
+
+/* The track where bubbles are injected */
+.bubble-track {
+    position: absolute;
+    inset: 0;
+}
+
+/* Individual Bubble Wrapper (rotates the bubble into position) */
+.bubble-wrapper {
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    top: 0;
+    left: 0;
+}
+
+/* The actual Bubble/Pill */
+.bubble {
+    position: absolute;
+    top: 0;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 12px;
+    height: 20px; /* Pill shape */
+    border-radius: 12px;
+    background: rgba(255, 255, 255, 0.08); /* Dim when empty */
+    transition: background 0.1s;
+}
+
+/* The bouncy animation when a bubble fills */
+.bubble.filled {
+    background: var(--active-color);
+    box-shadow: 0 0 12px var(--active-color);
+    /* Bouncy ease-out physics */
+    animation: bubblePop 0.5s cubic-bezier(0.34, 1.56, 0.64, 1) forwards; 
+}
+
+@keyframes bubblePop {
+    0% { transform: translateX(-50%) scale(0.8); }
+    50% { transform: translateX(-50%) scale(1.4); }
+    100% { transform: translateX(-50%) scale(1); }
+}
+
+/* The giant, playful percentage number */
+.fun-percentage {
+    font-family: 'Quicksand', sans-serif;
+    font-size: 3.5rem;
+    font-weight: 700;
+    color: #ffffff;
+    z-index: 10;
+    text-shadow: 0 4px 15px rgba(0,0,0,0.3);
+    font-variant-numeric: tabular-nums;
+    transition: transform 0.1s ease;
+}
+
+/* Title - Bolder, slightly rounded feel */
+.fun-title {
+    font-family: 'Quicksand', sans-serif;
+    font-size: 1.4rem;
+    font-weight: 700;
+    color: #f8fafc;
+    letter-spacing: 0.5px;
+    margin: 0;
+}
+
+/* Subtle footer */
+.fun-footer {
+    position: absolute;
+    bottom: 30px;
+    font-family: 'Quicksand', sans-serif;
+    font-size: 0.75rem;
+    font-weight: 600;
+    color: rgba(255, 255, 255, 0.3);
+    text-transform: uppercase;
+    letter-spacing: 1px;
+}
+
+/* 🎬 Exit Animation (Scale down and fade out playfully) */
+.fun-loader-exit {
+    opacity: 0;
+    transform: scale(0.9) translateY(20px);
+    transition: opacity 0.4s ease, transform 0.5s cubic-bezier(0.34, 1.56, 0.64, 1);
+    pointer-events: none;
+}
+
+/* Celebration glow at 100% */
+.celebrate-glow {
+    filter: brightness(1.3);
+    transform: scale(1.05);
+    transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+/* ==========================================================================
+   🏆 SESSION COMPLETE SCREEN (Modern minimal)
+   ========================================================================== */
+#session-complete-screen {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    width: 100%;
+    height: 100%;
+    text-align: center;
+    padding: 2rem 1rem;
+    animation: fadeIn 0.5s ease;
+}
+
+#session-complete-screen.hidden {
+    display: none !important;
+}
+
+.sc-header { margin-bottom: 2.5rem; }
+.sc-title { font-size: 2rem; font-weight: 700; margin: 0 0 0.5rem 0; color: var(--text-main); }
+.sc-subtitle { font-size: 1rem; color: var(--text-muted); margin: 0; }
+
+/* Stats Row */
+.sc-stats {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 2.5rem;
+    margin-bottom: 3rem;
+}
+
+/* Circular Progress */
+.sc-progress-circle {
+    position: relative;
+    width: 100px;
+    height: 100px;
+}
+.sc-progress-circle svg { width: 100%; height: 100%; transform: rotate(-90deg); }
+.sc-bg-circle { fill: none; stroke: var(--bg-hover); stroke-width: 6; }
+.sc-progress-path {
+    fill: none;
+    stroke: url(#sc-gradient);
+    stroke-width: 6;
+    stroke-linecap: round;
+    /* Dash array set via JS */
+}
+.sc-percentage {
+    position: absolute;
+    top: 50%; left: 50%;
+    transform: translate(-50%, -50%);
+    font-size: 1.5rem;
+    font-weight: 700;
+    color: var(--text-main);
+}
+.sc-percent-sign { font-size: 1rem; color: var(--text-muted); }
+
+/* Text Stat */
+.sc-stat-text { text-align: left; }
+.sc-stat-number { font-size: 2.5rem; font-weight: 700; color: var(--text-main); line-height: 1; }
+.sc-stat-label { font-size: 0.9rem; color: var(--text-muted); margin-top: 0.2rem; }
+
+/* Graph Area */
+.sc-graph-container {
+    position: relative;
+    width: 100%;
+    max-width: 300px;
+    height: 80px;
+    margin-bottom: 1.5rem;
+}
+.sc-graph { width: 100%; height: 100%; overflow: visible; }
+.sc-area-path { fill: url(#sc-fill-gradient); animation: fadeIn 1.5s ease; }
+.sc-line-path {
+    fill: none;
+    stroke: url(#sc-gradient);
+    stroke-width: 3;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+    stroke-dasharray: 500;
+    stroke-dashoffset: 500;
+    animation: drawLine 1.5s ease forwards;
+}
+.sc-endpoint {
+    fill: #9333EA;
+    stroke: #ffffff;
+    stroke-width: 2;
+    filter: drop-shadow(0 0 6px rgba(147, 51, 234, 0.6));
+    opacity: 0;
+    animation: popIn 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275) 1.2s forwards;
+}
+.sc-graph-label {
+    position: absolute;
+    right: -10px;
+    top: 0;
+    font-size: 0.8rem;
+    font-weight: 600;
+    color: #9333EA;
+    opacity: 0;
+    animation: fadeIn 0.5s ease 1.4s forwards;
+}
+
+/* Tooltip (Desktop Hover) */
+.sc-tooltip {
+    position: absolute;
+    top: -40px; right: -20px;
+    background: var(--bg-card);
+    border: 1px solid var(--border-color);
+    padding: 0.5rem;
+    border-radius: 8px;
+    font-size: 0.75rem;
+    color: var(--text-main);
+    box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.2s;
+    text-align: left;
+}
+.sc-graph-container:hover .sc-tooltip { opacity: 1; }
+
+.sc-feedback { font-size: 0.95rem; color: #10B981; font-weight: 500; margin-bottom: 2.5rem; }
+
+/* Buttons */
+.sc-actions { display: flex; flex-direction: column; gap: 0.8rem; width: 100%; max-width: 280px; }
+.sc-btn {
+    padding: 14px;
+    border-radius: 12px;
+    font-size: 1rem;
+    font-weight: 600;
+    cursor: pointer;
+    border: none;
+    transition: all 0.2s ease;
+}
+.sc-btn-primary {
+    background: linear-gradient(135deg, #4F46E5, #9333EA);
+    color: white;
+    box-shadow: 0 4px 15px rgba(147, 51, 234, 0.3);
+}
+.sc-btn-primary:active { transform: scale(0.97); }
+.sc-btn-secondary { background: var(--bg-hover); color: var(--text-main); }
+.sc-btn-ghost { background: transparent; color: var(--text-muted); font-size: 0.9rem; }
+
+/* Animations */
+@keyframes drawLine { to { stroke-dashoffset: 0; } }
+@keyframes popIn { 0% { transform: scale(0); opacity: 0; } 100% { transform: scale(1); opacity: 1; } }
+@keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+
+/* ==========================================================
+   SESSION COMPLETE ANIMATIONS & BUTTONS
+   ========================================================== */
+.sc-btn {
+    width: 100%;
+    padding: 14px;
+    font-size: 1rem;
+    font-weight: 600;
+    border-radius: 12px;
+    border: none;
+    cursor: pointer;
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+    font-family: 'Quicksand', sans-serif;
+}
+.sc-btn:hover {
+    transform: scale(1.03);
+    box-shadow: 0 6px 15px rgba(0,0,0,0.1);
+}
+.sc-btn:active {
+    transform: scale(0.97);
+}
+
+@keyframes scPulse {
+    0% { transform: scale(0.85); opacity: 0.5; }
+    50% { transform: scale(1.2); opacity: 0.2; }
+    100% { transform: scale(0.85); opacity: 0.5; }
+}
+
+.progress-ring-circle {
+  transition: stroke-dashoffset 1s ease-in-out; /* This creates the smooth fill animation */
+  transform: rotate(-90deg); /* Starts the circle at the top (12 o'clock) instead of the right */
+  transform-origin: 50% 50%;
+}
+
+/* ==========================================================================
+   NAVBAR & MODERN FLOATING MENU (ALL SCREENS)
+   ========================================================================== */
+.navbar {
+    background: var(--card-bg, #ffffff);
+    border-bottom: 1px solid var(--border-color, #e5e7eb);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 12px 20px;
+    position: sticky;
+    top: 0;
+    z-index: 999;
+    transition: background 0.3s ease, border-color 0.3s ease;
+}
+
+/* Up/Down Arrow Button */
+.menu-toggle {
+    display: block; 
+    background: var(--bg-color, #f9fafb);
+    border: 1px solid var(--border-color, #e5e7eb);
+    border-radius: 12px;
+    font-size: 1rem;
+    color: var(--text-main);
+    cursor: pointer;
+    padding: 6px 16px;
+    transition: all 0.2s ease;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+}
+
+.menu-toggle:active {
+    transform: scale(0.95);
+}
+
+/* ✨ Modern Floating Island Menu (Side-by-Side Columns) ✨ */
+.nav-controls {
+    display: none; /* Hidden by default */
+    position: absolute;
+    top: calc(100% + 15px); /* Detaches it from the top bar for a floating look */
+    right: 20px; /* Aligns to the right side under the button */
+    background: var(--card-bg, #ffffff);
+    border: 1px solid var(--border-color, #e5e7eb);
+    border-radius: 24px; /* Deep, modern rounded corners */
+    
+    /* This makes them side-by-side (columns) instead of vertical */
+    flex-direction: row; 
+    flex-wrap: wrap; /* Wraps neatly if viewed on a super tiny phone */
+    align-items: center;
+    justify-content: center;
+    
+    padding: 12px 24px;
+    gap: 20px;
+    box-shadow: 0 15px 35px rgba(0, 0, 0, 0.15);
+}
+
+/* When active class is added via Javascript */
+.nav-controls.active {
+    display: flex;
+    animation: dropDownIsland 0.3s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+/* Smooth pop-and-drop animation */
+@keyframes dropDownIsland {
+    from { 
+        opacity: 0; 
+        transform: translateY(-15px) scale(0.95); 
+    }
+    to { 
+        opacity: 1; 
+        transform: translateY(0) scale(1); 
+    }
+}
+
+/* ==========================================
+   📚 COLLAPSIBLE EXAMPLE SENTENCES
+   ========================================== */
+#fc-sentences-container {
+    margin-top: 20px;
+    width: 100%;
+}
+
+.fc-sentences-wrapper {
+    border: 1px solid var(--border-color, #e5e7eb);
+    border-radius: 12px;
+    background: var(--card-bg, #ffffff);
+    box-shadow: 0 2px 5px rgba(0,0,0,0.02);
+    
+    /* 📜 NEW: Scrolling limits for multiple/long sentences */
+    max-height: 220px; /* Adjust this if you want the box taller/shorter */
+    overflow-y: auto; 
+    overflow-x: hidden;
+}
+
+.fc-sentences-summary {
+    padding: 12px 16px;
+    cursor: pointer;
+    font-weight: 600;
+    color: var(--text-main);
+    background: var(--bg-color, #f9fafb);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    list-style: none; /* Hides default triangle */
+    user-select: none;
+    font-size: 0.95rem;
+}
+
+/* Hide default marker in Safari/Chrome */
+.fc-sentences-summary::-webkit-details-marker {
+    display: none; 
+}
+
+/* Custom animated arrow */
+.fc-sentences-summary::after {
+    content: '▼';
+    font-size: 0.75rem;
+    color: var(--text-muted);
+    transition: transform 0.3s ease;
+}
+
+details[open].fc-sentences-wrapper .fc-sentences-summary::after {
+    transform: rotate(180deg);
+}
+
+.fc-sentence-item {
+    padding: 16px;
+    border-top: 1px solid var(--border-color, #e5e7eb);
+    text-align: left;
+    
+    /* 🛑 NEW: Force text to be normal size and wrap cleanly */
+    font-size: 1.1rem !important;
+    line-height: 1.5 !important;
+    white-space: normal !important;
+    word-wrap: break-word !important;
+}
+
+/* Remove border from the very first item if it's the only one */
+.fc-sentences-wrapper.single-sentence .fc-sentence-item {
+    border-top: none;
+}
+
+.fc-sentence-zh {
+    font-size: 1.3rem;
+    color: var(--text-main);
+    margin-bottom: 6px;
+}
+
+.fc-sentence-py {
+    font-size: 1rem;
+    color: var(--primary-color, #3b82f6);
+    margin-bottom: 4px;
+}
+
+.fc-sentence-en {
+    font-size: 0.95rem;
+    color: var(--text-muted);
+}
+
+/* 🛑 FORCE ALL EXTRA INFO, GRAMMAR, AND SENTENCES TO BE NORMAL SIZE */
+#fc-sentences-container *, 
+.extra-info-box *, 
+#fc-example-box *,
+.fc-breakdown * {
+    white-space: normal !important;
+    word-wrap: break-word !important;
+}
+
+/* Force standard sizes for Chinese characters in these boxes */
+#fc-sentences-container .text-chinese,
+.extra-info-box .text-chinese,
+#fc-example-box .fc-ex-zh {
+    font-size: 1.3rem !important;
+    line-height: 1.4 !important;
+}
+
+/* Force standard sizes for English/Pinyin in these boxes */
+#fc-sentences-container .text-english,
+#fc-sentences-container .text-pinyin,
+.extra-info-box .text-english,
+.extra-info-box .text-pinyin,
+.fc-breakdown .text-pinyin {
+    font-size: 0.95rem !important;
+}
+
+/* Ensure the back of the flashcard itself can scroll */
+.flashcard-back {
+    overflow-y: auto !important;
+    overflow-x: hidden;
+    padding-bottom: 20px; 
+}
+
+/* 🛑 FORCE ALL EXTRA INFO, GRAMMAR, AND SENTENCES TO BE NORMAL SIZE */
+#fc-sentences-container *, 
+.extra-info-box *, 
+#fc-example-box *,
+.fc-breakdown * {
+    white-space: normal !important;
+    word-wrap: break-word !important;
+}
+
+/* Force standard sizes for Chinese characters in these boxes */
+#fc-sentences-container .text-chinese,
+.extra-info-box .text-chinese,
+#fc-example-box .fc-ex-zh {
+    font-size: 1.3rem !important;
+    line-height: 1.4 !important;
+}
+
+/* Force standard sizes for English/Pinyin in these boxes */
+#fc-sentences-container .text-english,
+#fc-sentences-container .text-pinyin,
+.extra-info-box .text-english,
+.extra-info-box .text-pinyin,
+.fc-breakdown .text-pinyin {
+    font-size: 0.95rem !important;
+}
+
+/* Ensure the back of the flashcard itself can scroll */
+.flashcard-back {
+    overflow-y: auto !important;
+    overflow-x: hidden;
+    padding-bottom: 20px; 
+    
+    /* 👇 ADD THESE 3 LINES 👇 */
+    touch-action: pan-y !important; 
+    -webkit-overflow-scrolling: touch !important; 
+    max-height: 100%; /* Forces the container to stay inside the screen so it CAN scroll */
+}
+#fc-sentences-container .text-chinese {
+    font-weight: normal !important;
+    -webkit-text-stroke: 0px transparent !important; /* Removes any "fake" bold thickness */
+}
+
+/* Also ensure the general Chinese text in sentences is not bold */
+.fc-sentence-item .text-chinese {
+    font-weight: 400 !important;
+}
